@@ -1,35 +1,24 @@
-# Bevy template discovery
+# Bevy template import
 
-Research date: 2026-10-04.
+## Source
 
-## Expected source
+- Repository: [sagan-software/template-bevy](https://github.com/sagan-software/template-bevy)
+- Local reference clone: `/home/sagan/Code/github.com/sagan-software/template-bevy`
+- Imported commit: `da85b65ffbad26f78d23c953d379a5b0d624e1ed` (`Add generic Bevy project template`)
+- Branch at import: `main`; clone was clean and matched `origin/main`.
+- License: MIT, retained from the template.
+- Import date: 2026-10-04.
 
-Owner-local Cubewright notes identify the Bevy template as:
+The tracked template files were copied into this repository without its `.git` directory. The local project keeps its existing `main` history and research commits.
 
-```text
-~/Code/gitlab.com/liamcurry/templates/template-bevy
-```
+## Retained scaffold
 
-Those notes record template commit `9d5f28a` dated 2026-09-04, a Bevy 0.19.1 networked 2D demo. They describe edition 2024, resolver 3, Rust workspace MSRV 1.96.1, Clippy MSRV 1.96.1, a Nix flake using `rust-overlay`, `crane`, and `treefmt-nix`, and Bevy-specific validation. These are discovery notes only; inspect the exact template source before copying or relying on any setting.
+The import retains the template's Nix flake and lockfile, Rust toolchain and formatter settings, strict Clippy and Rust workspace lints, Nix build/test/coverage/benchmark workflows, native Linux dependencies, and AI tooling setup. The template's source app, tests, and benchmarks remain as a temporary Bevy 0.19.1 networked 2D smoke-test baseline. They are not the ray-traced audio implementation and must be replaced or reshaped after plan review.
 
-## Access attempts from this host
+The root Cargo package and Rust crate references were renamed to `bevy-raytraced-audio` and `bevy_raytraced_audio`. The workspace MSRV and Clippy `msrv` remain `1.96.1`; the checked-in `rust-toolchain.toml` remains at `1.98.1`, matching the imported baseline. The supported 1.96–1.99 Rust matrix and Bevy 0.17–0.20 matrix are research targets, not verified by this single-version scaffold.
 
-- No `template-bevy` checkout was found under `/home/sagan/Code` or `/home/sagan/Sync`.
-- Authenticated GitLab API lookup and project search did not expose `liamcurry/templates/template-bevy` to the current account.
-- GitLab SSH returned a project-not-found or permission response.
-- The recorded Tailscale alias for the NixOS machine was offline. A separate online `nixos` peer refused port 22 and the `tailscale ssh` attempt closed without a session.
-- The user's previous project notes contain the path and commit summary but not the actual template files.
+Sagan Dylints library selection was added to root Cargo workspace metadata at pinned revision `483b64d83e38352994d509eacf4a56db1892f1a3`. The existing Dylints checkout was not changed.
 
-No credentials or SSH keys were changed. No template files were copied. This repository therefore remains a docs-only plan until the owner restores SSH access, supplies a reachable path, or authorizes the fallback scaffold.
+## Next import gate
 
-## Required import review
-
-When the template becomes available:
-
-1. Record its exact remote URL, commit, and working-tree state.
-2. Inspect `AGENTS.md`, reviewer rules, Cargo manifests, Rust and Clippy MSRV settings, `flake.nix`, `flake.lock`, Nix checks, profiles, lint configuration, CI, examples, benchmarks, and assets.
-3. Generate this project from the template or copy its documented scaffold, preserving only applicable Bevy, Nix, and developer conventions.
-4. Remove unrelated gameplay, networking, and asset content without copying encrypted secrets or dirty user work.
-5. Run the template's baseline checks before making project-specific changes.
-
-The final README and plan must record what was retained and changed. `nix build`, `nix run`, and `nix flake check` remain unverified until this import and first build succeed.
+Before audio implementation, inspect the imported manifest, Flake, and tests against the approved crate layout. Remove template-only networking, physics, particle, editor, and MCP dependencies when no audio example or development workflow needs them. Preserve only measured project conventions and infrastructure. Then run the template Nix gates and record separate results for baseline scaffold validation and the requested Bevy/Rust compatibility matrix.

@@ -1,6 +1,6 @@
 # Local research clones
 
-Research snapshot: 2026-10-04. These shallow clones are kept outside this project under `/home/sagan/Code/github.com/` so they remain available for inspection without vendoring upstream code. The listed commit identifies the snapshot researched; recheck the upstream repository before implementation.
+Research snapshot: 2026-10-04. The research clones are kept outside this project under `/home/sagan/Code/github.com/` so they remain available for inspection without vendoring upstream code. Most are shallow clones; `template-bevy` retains its full history. The listed commit identifies the snapshot researched; recheck the upstream repository before implementation.
 
 ## Vercidium Audio organization
 
@@ -19,6 +19,7 @@ All 18 public repositories were cloned under `/home/sagan/Code/github.com/vercid
 | `/home/sagan/Code/github.com/BillyDM/firewheel` | `34b35cad0535bf0a9542ac977b34744805d6cc03` | Rust audio graph engine and custom node APIs. |
 | `/home/sagan/Code/github.com/JustGoscha/omg-audio` | `7e10eae1d8498dc6a2c0dc46c68d2999ef2f7e9f` | Closest pure-Rust propagation and DSP implementation reference. |
 | `/home/sagan/Code/github.com/AudioGroupCologne/wavefront` | `73a1f2c79e66bbd332dfc77cfc425e776703dcd9` | 2D acoustic wave simulation reference, not ray tracing. |
+| `/home/sagan/Code/github.com/sagan-software/template-bevy` | `da85b65ffbad26f78d23c953d379a5b0d624e1ed` | User's Nix-first Bevy starter, imported as the local scaffold. |
 
 The local Sagan Dylints checkout is `/home/sagan/Code/github.com/sagan-software/dylints`. It has pre-existing uncommitted user work and was not changed. The reproducible Dylints pin and integration instructions are documented in [Dylints integration](../DYLINTS.md).
 

@@ -10,13 +10,13 @@ Bevy root manifests declare `rust-version` 1.88.0 for 0.17.3, 1.89.0 for 0.18.1,
 
 ## Rust stable support
 
-Rust 1.99.0 was announced on 2026-10-01. The four latest stable minor versions are 1.96, 1.97, 1.98, and 1.99. Set `rust-version` and Clippy's `msrv` to 1.96.0; do not promise Rust 1.95 while supporting the Bevy 0.20 release candidate.
+Rust 1.99.0 was announced on 2026-10-01. The four latest stable minor versions are 1.96, 1.97, 1.98, and 1.99. The copied template sets workspace `rust-version` and Clippy `msrv` to 1.96.1. Keep that minimum unless Bevy 0.20 can be validated against an earlier 1.96 patch; do not promise Rust 1.95 while supporting the 0.20 release candidate.
 
 ## Template findings from the owner's local project notes
 
-The Bevy template notes identify `~/Code/gitlab.com/liamcurry/templates/template-bevy`, last observed at commit `9d5f28a` dated 2026-09-04. They describe a Bevy 0.19.1 networked 2D demo, edition 2024, resolver 3, workspace MSRV 1.96.1, and Clippy MSRV 1.96.1. They also record a Nix flake using nixpkgs, rust-overlay, crane, and treefmt-nix with Bevy-oriented checks. These are owner-local notes, not a substitute for inspecting the template checkout.
+The imported `sagan-software/template-bevy` at `da85b65` is a Bevy 0.19.1 networked 2D demo, edition 2024, resolver 3, workspace MSRV 1.96.1, and Clippy MSRV 1.96.1. Its Nix flake uses nixpkgs, rust-overlay, crane, and treefmt-nix with Bevy-oriented checks. Exact origin and import notes are in [template research](template.md).
 
-The template was not available on the current T490 filesystem. Its import status and failed access paths are recorded in [template research](template.md). Do not claim that this project inherits or currently validates the template's flake.
+The template is now imported at commit `da85b65`. The scaffold's build validation is tracked separately from the planned Bevy and Rust compatibility matrix. See [template research](template.md) for the retained source and current limits.
 
 ## Dylints findings
 

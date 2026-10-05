@@ -2,6 +2,8 @@
 
 Research snapshot: 2026-10-04.
 
+The imported scaffold currently targets Bevy 0.19.1 only. It contains no ray-traced audio adapter, and it has not passed the 0.17–0.20 or Rust 1.96–1.99 matrix.
+
 ## Bevy releases
 
 | Bevy target | State at snapshot | Declared Bevy `rust-version` | Audio source adapter |
@@ -19,7 +21,7 @@ The support promise must identify exact patch releases tested. Do not describe 0
 
 Rust 1.99.0 was released on 2026-10-01. The latest four stable minor versions on the research date are 1.96, 1.97, 1.98, and 1.99. The [Rust 1.99 release announcement](https://blog.rust-lang.org/2026/10/01/Rust-1.99.0/) is the current-version source.
 
-Set workspace `rust-version = "1.96.0"` and Clippy `msrv = "1.96.0"`. Rust 1.95 cannot be the project minimum while Bevy 0.20 RC2 requires Rust 1.96.0. Testing the four latest stable versions satisfies the requested four-release window as of this research snapshot. Refresh this window when support policy is updated.
+The imported workspace and Clippy configuration set MSRV `1.96.1`. Keep that patch minimum unless the Bevy 0.20 support row can be validated against an earlier 1.96 patch. Test the four latest stable minor lines, selecting a current patch release for each line at matrix refresh time. Rust 1.95 cannot be the project minimum while supporting Bevy 0.20 RC2. Refresh patch selections when support policy is updated.
 
 ## CI matrix
 

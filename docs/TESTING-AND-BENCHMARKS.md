@@ -58,15 +58,17 @@ Use Criterion with release-like compiler settings and a documented environment. 
 
 Record CPU/GPU model, operating system, driver, Rust compiler, Bevy version, feature set, input seed, geometry and ray counts, and Criterion baseline. Do not set a performance threshold until representative baselines exist. Compare CPU and GPU end-to-end time, not only shader execution.
 
-## Required Rust gates
+## Imported scaffold gates
 
-After template import, add the applicable commands from that template and repository policy. The supplied AGENTS instructions require the Rust fallback gates when no closer repository gate applies:
+The current Nix template says to run development commands through Nix, not a host-installed Rust toolchain. Its full `nix run .#check` workflow covers formatting, Clippy, Bevy feature checks, Bevy-specific lints, tests, doctests, private docs, benchmark compilation, and coverage. `nix flake check` exposes those checks as isolated derivations. These gates currently validate the inherited Bevy 0.19.1 network demo.
+
+The target library gates must cover the shared core and each Bevy adapter. Use the imported Nix workflows while the template policy applies:
 
 ```sh
-cargo fmt --all -- --check
-cargo test
-cargo clippy --all-targets --all-features -- -D warnings
-nix run /home/sagan/Code/github.com/sagan-software/dylints#sagan-lints -- --repo .
+nix run .#check
+nix flake check
+nix build
+nix run github:sagan-software/dylints/483b64d83e38352994d509eacf4a56db1892f1a3 -- --repo . --fast
 ```
 
-Use the project Nix wrapper if the template requires one, without changing Cargo arguments or scope. Run each exact required gate after the final source change. The current repository has no Rust targets, so no tests or code gates have been run.
+The Bevy adapters may require separate feature builds because one Cargo invocation cannot contain multiple incompatible Bevy minor versions. Record the exact matrix commands and test results after selecting the crate and adapter layout. The imported flake currently sets its coverage floor to 50%; raise the project production-code threshold to at least 90% after the audio crate structure exists. Do not report the inherited baseline's coverage as audio-library coverage.

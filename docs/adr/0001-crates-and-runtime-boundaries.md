@@ -9,7 +9,7 @@ date: 2026-10-04
 
 The project must support Bevy 0.17 through 0.20, separate 2D and 3D use, CPU fallback, optional GPU acceleration, and brownfield installation. Bevy's built-in audio path uses `AudioPlayer<Source>` with `Source: Asset + Decodable`; the public sink exposes playback controls but not a general DSP graph. Bevy 0.17/0.18 and 0.19/0.20 have different `Decodable` trait shapes.
 
-The research found both a Bevy integration around Steam Audio and a direct Firewheel/Seedling integration. It also found `omg-audio`, a closely related Rust propagation engine with an Apache-2.0 core. The current recommendation is an independent solver and API, with no source copied from either Vercidium or OMG. The owner can request a separate reuse audit before implementation. The template expected by the owner is not available on the current host, so the final crate and Nix layout must wait for its import.
+The research found both a Bevy integration around Steam Audio and a direct Firewheel/Seedling integration. It also found `omg-audio`, a closely related Rust propagation engine with an Apache-2.0 core. The current recommendation is an independent solver and API, with no source copied from either Vercidium or OMG. The owner can request a separate reuse audit before implementation. The imported template supplies the initial crate and Nix scaffold; template-specific gameplay remains temporary.
 
 ## Proposed decision
 

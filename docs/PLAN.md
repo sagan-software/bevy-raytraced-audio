@@ -18,7 +18,7 @@ The first review covers research and design. It does not authorize implementatio
 - The package declares Rust 1.96 as its minimum and CI tests stable Rust 1.96, 1.97, 1.98, and 1.99, matching the four stable minor releases available on 2026-10-04.
 - Production-code line coverage is at least 90%, with branch gaps reported separately. Tests cover each reachable changed branch and each backend fallback.
 - Criterion benchmarks cover acoustic build, direct-path queries, reflection queries, scene updates, and CPU/GPU parity on fixed inputs. Performance claims include the input size, hardware, compiler, build profile, and measured output.
-- The copied Bevy template supplies the actual project scaffold, Nix setup, profiles, and preferred tooling. This criterion is pending because the template is currently inaccessible from this host.
+- The copied Bevy template supplies the project's initial scaffold, Nix setup, profiles, and preferred tooling. Its origin, commit, retained settings, and temporary demo baseline are recorded in [template import research](research/template.md).
 - `nix build`, `nix run`, and `nix flake check` have documented and tested behavior. The default run target launches a small demo; named 2D and 3D demos are available.
 - Every downloaded asset has a recorded source, creator, exact license, retrieval date, checksum, and any modifications.
 - The project uses the Sagan Dylints runner and a pinned Dylint library configuration after verifying that the configured checks work with the project's Bevy and Rust matrix.
@@ -28,9 +28,9 @@ The first review covers research and design. It does not authorize implementatio
 
 ### 0. Import and inspect the template
 
-Copy the exact `template-bevy` source after the owner restores access or supplies a reachable checkout. Preserve its documented Bevy, Nix, lint, profile, and test conventions unless this plan records a reason to change them. Remove the template demo only after recording the files and settings that the new project retains.
+The exact template source is now copied from commit `da85b65ffbad26f78d23c953d379a5b0d624e1ed`. Keep its networked 2D app only as a temporary scaffold baseline while the owner reviews this plan. After approval, retain relevant Nix, toolchain, lint, profile, test, benchmark, and AI tooling settings; replace or remove template-specific gameplay and dependencies.
 
-Exit evidence: template origin and commit recorded; clean local repository; Nix flake and package skeleton intact; Rust and Clippy MSRV fields located; no template secrets or unrelated game assets included.
+Exit evidence: template origin and commit recorded; imported files are committed; Nix flake and package skeleton intact; Rust and Clippy MSRV fields located; no template secrets or external game assets copied. The donor gameplay remains clearly labeled as temporary baseline code.
 
 ### 1. Settle the audio integration boundary
 
@@ -91,7 +91,7 @@ Exit evidence: all required matrix cells pass; `nix build`, `nix run`, and `nix 
 1. Approve the Bevy audio integration boundary in [the proposed architecture](DESIGN.md). The built-in sink exposes playback controls, while full reverb and filtering require a processed decoder or graph node.
 2. Confirm the proposed planar XY definition for 2D mode and whether layered 2D acoustics belong in the first release.
 3. Confirm whether the initial support promise targets Windows, Linux, and macOS, with browser/WebGPU support treated as later validation.
-4. Confirm the template access path. Its clone and SSH routes failed from this host; details are in [template research](research/template.md).
+4. Confirm which template-only development tools should remain after the demo is replaced. The import currently retains AI tooling, editor tooling, networking, physics, and particles from the source template.
 5. Confirm the solver policy. The recommendation is an independent implementation with no copied `omg-audio` code; details are in [prior-art research](research/prior-art.md).
 
 ## Risks tracked
