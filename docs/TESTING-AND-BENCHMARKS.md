@@ -68,7 +68,7 @@ The target library gates must cover the shared core and each Bevy adapter. Use t
 nix run .#check
 nix flake check
 nix build
-nix run github:sagan-software/dylints/483b64d83e38352994d509eacf4a56db1892f1a3 -- --repo . --fast
+nix develop --command nix run github:sagan-software/dylints/483b64d83e38352994d509eacf4a56db1892f1a3 -- --repo . --fast
 ```
 
 The Bevy adapters may require separate feature builds because one Cargo invocation cannot contain multiple incompatible Bevy minor versions. Record the exact matrix commands and test results after selecting the crate and adapter layout. The imported flake currently sets its coverage floor to 50%; raise the project production-code threshold to at least 90% after the audio crate structure exists. Do not report the inherited baseline's coverage as audio-library coverage.
