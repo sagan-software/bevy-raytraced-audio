@@ -9,7 +9,7 @@ use bevy::{
 use bevy_raytraced_audio::AcousticMaterial;
 use bevy_raytraced_audio_3d::{
     RaytracedAudio3dPlugin, RaytracedAudioEmitter3d, RaytracedAudioListener3d,
-    RaytracedAudioResponse3d, RaytracedAudioSurface3d,
+    RaytracedAudioReflectionPaths3d, RaytracedAudioResponse3d, RaytracedAudioSurface3d,
 };
 
 /// Vertical height of the example's two-triangle wall.
@@ -107,16 +107,17 @@ fn setup(
     commands.spawn((
         Name::new("Looping sound emitter"),
         RaytracedAudioEmitter3d,
+        RaytracedAudioReflectionPaths3d::default(),
         AudioPlayer::new(asset_server.load("audio/bevy-raytraced-audio-chime.wav")),
         PlaybackSettings::LOOP.with_spatial(true),
         Mesh3d(meshes.add(Sphere::new(0.2).mesh().uv(24, 16))),
         MeshMaterial3d(materials.add(Color::srgb(0.25, 0.6, 1.0))),
-        Transform::from_xyz(3.0, 1.0, 0.0),
+        Transform::from_xyz(-2.0, 1.0, 0.0),
         MovingEmitter,
     ));
 
     commands.spawn((
-        Text::new("The source passes the finite wall edge; the path color follows the response."),
+        Text::new("The emitter moves. Green/red: direct path. Cyan: reflections."),
         Node {
             position_type: PositionType::Absolute,
             top: px(12),
@@ -152,11 +153,20 @@ fn animate_source(
     emitter.translation.z = (time.elapsed_secs() * 0.7).sin() * 3.0;
 }
 
-/// Draws the current direct path in green or red from the response component.
+/// Draws the direct path and each first-order reflection polyline.
 fn draw_path(
     mut gizmos: Gizmos<'_, '_>,
     listener: Single<'_, '_, &GlobalTransform, With<RaytracedAudioListener3d>>,
-    emitter: Single<'_, '_, (&GlobalTransform, &RaytracedAudioResponse3d), With<MovingEmitter>>,
+    emitter: Single<
+        '_,
+        '_,
+        (
+            &GlobalTransform,
+            &RaytracedAudioResponse3d,
+            &RaytracedAudioReflectionPaths3d,
+        ),
+        With<MovingEmitter>,
+    >,
 ) {
     let color = if emitter.1.response().direct.is_occluded() {
         Color::srgb(1.0, 0.15, 0.12)
@@ -164,6 +174,21 @@ fn draw_path(
         Color::srgb(0.1, 1.0, 0.45)
     };
     gizmos.line(listener.translation(), emitter.0.translation(), color);
+    let reflection_color = Color::srgb(0.1, 0.8, 1.0);
+    for path in emitter.2.paths() {
+        let reflection_point = render_point_3d(path.reflection_point());
+        gizmos.line(emitter.0.translation(), reflection_point, reflection_color);
+        gizmos.line(reflection_point, listener.translation(), reflection_color);
+    }
+}
+
+/// Converts solver meter coordinates to Bevy's single-precision render coordinates.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "Bevy Gizmos use f32 coordinates while the acoustic solver stores f64 meters."
+)]
+const fn render_point_3d(point: bevy_raytraced_audio::SolverPoint3d) -> Vec3 {
+    Vec3::new(point.x_m() as f32, point.y_m() as f32, point.z_m() as f32)
 }
 
 /// Displays the frame-rate diagnostic so the stress target is visible during review.

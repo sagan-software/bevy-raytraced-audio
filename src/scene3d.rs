@@ -39,6 +39,45 @@ impl AcousticScene3d {
     /// Traces direct visibility and first-order reflections between two points.
     #[must_use]
     pub fn trace(&self, emitter: Emitter3d, listener: Listener3d) -> AcousticResponse {
+        self.trace_internal(emitter, listener, None)
+    }
+
+    /// Returns geometrically visible first-order reflections lazily in triangle insertion order; indices refer to this scene's current registration sequence.
+    pub fn reflection_paths(
+        &self,
+        emitter: Emitter3d,
+        listener: Listener3d,
+    ) -> impl Iterator<Item = ReflectionPath3d> + '_ {
+        let source = Vector3::from_point(emitter.position());
+        let receiver = Vector3::from_point(listener.position());
+        let direct_distance = receiver.subtract(source).length();
+        self.reflection_paths_between(source, receiver, direct_distance)
+    }
+
+    /// Traces a response while writing first-order paths into caller-owned reusable storage.
+    ///
+    /// The output is cleared before each query and retains its allocated capacity.
+    #[must_use]
+    pub fn trace_with_reflection_paths(
+        &self,
+        emitter: Emitter3d,
+        listener: Listener3d,
+        paths: &mut Vec<ReflectionPath3d>,
+    ) -> AcousticResponse {
+        self.trace_internal(emitter, listener, Some(paths))
+    }
+
+    /// Computes the aggregate response and optionally appends the same visible paths to reusable storage.
+    fn trace_internal(
+        &self,
+        emitter: Emitter3d,
+        listener: Listener3d,
+        mut paths: Option<&mut Vec<ReflectionPath3d>>,
+    ) -> AcousticResponse {
+        if let Some(output) = paths.as_deref_mut() {
+            output.clear();
+        }
+
         let source = Vector3::from_point(emitter.position());
         let receiver = Vector3::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
@@ -69,24 +108,17 @@ impl AcousticScene3d {
                 distance_ratio_squared.mul_add(1.0 - f64::from(absorption.mid()), reflected_mid);
             reflected_high =
                 distance_ratio_squared.mul_add(1.0 - f64::from(absorption.high()), reflected_high);
+
+            // The optional path output uses the same validated candidate as aggregate energy.
+            if let Some(output) = paths.as_deref_mut() {
+                output.push(path);
+            }
         }
 
         AcousticResponse::new(
             direct,
             BandEnergy::from_solver(reflected_low, reflected_mid, reflected_high),
         )
-    }
-
-    /// Returns geometrically visible first-order reflections lazily in triangle insertion order; indices refer to this scene's current registration sequence.
-    pub fn reflection_paths(
-        &self,
-        emitter: Emitter3d,
-        listener: Listener3d,
-    ) -> impl Iterator<Item = ReflectionPath3d> + '_ {
-        let source = Vector3::from_point(emitter.position());
-        let receiver = Vector3::from_point(listener.position());
-        let direct_distance = receiver.subtract(source).length();
-        self.reflection_paths_between(source, receiver, direct_distance)
     }
 
     /// Builds a lazy path iterator from the query's already-converted endpoints and distance.
@@ -283,13 +315,47 @@ mod tests {
     //! Private boundary coverage for triangle intersection and image-source handling.
 
     use super::{
-        PARAMETER_EPSILON, Vector3, first_reflection, path_intersects_triangle, point_in_triangle,
+        AcousticScene3d, PARAMETER_EPSILON, Vector3, first_reflection, path_intersects_triangle,
+        point_in_triangle,
     };
-    use crate::Point3;
+    use crate::{AcousticMaterial, Emitter3d, Listener3d, Point3, Triangle3d};
 
     /// Makes a double-precision test vector.
     fn vector(x: f64, y: f64, z: f64) -> Vector3 {
         Vector3 { x, y, z }
+    }
+
+    /// Captured paths match the response query and stale outputs clear without losing capacity.
+    #[test]
+    fn trace_with_paths_reuses_storage_and_preserves_response() {
+        let mut scene = AcousticScene3d::default();
+        let reflector = Triangle3d::try_new(
+            [
+                Point3::try_new(0.0, -1.0, -1.0).expect("finite reflector vertex"),
+                Point3::try_new(0.0, 1.0, -1.0).expect("finite reflector vertex"),
+                Point3::try_new(0.0, 0.0, 1.0).expect("finite reflector vertex"),
+            ],
+            AcousticMaterial::default(),
+        )
+        .expect("nondegenerate reflector");
+        scene.add_triangle(reflector);
+        let emitter = Emitter3d::new(Point3::try_new(-1.0, 0.0, 0.0).expect("finite emitter"));
+        let listener = Listener3d::new(Point3::try_new(-3.0, 0.0, 0.0).expect("finite listener"));
+        let mut paths = Vec::with_capacity(4);
+
+        let expected = scene.trace(emitter, listener);
+        let actual = scene.trace_with_reflection_paths(emitter, listener, &mut paths);
+
+        assert_eq!(actual, expected);
+        assert_eq!(paths.len(), 1);
+        let capacity = paths.capacity();
+        scene.clear();
+        let expected_without_reflections = scene.trace(emitter, listener);
+        let actual_without_reflections =
+            scene.trace_with_reflection_paths(emitter, listener, &mut paths);
+        assert_eq!(actual_without_reflections, expected_without_reflections);
+        assert_eq!(paths.len(), 0);
+        assert_eq!(paths.capacity(), capacity);
     }
 
     /// Makes finite test vertices in world-space meters.

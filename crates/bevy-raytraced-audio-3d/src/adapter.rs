@@ -3,6 +3,7 @@
 mod emitter;
 mod listener;
 mod plugin;
+mod reflection_paths;
 mod response;
 mod settings;
 mod surface;
@@ -12,6 +13,7 @@ mod volume;
 pub use emitter::RaytracedAudioEmitter3d;
 pub use listener::RaytracedAudioListener3d;
 pub use plugin::RaytracedAudio3dPlugin;
+pub use reflection_paths::RaytracedAudioReflectionPaths3d;
 pub use response::RaytracedAudioResponse3d;
 pub use surface::RaytracedAudioSurface3d;
 

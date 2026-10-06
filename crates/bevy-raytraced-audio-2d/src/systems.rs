@@ -2,6 +2,7 @@
 
 use super::emitter::RaytracedAudioEmitter2d;
 use super::listener::RaytracedAudioListener2d;
+use super::reflection_paths::RaytracedAudioReflectionPaths2d;
 use super::response::RaytracedAudioResponse2d;
 use super::settings::RaytracedAudioSettings;
 use super::surface::RaytracedAudioSurface2d;
@@ -27,6 +28,7 @@ pub(super) fn update_raytraced_audio(
             Option<&mut SpatialAudioSink>,
             Option<&mut RaytracedAudioBaseVolume>,
             Option<&mut RaytracedAudioResponse2d>,
+            Option<&mut RaytracedAudioReflectionPaths2d>,
         ),
         With<RaytracedAudioEmitter2d>,
     >,
@@ -61,13 +63,28 @@ pub(super) fn update_raytraced_audio(
         mut spatial_sink,
         mut base_volume,
         mut response_state,
+        mut reflection_paths,
     ) in &mut emitters
     {
         let translation = transform.translation();
         let response = Point2::try_new(translation.x, translation.y)
             .ok()
             .zip(listener.as_ref())
-            .map(|(position, listener)| scene.trace(Emitter2d::new(position), *listener));
+            .map(|(position, listener)| {
+                let emitter = Emitter2d::new(position);
+                if let Some(paths) = reflection_paths.as_deref_mut() {
+                    scene.trace_with_reflection_paths(emitter, *listener, &mut paths.paths)
+                } else {
+                    scene.trace(emitter, *listener)
+                }
+            });
+
+        // Invalid or ambiguous endpoints clear any path data left from the previous frame.
+        if response.is_none()
+            && let Some(paths) = reflection_paths.as_deref_mut()
+        {
+            paths.paths.clear();
+        }
 
         // A sink volume change since the prior update is treated as a user's new base volume.
         let current_volume = audio_sink

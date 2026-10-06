@@ -5,11 +5,11 @@ use bevy::prelude::{App, Transform, TransformPlugin, Vec2, Vec3};
 use bevy_raytraced_audio::{AcousticMaterial, GeometryError, Point2, Point3};
 use bevy_raytraced_audio_2d::{
     RaytracedAudio2dPlugin, RaytracedAudioEmitter2d, RaytracedAudioListener2d,
-    RaytracedAudioResponse2d, RaytracedAudioSurface2d,
+    RaytracedAudioReflectionPaths2d, RaytracedAudioResponse2d, RaytracedAudioSurface2d,
 };
 use bevy_raytraced_audio_3d::{
     RaytracedAudio3dPlugin, RaytracedAudioEmitter3d, RaytracedAudioListener3d,
-    RaytracedAudioResponse3d, RaytracedAudioSurface3d,
+    RaytracedAudioReflectionPaths3d, RaytracedAudioResponse3d, RaytracedAudioSurface3d,
 };
 use std::num::{NonZeroU16, NonZeroU32};
 
@@ -42,6 +42,96 @@ fn public_2d_plugin_publishes_an_occluded_response() -> Result<(), GeometryError
         .expect("the public adapter inserts its response component")
         .response();
     assert!(response.direct.is_occluded());
+    assert!(
+        app.world()
+            .get::<RaytracedAudioReflectionPaths2d>(emitter)
+            .is_none()
+    );
+    Ok(())
+}
+
+/// The 2D plugin exposes first-order paths only when the emitter opts in.
+#[test]
+fn public_2d_plugin_updates_opt_in_reflection_paths() -> Result<(), GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(RaytracedAudio2dPlugin::default());
+    app.world_mut().spawn((
+        RaytracedAudioListener2d,
+        Transform::from_xyz(-3.0, 0.0, 0.0),
+    ));
+    let emitter = app
+        .world_mut()
+        .spawn((
+            RaytracedAudioEmitter2d,
+            RaytracedAudioReflectionPaths2d::default(),
+            Transform::from_xyz(-1.0, 0.0, 0.0),
+        ))
+        .id();
+    app.world_mut().spawn((
+        RaytracedAudioSurface2d::new(
+            Vec2::new(0.0, -2.0),
+            Vec2::new(0.0, 2.0),
+            AcousticMaterial::default(),
+        )?,
+        Transform::default(),
+    ));
+
+    app.update();
+
+    let paths = app
+        .world()
+        .get::<RaytracedAudioReflectionPaths2d>(emitter)
+        .expect("the opt-in component remains on its emitter")
+        .paths();
+    assert_eq!(paths.len(), 1);
+    assert_eq!(paths[0].surface_index().index(), 0);
+    assert_eq!(paths[0].reflection_point().x_m(), 0.0);
+    assert_eq!(paths[0].reflection_point().y_m(), 0.0);
+    assert_eq!(paths[0].distance_m(), 4.0);
+
+    let duplicate_listener = app
+        .world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::from_xyz(1.0, 0.0, 0.0)))
+        .id();
+    app.update();
+    assert_eq!(
+        app.world()
+            .get::<RaytracedAudioReflectionPaths2d>(emitter)
+            .expect("the opt-in component remains on its emitter")
+            .paths()
+            .len(),
+        0
+    );
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse2d>(emitter)
+            .is_none()
+    );
+    assert!(app.world_mut().despawn(duplicate_listener));
+    app.update();
+    assert_eq!(
+        app.world()
+            .get::<RaytracedAudioReflectionPaths2d>(emitter)
+            .expect("the opt-in component remains on its emitter")
+            .paths()
+            .len(),
+        1
+    );
+
+    app.world_mut()
+        .get_mut::<Transform>(emitter)
+        .expect("the emitter retains its transform")
+        .translation = Vec3::new(-3.0, 0.0, 0.0);
+    app.update();
+    assert_eq!(
+        app.world()
+            .get::<RaytracedAudioReflectionPaths2d>(emitter)
+            .expect("the opt-in component remains on its emitter")
+            .paths()
+            .len(),
+        0
+    );
     Ok(())
 }
 
@@ -161,6 +251,100 @@ fn public_3d_plugin_publishes_an_occluded_response() -> Result<(), GeometryError
         .expect("the public adapter inserts its response component")
         .response();
     assert!(response.direct.is_occluded());
+    assert!(
+        app.world()
+            .get::<RaytracedAudioReflectionPaths3d>(emitter)
+            .is_none()
+    );
+    Ok(())
+}
+
+/// The 3D plugin exposes first-order paths only when the emitter opts in.
+#[test]
+fn public_3d_plugin_updates_opt_in_reflection_paths() -> Result<(), GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(RaytracedAudio3dPlugin::default());
+    app.world_mut().spawn((
+        RaytracedAudioListener3d,
+        Transform::from_xyz(-3.0, 0.0, 0.0),
+    ));
+    let emitter = app
+        .world_mut()
+        .spawn((
+            RaytracedAudioEmitter3d,
+            RaytracedAudioReflectionPaths3d::default(),
+            Transform::from_xyz(-1.0, 0.0, 0.0),
+        ))
+        .id();
+    app.world_mut().spawn((
+        RaytracedAudioSurface3d::new(
+            [
+                Vec3::new(0.0, -1.0, -1.0),
+                Vec3::new(0.0, 1.0, -1.0),
+                Vec3::new(0.0, 0.0, 1.0),
+            ],
+            AcousticMaterial::default(),
+        )?,
+        Transform::default(),
+    ));
+
+    app.update();
+
+    let paths = app
+        .world()
+        .get::<RaytracedAudioReflectionPaths3d>(emitter)
+        .expect("the opt-in component remains on its emitter")
+        .paths();
+    assert_eq!(paths.len(), 1);
+    assert_eq!(paths[0].surface_index().index(), 0);
+    assert_eq!(paths[0].reflection_point().x_m(), 0.0);
+    assert_eq!(paths[0].reflection_point().y_m(), 0.0);
+    assert_eq!(paths[0].reflection_point().z_m(), 0.0);
+    assert_eq!(paths[0].distance_m(), 4.0);
+
+    let duplicate_listener = app
+        .world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)))
+        .id();
+    app.update();
+    assert_eq!(
+        app.world()
+            .get::<RaytracedAudioReflectionPaths3d>(emitter)
+            .expect("the opt-in component remains on its emitter")
+            .paths()
+            .len(),
+        0
+    );
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse3d>(emitter)
+            .is_none()
+    );
+    assert!(app.world_mut().despawn(duplicate_listener));
+    app.update();
+    assert_eq!(
+        app.world()
+            .get::<RaytracedAudioReflectionPaths3d>(emitter)
+            .expect("the opt-in component remains on its emitter")
+            .paths()
+            .len(),
+        1
+    );
+
+    app.world_mut()
+        .get_mut::<Transform>(emitter)
+        .expect("the emitter retains its transform")
+        .translation = Vec3::new(-3.0, 0.0, 0.0);
+    app.update();
+    assert_eq!(
+        app.world()
+            .get::<RaytracedAudioReflectionPaths3d>(emitter)
+            .expect("the opt-in component remains on its emitter")
+            .paths()
+            .len(),
+        0
+    );
     Ok(())
 }
 

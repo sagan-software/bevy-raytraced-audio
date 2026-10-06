@@ -31,5 +31,12 @@
 - A query yields only finite, visible, first-order specular reflections; coincident source and listener positions yield none.
 - Paths follow surface insertion order. A surface index identifies one entry in the current scene and changes when that scene is rebuilt.
 - Reflection point, mirrored image-source position, path distance, and per-band relative energy derive from scene geometry and material absorption. Solver output points retain double precision.
+
+## Adapter path output
+
+- Per-emitter path storage exists only when the caller attaches the matching 2D or 3D reflection-path component.
+- `paths()` returns a borrowed slice in surface insertion order. The adapter reuses the component's vector between updates.
+- The adapter replaces the slice contents on a valid update and clears it when the listener is ambiguous, either transform is invalid, or source and listener coincide.
+- The aggregate response remains available without the optional path component. Path output does not modify audio samples.
 - The iterator borrows the scene and keeps constant query state. Full traversal is quadratic in surface count because each candidate checks every other surface.
 - The existing `AcousticResponse` remains copyable and continues to report aggregate reflected energy.

@@ -99,6 +99,28 @@ fn benchmark_small_scenes(
             )
         });
     });
+    let mut paths2d = Vec::with_capacity(1);
+    reflection_group.bench_function("2d/single_reflector_with_path_output", |bencher| {
+        bencher.iter(|| {
+            let response = reflected2d.trace_with_reflection_paths(
+                black_box(emitter2d),
+                black_box(listener2d),
+                &mut paths2d,
+            );
+            black_box((&response, &paths2d));
+        });
+    });
+    let mut paths3d = Vec::with_capacity(1);
+    reflection_group.bench_function("3d/single_reflector_with_path_output", |bencher| {
+        bencher.iter(|| {
+            let response = reflected3d.trace_with_reflection_paths(
+                black_box(emitter3d),
+                black_box(listener3d),
+                &mut paths3d,
+            );
+            black_box((&response, &paths3d));
+        });
+    });
     reflection_group.finish();
 }
 

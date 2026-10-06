@@ -47,6 +47,20 @@ materials are explicit and do not inherit Bevy rendering materials.
 The response is data, not rendered sound. The Bevy adapter uses direct-path
 occlusion to scale the existing `AudioSink` or `SpatialAudioSink` volume.
 Reflection results are available to the caller but do not change samples.
+
+## Per-emitter reflection paths
+
+The 2D and 3D adapters expose individual first-order paths through optional
+`RaytracedAudioReflectionPaths2d` and `RaytracedAudioReflectionPaths3d`
+components. Each component owns reusable storage for one emitter, and
+`paths()` returns a borrowed slice ordered by surface insertion. The slice
+reports valid paths for the current adapter update. Ambiguous listeners,
+invalid transforms, and coincident emitter/listener positions clear stale
+entries.
+
+The component is absent by default. Existing projects can add it only to
+emitters whose path data they consume. The minimal examples use it to draw
+reflection polylines. This output does not change Bevy audio samples.
 Filtering, reflection playback, late reverb, and source decoding changes are
 outside this version.
 

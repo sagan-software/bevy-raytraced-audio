@@ -6,9 +6,11 @@ plugins keep controlling playback. Mark only the listeners, emitters, and
 surfaces that should take part in acoustic queries.
 
 **Current scope:** direct-path occlusion changes the existing Bevy sink volume.
-The core also reports first-order reflection paths and band energy. Those
-reflection values do not yet modify audio samples. There is no GPU backend,
-mesh extraction, filter, or reverb DSP in this version.
+The core also reports first-order reflection paths and band energy. Attach
+`RaytracedAudioReflectionPaths2d` or `RaytracedAudioReflectionPaths3d` to an
+emitter to read its individual paths. Those reflection values do not yet modify
+audio samples. There is no GPU backend, mesh extraction, filter, or reverb DSP
+in this version.
 
 ## Quick start
 
@@ -55,12 +57,14 @@ error handling, and the corresponding 3D version are shown in the
 For a Bevy 0.17, 0.18, or 0.20 project, set the adapter feature to `bevy_0_17`,
 `bevy_0_18`, or `bevy_0_20`. Disable default features when selecting a version.
 Use one Bevy adapter version per application. The current 0.20 adapter targets
-`0.20.0-rc.2`; the stable 0.20 release is not available as of 2026-10-05.
+`0.20.0-rc.2`; the [official release list](https://github.com/bevyengine/bevy/releases)
+has no stable 0.20 release as of 2026-10-06.
 
 ## Examples
 
 The [2D GIF](assets/gifs/examples-2d.gif) and [3D GIF](assets/gifs/examples-3d.gif)
-show the four browser demo routes.
+show the browser demo routes. The minimal 2D and 3D scenes draw valid
+first-order reflection paths in cyan and direct paths in green or red.
 
 ![2D tutorial and stress examples](assets/gifs/examples-2d.gif)
 
@@ -120,17 +124,17 @@ nix run .#test
 nix run .#bench -- --quick --noplot
 ```
 
-The latest local coverage run reports 99.08% executable-line coverage,
-98.43% region coverage, and 100.00% function coverage. The quick Criterion run
-completes all 24 named workloads. These figures describe code and workload
+The latest local coverage run reports 99.08% line coverage, 98.53% region
+coverage, and 100.00% function coverage. The quick Criterion run completes all
+26 named workloads. These figures describe code and workload
 execution coverage; they do not certify real-time audio quality or rendered
 frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Performance status
 
 On the local Intel Core i7-8565U laptop CPU, the 128-emitter and 256-surface
-adapter schedule measured 0.96 ms in 2D and 2.45 ms in 3D. The 256-emitter,
-1,024-surface schedule measured 13.96 ms in 2D and 25.47 ms in 3D. These
+adapter schedule measured 1.14 ms in 2D and 2.89 ms in 3D. The 256-emitter,
+1,024-surface schedule measured 15.84 ms in 2D and 30.60 ms in 3D. These
 benchmarks measure Bevy scheduling without rendering or audio output.
 
 The 90 FPS target is not met by the largest schedule workload and is not

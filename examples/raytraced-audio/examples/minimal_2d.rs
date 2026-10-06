@@ -11,7 +11,7 @@ use bevy::{
 use bevy_raytraced_audio::AcousticMaterial;
 use bevy_raytraced_audio_2d::{
     RaytracedAudio2dPlugin, RaytracedAudioEmitter2d, RaytracedAudioListener2d,
-    RaytracedAudioResponse2d, RaytracedAudioSurface2d,
+    RaytracedAudioReflectionPaths2d, RaytracedAudioResponse2d, RaytracedAudioSurface2d,
 };
 
 /// Keeps enough room around the wall for the animated source to pass its endpoint.
@@ -70,16 +70,17 @@ fn setup(mut commands: Commands<'_, '_>, asset_server: Res<'_, AssetServer>) {
         RaytracedAudioListener2d,
         SpatialListener::new(0.2),
         Sprite::from_color(Color::srgb(0.2, 0.95, 0.55), Vec2::splat(0.32)),
-        Transform::from_xyz(-2.5, 0.0, 1.0),
+        Transform::from_xyz(-3.5, 0.0, 1.0),
     ));
 
     commands.spawn((
         Name::new("Looping sound emitter"),
         RaytracedAudioEmitter2d,
+        RaytracedAudioReflectionPaths2d::default(),
         AudioPlayer::new(asset_server.load("audio/bevy-raytraced-audio-chime.wav")),
         PlaybackSettings::LOOP.with_spatial(true),
         Sprite::from_color(Color::srgb(0.25, 0.6, 1.0), Vec2::splat(0.3)),
-        Transform::from_xyz(2.5, 0.0, 1.0),
+        Transform::from_xyz(-2.0, 0.0, 1.0),
         MovingEmitter,
     ));
 
@@ -99,7 +100,7 @@ fn setup(mut commands: Commands<'_, '_>, asset_server: Res<'_, AssetServer>) {
     ));
 
     commands.spawn((
-        Text::new("Arrow keys: move listener\nGreen path: clear, red path: blocked"),
+        Text::new("Arrow keys move the listener. Green/red: direct path. Cyan: reflections."),
         Node {
             position_type: PositionType::Absolute,
             top: px(12),
@@ -149,11 +150,20 @@ fn move_listener(
     listener.translation += direction.extend(0.0) * (time.delta_secs() * 1.5);
 }
 
-/// Draws the current direct path in green or red from the response component.
+/// Draws the direct path and each first-order reflection polyline.
 fn draw_path(
     mut gizmos: Gizmos<'_, '_>,
     listener: Single<'_, '_, &GlobalTransform, With<RaytracedAudioListener2d>>,
-    emitter: Single<'_, '_, (&GlobalTransform, &RaytracedAudioResponse2d), With<MovingEmitter>>,
+    emitter: Single<
+        '_,
+        '_,
+        (
+            &GlobalTransform,
+            &RaytracedAudioResponse2d,
+            &RaytracedAudioReflectionPaths2d,
+        ),
+        With<MovingEmitter>,
+    >,
 ) {
     let color = if emitter.1.response().direct.is_occluded() {
         Color::srgb(1.0, 0.15, 0.12)
@@ -165,6 +175,23 @@ fn draw_path(
         emitter.0.translation().truncate(),
         color,
     );
+    let reflection_color = Color::srgb(0.1, 0.8, 1.0);
+    for path in emitter.2.paths() {
+        let reflection_point = render_point_2d(path.reflection_point());
+        let source_point = emitter.0.translation().truncate();
+        let listener_point = listener.translation().truncate();
+        gizmos.line_2d(source_point, reflection_point, reflection_color);
+        gizmos.line_2d(reflection_point, listener_point, reflection_color);
+    }
+}
+
+/// Converts solver meter coordinates to Bevy's single-precision render coordinates.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "Bevy Gizmos use f32 coordinates while the acoustic solver stores f64 meters."
+)]
+const fn render_point_2d(point: bevy_raytraced_audio::SolverPoint2d) -> Vec2 {
+    Vec2::new(point.x_m() as f32, point.y_m() as f32)
 }
 
 /// Displays the frame-rate diagnostic so the stress target is visible during review.

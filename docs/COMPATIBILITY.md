@@ -1,6 +1,6 @@
 # Compatibility
 
-Research snapshot: 2026-10-05.
+Research snapshot: 2026-10-06.
 
 ## Bevy versions
 
@@ -33,13 +33,12 @@ manifests. See the versioned Bevy audio sources in
 ## Rust versions
 
 The manifest `rust-version` and Clippy `msrv` are `1.96.1`. The compatibility
-workflow tests Rust `1.96.1`, `1.97.0`, `1.98.1`, and `1.99.0`, which are the
-four selected stable minor lines for this research snapshot. The 1.96 minimum
+workflow tests Rust `1.96.1`, `1.97.0`, `1.98.1`, and `1.99.0`. The 1.96 minimum
 matches the Bevy 0.20 release candidate's declared minimum.
 
 ## Test matrix
 
-The compatibility workflow runs the core and adapter workspace tests with each Rust version, then checks all four Bevy feature selections. This defines 16 Rust and Bevy combinations. Local checks passed with Rust 1.99.0; the other Rust versions await the GitHub Actions matrix. The matrix excludes the Bevy 0.19.1 example package. That package and the four browser builds are tested separately on the locked workspace toolchain.
+The compatibility workflow runs the core and adapter workspace tests with each Rust version, then checks all four Bevy feature selections. This defines 16 Rust and Bevy combinations. The matrix excludes the Bevy 0.19.1 example package. That package and the four browser builds are tested separately on the locked workspace toolchain.
 
 Run the same checks locally with:
 

@@ -39,6 +39,45 @@ impl AcousticScene2d {
     /// Traces direct visibility and first-order reflections between two points.
     #[must_use]
     pub fn trace(&self, emitter: Emitter2d, listener: Listener2d) -> AcousticResponse {
+        self.trace_internal(emitter, listener, None)
+    }
+
+    /// Returns geometrically visible first-order reflections lazily in surface insertion order; indices refer to this scene's current registration sequence.
+    pub fn reflection_paths(
+        &self,
+        emitter: Emitter2d,
+        listener: Listener2d,
+    ) -> impl Iterator<Item = ReflectionPath2d> + '_ {
+        let source = Vector2::from_point(emitter.position());
+        let receiver = Vector2::from_point(listener.position());
+        let direct_distance = receiver.subtract(source).length();
+        self.reflection_paths_between(source, receiver, direct_distance)
+    }
+
+    /// Traces a response while writing first-order paths into caller-owned reusable storage.
+    ///
+    /// The output is cleared before each query and retains its allocated capacity.
+    #[must_use]
+    pub fn trace_with_reflection_paths(
+        &self,
+        emitter: Emitter2d,
+        listener: Listener2d,
+        paths: &mut Vec<ReflectionPath2d>,
+    ) -> AcousticResponse {
+        self.trace_internal(emitter, listener, Some(paths))
+    }
+
+    /// Computes the aggregate response and optionally appends the same visible paths to reusable storage.
+    fn trace_internal(
+        &self,
+        emitter: Emitter2d,
+        listener: Listener2d,
+        mut paths: Option<&mut Vec<ReflectionPath2d>>,
+    ) -> AcousticResponse {
+        if let Some(output) = paths.as_deref_mut() {
+            output.clear();
+        }
+
         let source = Vector2::from_point(emitter.position());
         let receiver = Vector2::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
@@ -73,24 +112,17 @@ impl AcousticScene2d {
                 distance_ratio_squared.mul_add(1.0 - f64::from(absorption.mid()), reflected_mid);
             reflected_high =
                 distance_ratio_squared.mul_add(1.0 - f64::from(absorption.high()), reflected_high);
+
+            // The optional path output uses the same validated candidate as aggregate energy.
+            if let Some(output) = paths.as_deref_mut() {
+                output.push(path);
+            }
         }
 
         AcousticResponse::new(
             direct,
             BandEnergy::from_solver(reflected_low, reflected_mid, reflected_high),
         )
-    }
-
-    /// Returns geometrically visible first-order reflections lazily in surface insertion order; indices refer to this scene's current registration sequence.
-    pub fn reflection_paths(
-        &self,
-        emitter: Emitter2d,
-        listener: Listener2d,
-    ) -> impl Iterator<Item = ReflectionPath2d> + '_ {
-        let source = Vector2::from_point(emitter.position());
-        let receiver = Vector2::from_point(listener.position());
-        let direct_distance = receiver.subtract(source).length();
-        self.reflection_paths_between(source, receiver, direct_distance)
     }
 
     /// Builds a lazy path iterator from the query's already-converted endpoints and distance.
@@ -265,11 +297,44 @@ fn path_intersects_segment(
 mod tests {
     //! Private boundary coverage for line intersection and image-source edge cases.
 
-    use super::{PARAMETER_EPSILON, Vector2, first_reflection, path_intersects_segment};
+    use super::{
+        AcousticScene2d, PARAMETER_EPSILON, Vector2, first_reflection, path_intersects_segment,
+    };
+    use crate::{AcousticMaterial, Emitter2d, Listener2d, Point2, Segment2d};
 
     /// Makes a double-precision test point.
     fn point(x: f64, y: f64) -> Vector2 {
         Vector2 { x, y }
+    }
+
+    /// Captured paths match the response query and stale outputs clear without losing capacity.
+    #[test]
+    fn trace_with_paths_reuses_storage_and_preserves_response() {
+        let mut scene = AcousticScene2d::default();
+        let reflector = Segment2d::try_new(
+            Point2::try_new(0.0, -2.0).expect("finite reflector start"),
+            Point2::try_new(0.0, 2.0).expect("finite reflector end"),
+            AcousticMaterial::default(),
+        )
+        .expect("nondegenerate reflector");
+        scene.add_segment(reflector);
+        let emitter = Emitter2d::new(Point2::try_new(-1.0, 0.0).expect("finite emitter"));
+        let listener = Listener2d::new(Point2::try_new(-3.0, 0.0).expect("finite listener"));
+        let mut paths = Vec::with_capacity(4);
+
+        let expected = scene.trace(emitter, listener);
+        let actual = scene.trace_with_reflection_paths(emitter, listener, &mut paths);
+
+        assert_eq!(actual, expected);
+        assert_eq!(paths.len(), 1);
+        let capacity = paths.capacity();
+        scene.clear();
+        let expected_without_reflections = scene.trace(emitter, listener);
+        let actual_without_reflections =
+            scene.trace_with_reflection_paths(emitter, listener, &mut paths);
+        assert_eq!(actual_without_reflections, expected_without_reflections);
+        assert_eq!(paths.len(), 0);
+        assert_eq!(paths.capacity(), capacity);
     }
 
     /// Collinear overlap blocks an open path, while endpoint touch and parallel offset do not.

@@ -4,10 +4,22 @@ The Bevy native and browser examples use Bevy 0.19.1. Each browser route has its
 
 | Example | Scene and controls | What it demonstrates |
 | --- | --- | --- |
-| `minimal_2d` | One listener, a looping spatial sound, one wall; arrow keys move the listener. | Add the 2D plugin, mark a listener, emitter, and explicit surface, then read the direct-path response. |
-| `minimal_3d` | One listener, a moving sound, a finite wall made from two triangles, and a floor. | Configure Bevy spatial audio, attach a response component, and inspect direct paths. |
+| `minimal_2d` | One listener, a looping spatial sound, one wall; arrow keys move the listener. | Add the 2D plugin, mark a listener, emitter, and explicit surface, then inspect direct and first-order reflection paths. |
+| `minimal_3d` | One listener, a moving sound, a finite wall made from two triangles, and a floor. | Configure Bevy spatial audio, attach response and reflection-path components, and inspect both path types. |
 | `stress_2d` | 128 moving emitters, 256 wall segments, one looping sound. | Measure the scheduled update and display a frame-rate readout. |
 | `stress_3d` | 128 moving emitters, 256 wall triangles, one looping sound. | Measure the 3D update with the same source and surface counts. |
+
+The minimal examples attach `RaytracedAudioReflectionPaths2d` or
+`RaytracedAudioReflectionPaths3d` to the emitter. The adapter fills each
+component with the current valid paths in surface insertion order. Call
+`paths()` to borrow the slice. Each path exposes its surface index, reflection
+point, image source, total distance in meters, and relative energy for each
+frequency band. The Bevy examples draw the source-to-reflection and
+reflection-to-listener segments in cyan.
+
+Path collection is opt-in. Without the component, the adapter still publishes
+the aggregate response and updates direct-path sink volume. Reflection paths
+remain geometric response data and do not add audible reflection taps.
 
 The core crate also provides `cargo run --example trace_2d` inside `nix develop`. It prints the direct response and each visible first-order reflection, including the reflection point, image source, distance, and per-band relative energy. The browser catalogue currently contains the four Bevy scenes in the table.
 
