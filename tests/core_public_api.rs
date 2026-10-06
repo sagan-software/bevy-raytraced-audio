@@ -41,6 +41,117 @@ fn crossed_segment_blocks_direct_path() -> Result<(), GeometryError> {
     Ok(())
 }
 
+/// Adding and clearing surfaces after a trace keeps the public query current.
+#[test]
+fn scene_mutations_after_queries_update_both_dimensions() -> Result<(), GeometryError> {
+    let emitter2d = Emitter2d::new(Point2::try_new(-1.0, 0.0)?);
+    let listener2d = Listener2d::new(Point2::try_new(1.0, 0.0)?);
+    let wall2d = Segment2d::try_new(
+        Point2::try_new(0.0, -1.0)?,
+        Point2::try_new(0.0, 1.0)?,
+        AcousticMaterial::default(),
+    )?;
+    let mut scene2d = AcousticScene2d::default();
+
+    assert!(!scene2d.trace(emitter2d, listener2d).direct.is_occluded());
+    scene2d.add_segment(wall2d);
+    assert!(scene2d.trace(emitter2d, listener2d).direct.is_occluded());
+    scene2d.clear();
+    assert!(!scene2d.trace(emitter2d, listener2d).direct.is_occluded());
+
+    let emitter3d = Emitter3d::new(Point3::try_new(-1.0, 0.0, 0.0)?);
+    let listener3d = Listener3d::new(Point3::try_new(1.0, 0.0, 0.0)?);
+    let wall3d = Triangle3d::try_new(
+        [
+            Point3::try_new(0.0, -1.0, -1.0)?,
+            Point3::try_new(0.0, 1.0, -1.0)?,
+            Point3::try_new(0.0, 0.0, 1.0)?,
+        ],
+        AcousticMaterial::default(),
+    )?;
+    let mut scene3d = AcousticScene3d::default();
+
+    assert!(!scene3d.trace(emitter3d, listener3d).direct.is_occluded());
+    scene3d.add_triangle(wall3d);
+    assert!(scene3d.trace(emitter3d, listener3d).direct.is_occluded());
+    scene3d.clear();
+    assert!(!scene3d.trace(emitter3d, listener3d).direct.is_occluded());
+    Ok(())
+}
+
+/// Spatially separated extra surfaces keep first-order path output exact in both dimensions.
+#[test]
+fn multi_surface_scenes_preserve_reflection_results() -> Result<(), GeometryError> {
+    let material = AcousticMaterial::default();
+    let reflector2d = Segment2d::try_new(
+        Point2::try_new(1.0, -1.0)?,
+        Point2::try_new(1.0, 3.0)?,
+        material,
+    )?;
+    let mut scene2d = AcousticScene2d::default();
+    scene2d.add_segment(reflector2d);
+    for (x, y) in [(20.0, 100.0), (30.0, 200.0), (40.0, 300.0), (50.0, 400.0)] {
+        scene2d.add_segment(Segment2d::try_new(
+            Point2::try_new(x, y)?,
+            Point2::try_new(x, y + 1.0)?,
+            material,
+        )?);
+    }
+    let emitter2d = Emitter2d::new(Point2::try_new(-1.0, 0.0)?);
+    let listener2d = Listener2d::new(Point2::try_new(-1.0, 2.0)?);
+    let mut paths2d = Vec::new();
+    let response2d = scene2d.trace_with_reflection_paths(emitter2d, listener2d, &mut paths2d);
+
+    assert!(!response2d.direct.is_occluded());
+    assert_eq!(paths2d.len(), 1);
+    let Some(path2d) = paths2d.first() else {
+        panic!("the finite 2D reflector must produce one first-order path");
+    };
+    assert_eq!(path2d.surface_index().index(), 0);
+    assert!((path2d.distance_m() - 20.0_f64.sqrt()).abs() < 1.0e-6);
+    assert_eq!(response2d.reflected_energy, path2d.relative_energy());
+
+    let reflector3d = Triangle3d::try_new(
+        [
+            Point3::try_new(-2.0, -2.0, 1.0)?,
+            Point3::try_new(2.0, -2.0, 1.0)?,
+            Point3::try_new(0.0, 3.0, 1.0)?,
+        ],
+        material,
+    )?;
+    let mut scene3d = AcousticScene3d::default();
+    scene3d.add_triangle(reflector3d);
+    for (x, y, z) in [
+        (100.0, 100.0, 2.0),
+        (200.0, 200.0, 3.0),
+        (300.0, 300.0, 4.0),
+        (400.0, 400.0, 5.0),
+    ] {
+        scene3d.add_triangle(Triangle3d::try_new(
+            [
+                Point3::try_new(x, y, z)?,
+                Point3::try_new(x + 1.0, y, z)?,
+                Point3::try_new(x, y + 1.0, z)?,
+            ],
+            material,
+        )?);
+    }
+    let emitter3d = Emitter3d::new(Point3::try_new(0.0, 0.0, 0.0)?);
+    let listener3d = Listener3d::new(Point3::try_new(0.0, 2.0, 0.0)?);
+    let mut paths3d = Vec::new();
+    let response3d = scene3d.trace_with_reflection_paths(emitter3d, listener3d, &mut paths3d);
+
+    assert!(!response3d.direct.is_occluded());
+    assert_eq!(paths3d.len(), 1);
+    let Some(path3d) = paths3d.first() else {
+        panic!("the finite 3D reflector must produce one first-order path");
+    };
+    assert_eq!(path3d.surface_index().index(), 0);
+    assert!((path3d.distance_m() - 8.0_f64.sqrt()).abs() < 1.0e-6);
+    assert_eq!(response3d.reflected_energy, path3d.relative_energy());
+    Ok(())
+}
+
 /// A specular first-order 2D reflection contributes energy without blocking the direct path.
 #[test]
 fn same_side_segment_contributes_reflected_energy() -> Result<(), GeometryError> {

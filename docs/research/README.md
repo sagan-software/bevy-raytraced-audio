@@ -1,6 +1,6 @@
 # Research index
 
-Research snapshot: 2026-10-05. Links below point to upstream sources. The local repositories were cloned as read-only references; they are not vendored into this project.
+Research snapshot: 2026-10-06. Links below point to upstream sources. The local repositories were cloned as read-only references; they are not vendored into this project.
 
 - [Vercidium Audio organization and repositories](vercidium-audio.md)
 - [Bevy audio APIs and examples](bevy-audio.md)

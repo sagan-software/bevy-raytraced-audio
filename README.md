@@ -124,8 +124,8 @@ nix run .#test
 nix run .#bench -- --quick --noplot
 ```
 
-The latest local coverage run reports 99.08% line coverage, 98.53% region
-coverage, and 100.00% function coverage. The quick Criterion run completes all
+The latest local coverage run reports 99.06% line coverage, 98.34% region
+coverage, and 99.51% function coverage. The quick Criterion run completes all
 26 named workloads. These figures describe code and workload
 execution coverage; they do not certify real-time audio quality or rendered
 frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
@@ -133,14 +133,16 @@ frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
 ## Performance status
 
 On the local Intel Core i7-8565U laptop CPU, the 128-emitter and 256-surface
-adapter schedule measured 1.14 ms in 2D and 2.89 ms in 3D. The 256-emitter,
-1,024-surface schedule measured 15.84 ms in 2D and 30.60 ms in 3D. These
+adapter schedule measured 0.85 ms in 2D and 1.25 ms in 3D. The 256-emitter,
+1,024-surface schedule measured 9.79 ms in 2D and 13.02 ms in 3D. These
 benchmarks measure Bevy scheduling without rendering or audio output.
 
-The 90 FPS target is not met by the largest schedule workload and is not
-verified for a rendered application. The local browser check used SwiftShader
-through Xvfb and reported roughly 1–5 FPS. Native display validation is
-unavailable here. See the [measured limits and remaining coverage gaps](docs/TESTING-AND-BENCHMARKS.md).
+The 90 FPS target is met by the 128-emitter and 256-surface schedule in both
+dimensions and by the 2D 256-emitter and 1,024-surface schedule. The largest
+3D schedule measures 13.02 ms. Rendered 90 FPS is not verified. The local
+browser check used SwiftShader through Xvfb and reported roughly 1–5 FPS.
+Native display validation is unavailable here. See the
+[measured limits and remaining coverage gaps](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Documentation
 

@@ -1,10 +1,12 @@
 //! CPU acoustic propagation over explicit triangular surfaces in 3D.
 
+use crate::bvh::{BoundingVolumeHierarchy, Bounds, SceneDimensions};
 use crate::math3d::Vector3;
 use crate::{
-    AcousticResponse, BandEnergy, BandGain, Emitter3d, Listener3d, PathResponse, Point3,
+    AcousticResponse, BandAbsorption, BandEnergy, BandGain, Emitter3d, Listener3d, PathResponse,
     ReflectionPath3d, ReflectionSurfaceIndex, SolverPoint3d, Triangle3d,
 };
+use std::sync::OnceLock;
 
 /// Tolerance for unitless segment and triangle coordinates.
 const PARAMETER_EPSILON: f64 = 1.0e-9;
@@ -17,17 +19,21 @@ const PARALLEL_EPSILON: f64 = 1.0e-12;
 pub struct AcousticScene3d {
     /// Explicitly registered opaque and reflective triangles.
     triangles: Vec<Triangle3d>,
+    /// Lazily rebuilt broad-phase bounds after the last surface mutation.
+    acceleration: OnceLock<SceneAcceleration3d>,
 }
 
 impl AcousticScene3d {
     /// Adds one validated surface triangle to the scene.
     pub fn add_triangle(&mut self, triangle: Triangle3d) {
         self.triangles.push(triangle);
+        drop(self.acceleration.take());
     }
 
     /// Removes every surface triangle from the scene.
     pub fn clear(&mut self) {
         self.triangles.clear();
+        drop(self.acceleration.take());
     }
 
     /// Returns the number of registered surface triangles.
@@ -83,11 +89,20 @@ impl AcousticScene3d {
         let direct_distance = receiver.subtract(source).length();
 
         // If source and listener coincide, the path has no interior where an opaque surface can block it.
+        let acceleration = self.acceleration();
         let direct_occluded = direct_distance > 0.0
-            && self
-                .triangles
-                .iter()
-                .any(|triangle| path_intersects_triangle(source, receiver, triangle.vertices()));
+            && acceleration.hierarchy.any_intersection(
+                Bounds::path_3d(
+                    (source.x, source.y, source.z),
+                    (receiver.x, receiver.y, receiver.z),
+                ),
+                None,
+                |index| {
+                    acceleration.triangles.get(index).is_some_and(|triangle| {
+                        path_intersects_triangle(source, receiver, triangle)
+                    })
+                },
+            );
         let direct_gain = if direct_occluded {
             BandGain::ZERO
         } else {
@@ -128,7 +143,9 @@ impl AcousticScene3d {
         receiver: Vector3,
         direct_distance: f64,
     ) -> impl Iterator<Item = ReflectionPath3d> + '_ {
-        self.triangles
+        let acceleration = self.acceleration();
+        acceleration
+            .triangles
             .iter()
             .enumerate()
             .filter_map(move |(index, reflector)| {
@@ -138,7 +155,7 @@ impl AcousticScene3d {
                 }
 
                 let (reflection_point, reflected_distance, image_source) =
-                    first_reflection(source, receiver, reflector.vertices())?;
+                    first_reflection(source, receiver, reflector)?;
 
                 // If another triangle crosses either leg, this reflected candidate is omitted.
                 if self.segment_is_occluded(source, reflection_point, Some(index))
@@ -154,7 +171,7 @@ impl AcousticScene3d {
                     SolverPoint3d::new(image_source.x, image_source.y, image_source.z),
                     reflected_distance,
                     distance_ratio * distance_ratio,
-                    reflector.material().absorption(),
+                    reflector.absorption,
                 ))
             })
     }
@@ -166,30 +183,167 @@ impl AcousticScene3d {
         end: Vector3,
         skipped_index: Option<usize>,
     ) -> bool {
-        self.triangles.iter().enumerate().any(|(index, triangle)| {
-            if skipped_index == Some(index) {
-                return false;
-            }
+        let acceleration = self.acceleration();
+        acceleration.hierarchy.any_intersection(
+            Bounds::path_3d((start.x, start.y, start.z), (end.x, end.y, end.z)),
+            skipped_index,
+            |index| {
+                acceleration
+                    .triangles
+                    .get(index)
+                    .is_some_and(|triangle| path_intersects_triangle(start, end, triangle))
+            },
+        )
+    }
 
-            path_intersects_triangle(start, end, triangle.vertices())
+    /// Builds one deterministic hierarchy and reuses it until a surface mutation.
+    fn acceleration(&self) -> &SceneAcceleration3d {
+        self.acceleration.get_or_init(|| {
+            let triangles: Vec<_> = self
+                .triangles
+                .iter()
+                .copied()
+                .map(TriangleGeometry::new)
+                .collect();
+            let hierarchy = BoundingVolumeHierarchy::build(
+                triangles
+                    .iter()
+                    .enumerate()
+                    .map(|(index, triangle)| (index, triangle.bounds)),
+                SceneDimensions::Three,
+            );
+            SceneAcceleration3d {
+                hierarchy,
+                triangles,
+            }
         })
     }
+}
+
+/// Cached triangle values derived once after a scene mutation.
+#[derive(Clone, Copy, Debug)]
+struct TriangleGeometry {
+    /// First vertex, used as the origin for barycentric coordinates.
+    origin: Vector3,
+    /// Edge from the first vertex to the second vertex.
+    edge_a: Vector3,
+    /// Edge from the first vertex to the third vertex.
+    edge_b: Vector3,
+    /// Unnormalized normal retained for reflection and ray intersection math.
+    normal: Vector3,
+    /// Squared normal length used to reflect the source point.
+    normal_squared: f64,
+    /// Normal length used for scale-relative parallel checks.
+    normal_length: f64,
+    /// First edge length used for scale-relative parallel checks.
+    edge_a_length: f64,
+    /// Second edge length used for scale-relative parallel checks.
+    edge_b_length: f64,
+    /// Precomputed inner products used by barycentric projection.
+    barycentric_basis: BarycentricBasis,
+    /// Triangle bounds padded by the narrow-phase barycentric tolerance.
+    bounds: Bounds,
+    /// Material absorption used by reflected paths.
+    absorption: BandAbsorption,
+}
+
+impl TriangleGeometry {
+    /// Converts one validated triangle into reusable double-precision geometry.
+    fn new(triangle: Triangle3d) -> Self {
+        let [first, second, third] = triangle.vertices();
+        let origin = Vector3::from_point(first);
+        let second = Vector3::from_point(second);
+        let third = Vector3::from_point(third);
+        let edge_a = second.subtract(origin);
+        let edge_b = third.subtract(origin);
+        let normal = edge_a.cross(edge_b);
+        let normal_squared = normal.dot(normal);
+        let barycentric_basis = BarycentricBasis::new(edge_a, edge_b);
+        let bounds = Bounds::triangle_surface_3d(
+            [
+                (origin.x, origin.y, origin.z),
+                (second.x, second.y, second.z),
+                (third.x, third.y, third.z),
+            ],
+            PARAMETER_EPSILON,
+        );
+
+        Self {
+            origin,
+            edge_a,
+            edge_b,
+            normal,
+            normal_squared,
+            normal_length: normal.length(),
+            edge_a_length: edge_a.length(),
+            edge_b_length: edge_b.length(),
+            barycentric_basis,
+            bounds,
+            absorption: triangle.material().absorption(),
+        }
+    }
+
+    /// Tests triangle membership with the precomputed Gram determinant and edge products.
+    fn contains_point(self, point: Vector3) -> bool {
+        point_in_triangle_with_basis(
+            point,
+            self.origin,
+            self.edge_a,
+            self.edge_b,
+            self.barycentric_basis,
+        )
+    }
+}
+
+/// Inner products and determinant for one triangle's barycentric basis.
+#[derive(Clone, Copy, Debug)]
+struct BarycentricBasis {
+    /// Squared first edge length.
+    first_edge_length_squared: f64,
+    /// Product of the two edge vectors.
+    edge_dot: f64,
+    /// Squared second edge length.
+    second_edge_length_squared: f64,
+    /// Gram determinant used to reject a degenerate basis.
+    denominator: f64,
+}
+
+impl BarycentricBasis {
+    /// Computes the inner products once for a stable pair of triangle edges.
+    fn new(edge_a: Vector3, edge_b: Vector3) -> Self {
+        let first_edge_length_squared = edge_a.dot(edge_a);
+        let edge_dot = edge_a.dot(edge_b);
+        let second_edge_length_squared = edge_b.dot(edge_b);
+        let denominator = edge_dot.mul_add(
+            -edge_dot,
+            first_edge_length_squared * second_edge_length_squared,
+        );
+        Self {
+            first_edge_length_squared,
+            edge_dot,
+            second_edge_length_squared,
+            denominator,
+        }
+    }
+}
+
+/// Lazily derived per-scene geometry and its bounds hierarchy.
+#[derive(Clone, Debug)]
+struct SceneAcceleration3d {
+    /// Balanced hierarchy for broad-phase candidate rejection.
+    hierarchy: BoundingVolumeHierarchy,
+    /// Triangles with cached coordinates and material properties.
+    triangles: Vec<TriangleGeometry>,
 }
 
 /// Finds one valid image-source reflection and returns its point and path length.
 fn first_reflection(
     source: Vector3,
     receiver: Vector3,
-    vertices: [Point3; 3],
+    triangle: &TriangleGeometry,
 ) -> Option<(Vector3, f64, Vector3)> {
-    let [first, second, third] = vertices;
-    let triangle_origin = Vector3::from_point(first);
-    let edge_a = Vector3::from_point(second).subtract(triangle_origin);
-    let edge_b = Vector3::from_point(third).subtract(triangle_origin);
-    let normal = edge_a.cross(edge_b);
-    let normal_squared = normal.dot(normal);
-    let source_offset = source.subtract(triangle_origin).dot(normal);
-    let receiver_offset = receiver.subtract(triangle_origin).dot(normal);
+    let source_offset = source.subtract(triangle.origin).dot(triangle.normal);
+    let receiver_offset = receiver.subtract(triangle.origin).dot(triangle.normal);
 
     // If either endpoint lies on the surface or they lie on opposite sides, no image-source reflection exists.
     if source_offset == 0.0
@@ -199,21 +353,32 @@ fn first_reflection(
         return None;
     }
 
-    let image_source = source.subtract(normal.scale(2.0 * source_offset / normal_squared));
+    let image_source = source.subtract(
+        triangle
+            .normal
+            .scale(2.0 * source_offset / triangle.normal_squared),
+    );
     let image_to_receiver = receiver.subtract(image_source);
-    let denominator = image_to_receiver.dot(normal);
-    let denominator_scale = image_to_receiver.length() * normal.length();
+    let denominator = image_to_receiver.dot(triangle.normal);
+    let denominator_scale = image_to_receiver.length() * triangle.normal_length;
     if denominator.abs() <= PARALLEL_EPSILON * denominator_scale {
         return None;
     }
 
     // If the image ray misses the finite triangle, the candidate cannot reflect from this surface.
-    let ray_parameter = triangle_origin.subtract(image_source).dot(normal) / denominator;
+    let ray_parameter = triangle.origin.subtract(image_source).dot(triangle.normal) / denominator;
     if !(0.0..=1.0).contains(&ray_parameter) {
         return None;
     }
     let reflection_point = image_source.add(image_to_receiver.scale(ray_parameter));
-    if !point_in_triangle(reflection_point, triangle_origin, edge_a, edge_b) {
+    let reflection_point_bounds = Bounds::path_3d(
+        (reflection_point.x, reflection_point.y, reflection_point.z),
+        (reflection_point.x, reflection_point.y, reflection_point.z),
+    );
+    if !triangle.bounds.overlaps(reflection_point_bounds) {
+        return None;
+    }
+    if !triangle.contains_point(reflection_point) {
         return None;
     }
 
@@ -222,78 +387,72 @@ fn first_reflection(
 }
 
 /// Tests whether a point lies inside or on the boundary of one triangle.
+#[cfg(test)]
 fn point_in_triangle(point: Vector3, origin: Vector3, edge_a: Vector3, edge_b: Vector3) -> bool {
+    point_in_triangle_with_basis(
+        point,
+        origin,
+        edge_a,
+        edge_b,
+        BarycentricBasis::new(edge_a, edge_b),
+    )
+}
+
+/// Projects a point through precomputed edge products and the Gram determinant.
+fn point_in_triangle_with_basis(
+    point: Vector3,
+    origin: Vector3,
+    edge_a: Vector3,
+    edge_b: Vector3,
+    basis: BarycentricBasis,
+) -> bool {
     let relative = point.subtract(origin);
-    let first_edge_length_squared = edge_a.dot(edge_a);
-    let edge_dot = edge_a.dot(edge_b);
-    let second_edge_length_squared = edge_b.dot(edge_b);
     let relative_dot_a = relative.dot(edge_a);
     let relative_dot_b = relative.dot(edge_b);
-    // This Gram determinant is zero exactly when the triangle basis is degenerate.
-    let denominator = edge_dot.mul_add(
-        -edge_dot,
-        first_edge_length_squared * second_edge_length_squared,
-    );
-    if denominator == 0.0 {
+    if basis.denominator == 0.0 {
         return false;
     }
 
-    let coordinate_a = edge_dot
-        .mul_add(-relative_dot_b, second_edge_length_squared * relative_dot_a)
-        / denominator;
-    let coordinate_b =
-        edge_dot.mul_add(-relative_dot_a, first_edge_length_squared * relative_dot_b) / denominator;
+    let coordinate_a = basis.edge_dot.mul_add(
+        -relative_dot_b,
+        basis.second_edge_length_squared * relative_dot_a,
+    ) / basis.denominator;
+    let coordinate_b = basis.edge_dot.mul_add(
+        -relative_dot_a,
+        basis.first_edge_length_squared * relative_dot_b,
+    ) / basis.denominator;
     coordinate_a >= -PARAMETER_EPSILON
         && coordinate_b >= -PARAMETER_EPSILON
         && coordinate_a + coordinate_b <= 1.0 + PARAMETER_EPSILON
 }
 
 /// Tests an open path against one finite triangle using a double-precision ray test.
-fn path_intersects_triangle(path_start: Vector3, path_end: Vector3, vertices: [Point3; 3]) -> bool {
-    let [first, second, third] = vertices;
-    let first = Vector3::from_point(first);
-    let second = Vector3::from_point(second);
-    let third = Vector3::from_point(third);
-    let edge_a = second.subtract(first);
-    let edge_b = third.subtract(first);
-    let path_min_x = path_start.x.min(path_end.x);
-    let path_max_x = path_start.x.max(path_end.x);
-    let path_min_y = path_start.y.min(path_end.y);
-    let path_max_y = path_start.y.max(path_end.y);
-    let path_min_z = path_start.z.min(path_end.z);
-    let path_max_z = path_start.z.max(path_end.z);
-    let surface_padding_x = 2.0 * PARAMETER_EPSILON * (edge_a.x.abs() + edge_b.x.abs());
-    let surface_padding_y = 2.0 * PARAMETER_EPSILON * (edge_a.y.abs() + edge_b.y.abs());
-    let surface_padding_z = 2.0 * PARAMETER_EPSILON * (edge_a.z.abs() + edge_b.z.abs());
-    let surface_min_x = first.x.min(second.x).min(third.x) - surface_padding_x;
-    let surface_max_x = first.x.max(second.x).max(third.x) + surface_padding_x;
-    let surface_min_y = first.y.min(second.y).min(third.y) - surface_padding_y;
-    let surface_max_y = first.y.max(second.y).max(third.y) + surface_padding_y;
-    let surface_min_z = first.z.min(second.z).min(third.z) - surface_padding_z;
-    let surface_max_z = first.z.max(second.z).max(third.z) + surface_padding_z;
-
-    // If the path and tolerant triangle bounds do not overlap, they cannot intersect.
-    if path_max_x < surface_min_x
-        || surface_max_x < path_min_x
-        || path_max_y < surface_min_y
-        || surface_max_y < path_min_y
-        || path_max_z < surface_min_z
-        || surface_max_z < path_min_z
-    {
+fn path_intersects_triangle(
+    path_start: Vector3,
+    path_end: Vector3,
+    triangle: &TriangleGeometry,
+) -> bool {
+    let path_bounds = Bounds::path_3d(
+        (path_start.x, path_start.y, path_start.z),
+        (path_end.x, path_end.y, path_end.z),
+    );
+    if !triangle.bounds.overlaps(path_bounds) {
         return false;
     }
 
+    let edge_a = triangle.edge_a;
+    let edge_b = triangle.edge_b;
     let direction = path_end.subtract(path_start);
     let determinant_vector = direction.cross(edge_b);
     let determinant = edge_a.dot(determinant_vector);
-    let determinant_scale = direction.length() * edge_a.length() * edge_b.length();
+    let determinant_scale = direction.length() * triangle.edge_a_length * triangle.edge_b_length;
     if determinant.abs() <= PARALLEL_EPSILON * determinant_scale {
         // A path parallel to the plane does not cross the triangle surface.
         return false;
     }
 
     let inverse_determinant = 1.0 / determinant;
-    let origin_delta = path_start.subtract(first);
+    let origin_delta = path_start.subtract(triangle.origin);
     let coordinate_a = origin_delta.dot(determinant_vector) * inverse_determinant;
     if !(-PARAMETER_EPSILON..=1.0 + PARAMETER_EPSILON).contains(&coordinate_a) {
         return false;
@@ -315,8 +474,8 @@ mod tests {
     //! Private boundary coverage for triangle intersection and image-source handling.
 
     use super::{
-        AcousticScene3d, PARAMETER_EPSILON, Vector3, first_reflection, path_intersects_triangle,
-        point_in_triangle,
+        AcousticScene3d, Bounds, PARAMETER_EPSILON, TriangleGeometry, Vector3, first_reflection,
+        path_intersects_triangle, point_in_triangle,
     };
     use crate::{AcousticMaterial, Emitter3d, Listener3d, Point3, Triangle3d};
 
@@ -367,55 +526,63 @@ mod tests {
         ]
     }
 
+    /// Builds cached geometry from validated test vertices.
+    fn geometry(vertices: [Point3; 3]) -> TriangleGeometry {
+        TriangleGeometry::new(
+            Triangle3d::try_new(vertices, AcousticMaterial::default())
+                .expect("test triangle is nondegenerate"),
+        )
+    }
+
     /// Triangle intersection distinguishes interior, parallel, outside, and endpoint paths.
     #[test]
     fn path_intersection_checks_triangle_and_open_segment() {
-        let triangle = vertices();
+        let triangle = geometry(vertices());
         assert!(path_intersects_triangle(
             vector(-1.0, 0.0, 0.0),
             vector(1.0, 0.0, 0.0),
-            triangle,
+            &triangle,
         ));
         assert!(!path_intersects_triangle(
             vector(-1.0, -2.0, 0.0),
             vector(-1.0, 2.0, 0.0),
-            triangle,
+            &triangle,
         ));
         assert!(!path_intersects_triangle(
             vector(-1.0, 2.0, 0.0),
             vector(1.0, 2.0, 0.0),
-            triangle,
+            &triangle,
         ));
         assert!(!path_intersects_triangle(
             vector(-1.0, 1.1, 0.4),
             vector(1.0, 1.1, 0.4),
-            triangle,
+            &triangle,
         ));
         assert!(!path_intersects_triangle(
             vector(0.0, 0.0, 0.0),
             vector(1.0, 0.0, 0.0),
-            triangle,
+            &triangle,
         ));
     }
 
     /// Overlapping bounds exercise the plane-parallel and barycentric rejection paths.
     #[test]
     fn path_intersection_checks_parallel_and_outside_barycentric_paths() {
-        let triangle = vertices();
+        let triangle = geometry(vertices());
         assert!(!path_intersects_triangle(
             vector(0.0, -2.0, 0.0),
             vector(0.0, 2.0, 0.0),
-            triangle,
+            &triangle,
         ));
         assert!(!path_intersects_triangle(
             vector(-1.0, 0.0, -1.0),
             vector(1.0, 2.2, -1.0),
-            triangle,
+            &triangle,
         ));
         assert!(!path_intersects_triangle(
             vector(-1.0, 0.0, 0.0),
             vector(1.0, 2.2, 0.0),
-            triangle,
+            &triangle,
         ));
     }
 
@@ -426,7 +593,7 @@ mod tests {
         assert!(path_intersects_triangle(
             vector(-1.0, 1.0 + y_offset, -1.0),
             vector(1.0, 1.0 + y_offset, -1.0),
-            vertices(),
+            &geometry(vertices()),
         ));
     }
 
@@ -465,7 +632,33 @@ mod tests {
             Point3::try_new(0.0, 10.0, 2.0).expect("finite triangle vertex"),
         ];
         assert!(
-            first_reflection(vector(-1.0, 0.0, 0.0), vector(-1.0, 0.0, 2.0), far_vertices,)
+            first_reflection(
+                vector(-1.0, 0.0, 0.0),
+                vector(-1.0, 0.0, 2.0),
+                &geometry(far_vertices),
+            )
+            .is_none()
+        );
+    }
+
+    /// The bounds fast path reaches barycentric rejection inside the triangle's padded box.
+    #[test]
+    fn image_reflection_rejects_a_point_inside_bounds_but_outside_triangle() {
+        let triangle = geometry([
+            Point3::try_new(0.0, 10.0, 0.0).expect("finite triangle vertex"),
+            Point3::try_new(0.0, 12.0, 0.0).expect("finite triangle vertex"),
+            Point3::try_new(0.0, 10.0, 2.0).expect("finite triangle vertex"),
+        ]);
+        let reflection_point = vector(0.0, 11.8, 1.8);
+        let point_bounds = Bounds::path_3d(
+            (reflection_point.x, reflection_point.y, reflection_point.z),
+            (reflection_point.x, reflection_point.y, reflection_point.z),
+        );
+
+        assert!(triangle.bounds.overlaps(point_bounds));
+        assert!(!triangle.contains_point(reflection_point));
+        assert!(
+            first_reflection(vector(-1.0, 11.8, 1.8), vector(-3.0, 11.8, 1.8), &triangle,)
                 .is_none()
         );
     }
@@ -474,8 +667,12 @@ mod tests {
     #[test]
     fn image_reflection_rejects_a_near_parallel_ray() {
         assert!(
-            first_reflection(vector(1.0, 0.0, 0.0), vector(1.0, 1.0e15, 2.0), vertices(),)
-                .is_none()
+            first_reflection(
+                vector(1.0, 0.0, 0.0),
+                vector(1.0, 1.0e15, 2.0),
+                &geometry(vertices()),
+            )
+            .is_none()
         );
     }
 }

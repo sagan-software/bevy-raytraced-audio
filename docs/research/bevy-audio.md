@@ -1,10 +1,10 @@
 # Bevy audio API research
 
-Research date: 2026-10-05. Stable Bevy is 0.19.1. Bevy 0.20.0-rc.2 is the tested release candidate. Tagged Bevy source files below were checked for each supported minor.
+Research date: 2026-10-06. The official release list still names Bevy 0.19.1 as the latest stable release and 0.20.0-rc.2 as the newest 0.20 release candidate. Tagged Bevy source files below were checked for each supported minor. The Bevy 0.20 milestone remains open, so the project continues to label 0.20 support as release-candidate compatibility.
 
 ## Built-in playback model
 
-Bevy's [audio module](https://docs.rs/bevy/0.19.1/bevy/audio/index.html) exposes `AudioPlayer`, `AudioSource`, `PlaybackSettings`, `AudioSink`, `SpatialAudioSink`, `SpatialListener`, `SpatialScale`, `GlobalVolume`, `Decodable`, `AddAudioSource`, `Volume`, and related types.
+Bevy's [audio module](https://docs.rs/bevy/0.19.1/bevy/audio/index.html) exposes `AudioPlayer`, `AudioSource`, `PlaybackSettings`, `AudioSink`, `SpatialAudioSink`, `SpatialListener`, `SpatialScale`, `GlobalVolume`, `Decodable`, `AddAudioSource`, `Volume`, and related types. The official `AudioSource` asset exposes its encoded bytes in Bevy 0.17.3, 0.18.1, 0.19.1, and 0.20.0-rc.2. This permits a custom source asset to wrap the same encoded file without changing Bevy's loader for `.wav`, `.ogg`, `.flac`, or `.mp3` files.
 
 An `AudioPlayer<Source>` stores an asset handle, where `Source: Asset + Decodable`. `PlaybackSettings` controls initial mode, volume, speed, pause/mute state, start position, duration, and the spatial flag. Bevy adds `AudioSink` or `SpatialAudioSink` after playback starts. Later playback changes go through the sink; changes to `PlaybackSettings` do not change an already-playing sound. See [Bevy's 0.19.1 playback implementation](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_audio/src/audio.rs).
 
@@ -18,7 +18,7 @@ Bevy's [Decodable example](https://github.com/bevyengine/bevy/blob/v0.19.1/examp
 
 There is a version boundary. Bevy 0.17 and 0.18 define the associated `DecoderItem` and constrain it through `rodio::Sample`; Bevy 0.19 and 0.20 use `Iterator<Item = rodio::Sample>` directly. Each version requires the custom source asset to implement `Asset + Decodable`. Compare the tagged [0.17.3 source](https://github.com/bevyengine/bevy/blob/v0.17.3/crates/bevy_audio/src/audio_source.rs), [0.18.1 source](https://github.com/bevyengine/bevy/blob/v0.18.1/crates/bevy_audio/src/audio_source.rs), [0.19.1 source](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_audio/src/audio_source.rs), and [0.20.0-rc.2 source](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_audio/src/audio_source.rs).
 
-Prototype per-playback parameter ownership before choosing this API. A custom source can create a decoder per playback, but it does not receive the Bevy entity or acoustic result as a `decoder()` argument. Shared asset state can accidentally make multiple players share effect state. The design must show how each voice reads its own bounded, lock-free acoustic parameters.
+The custom source creates a decoder per playback, but `decoder()` receives neither the Bevy entity nor its acoustic result. An asset shared by multiple players therefore cannot hold independent live effect state for each player. Any live source integration must establish per-emitter ownership or use a backend API that supplies per-voice state. This ownership boundary remains a design gate for audible reflections.
 
 ## Official spatial examples
 

@@ -4,6 +4,7 @@ mod acoustic_material;
 mod band_absorption;
 mod band_energy;
 mod band_gain;
+mod bvh;
 mod emitter2d;
 mod emitter3d;
 mod geometry_error;

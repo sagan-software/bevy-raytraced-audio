@@ -1,10 +1,12 @@
 //! CPU acoustic propagation over explicit line-segment surfaces in XY.
 
+use crate::bvh::{BoundingVolumeHierarchy, Bounds, SceneDimensions};
 use crate::math2d::Vector2;
 use crate::{
     AcousticResponse, BandEnergy, BandGain, Emitter2d, Listener2d, PathResponse, ReflectionPath2d,
     ReflectionSurfaceIndex, Segment2d, SolverPoint2d,
 };
+use std::sync::OnceLock;
 
 /// Tolerance for unitless segment parameters near path endpoints.
 const PARAMETER_EPSILON: f64 = 1.0e-9;
@@ -17,17 +19,21 @@ const PARALLEL_EPSILON: f64 = 1.0e-12;
 pub struct AcousticScene2d {
     /// Explicitly registered opaque and reflective line segments.
     segments: Vec<Segment2d>,
+    /// Lazily rebuilt broad-phase bounds after the last surface mutation.
+    acceleration: OnceLock<BoundingVolumeHierarchy>,
 }
 
 impl AcousticScene2d {
     /// Adds one validated surface segment to the scene.
     pub fn add_segment(&mut self, segment: Segment2d) {
         self.segments.push(segment);
+        drop(self.acceleration.take());
     }
 
     /// Removes every surface segment from the scene.
     pub fn clear(&mut self) {
         self.segments.clear();
+        drop(self.acceleration.take());
     }
 
     /// Returns the number of registered surface segments.
@@ -84,14 +90,20 @@ impl AcousticScene2d {
 
         // If source and listener coincide, the path has no interior where an opaque surface can block it.
         let direct_occluded = direct_distance > 0.0
-            && self.segments.iter().any(|segment| {
-                path_intersects_segment(
-                    source,
-                    receiver,
-                    Vector2::from_point(segment.start()),
-                    Vector2::from_point(segment.end()),
-                )
-            });
+            && self.acceleration().any_intersection(
+                Bounds::path_2d((source.x, source.y), (receiver.x, receiver.y)),
+                None,
+                |index| {
+                    self.segments.get(index).is_some_and(|segment| {
+                        path_intersects_segment(
+                            source,
+                            receiver,
+                            Vector2::from_point(segment.start()),
+                            Vector2::from_point(segment.end()),
+                        )
+                    })
+                },
+            );
         let direct_gain = if direct_occluded {
             BandGain::ZERO
         } else {
@@ -172,16 +184,39 @@ impl AcousticScene2d {
         end: Vector2,
         skipped_index: Option<usize>,
     ) -> bool {
-        self.segments.iter().enumerate().any(|(index, segment)| {
-            if skipped_index == Some(index) {
-                return false;
-            }
+        self.acceleration().any_intersection(
+            Bounds::path_2d((start.x, start.y), (end.x, end.y)),
+            skipped_index,
+            |index| {
+                self.segments.get(index).is_some_and(|segment| {
+                    path_intersects_segment(
+                        start,
+                        end,
+                        Vector2::from_point(segment.start()),
+                        Vector2::from_point(segment.end()),
+                    )
+                })
+            },
+        )
+    }
 
-            path_intersects_segment(
-                start,
-                end,
-                Vector2::from_point(segment.start()),
-                Vector2::from_point(segment.end()),
+    /// Builds one deterministic hierarchy and reuses it until a surface mutation.
+    fn acceleration(&self) -> &BoundingVolumeHierarchy {
+        self.acceleration.get_or_init(|| {
+            BoundingVolumeHierarchy::build(
+                self.segments.iter().enumerate().map(|(index, segment)| {
+                    let start = Vector2::from_point(segment.start());
+                    let end = Vector2::from_point(segment.end());
+                    (
+                        index,
+                        Bounds::segment_surface_2d(
+                            (start.x, start.y),
+                            (end.x, end.y),
+                            PARAMETER_EPSILON,
+                        ),
+                    )
+                }),
+                SceneDimensions::Two,
             )
         })
     }

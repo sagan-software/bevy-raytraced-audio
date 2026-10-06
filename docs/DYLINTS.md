@@ -25,6 +25,11 @@ nix run .#dylint
 
 On 2026-10-06, this command passed all three configured groups across the workspace. It used Dylint 6.0.3 and `nightly-2026-07-15`. Run `nix run .#check` for strict Clippy, Bevy compatibility checks, tests, doctests, docs, benchmark compilation, and coverage.
 
-The separate Liamc personal Rust lint workflow also passed across the workspace on 2026-10-06. It is an additional check beyond the Sagan Quick Start gate.
+The Sagan `nix run .#dylint` gate passed on 2026-10-06. The Liamc personal
+Rust lint passed when scoped to the changed core package with `--no-deps`.
+The full personal-lint dispatcher did not pass: it reported repository-wide
+documentation diagnostics and its Bevy 0.18 phase could not find ALSA through
+that runner's `PKG_CONFIG_PATH`. Its Markdown phase reported four paragraph
+length findings in unchanged documents.
 
 Upstream lint changes can change compiler and source requirements. Review the Dylints README and rerun the version matrix when updating the branch or runner.
