@@ -29,8 +29,12 @@ path = "examples/stress_2d.rs"
 name = "stress_3d"
 path = "examples/stress_3d.rs"
 
+[[test]]
+name = "audio_fixture"
+path = "tests/audio_fixture.rs"
+
 [dependencies]
-bevy = "0.19.1"
+bevy = { version = "0.19.1", features = ["wav"] }
 bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
 bevy-raytraced-audio-2d = { path = "../../crates/bevy-raytraced-audio-2d", version = "0.1.0", features = ["bevy_0_19"] }
 bevy-raytraced-audio-3d = { path = "../../crates/bevy-raytraced-audio-3d", version = "0.1.0", features = ["bevy_0_19"] }

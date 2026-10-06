@@ -90,24 +90,25 @@ Use one Bevy adapter version per application. The current 0.20 adapter targets
 `0.20.0-rc.2`; the [official release list](https://github.com/bevyengine/bevy/releases)
 has no stable 0.20 release as of 2026-10-06.
 
-## Examples
+## Browser examples
 
-The [2D GIF](assets/gifs/examples-2d.gif) and [3D GIF](assets/gifs/examples-3d.gif)
-show the browser demo routes. The minimal 2D and 3D scenes draw valid
-first-order reflection paths in cyan and direct paths in green or red.
+The [live gallery](https://sagan-software.github.io/bevy-raytraced-audio/)
+builds each example as a separate WebAssembly page. Open [minimal 2D](https://sagan-software.github.io/bevy-raytraced-audio/examples/minimal-2d/),
+[stress 2D](https://sagan-software.github.io/bevy-raytraced-audio/examples/stress-2d/),
+[minimal 3D](https://sagan-software.github.io/bevy-raytraced-audio/examples/minimal-3d/),
+or [stress 3D](https://sagan-software.github.io/bevy-raytraced-audio/examples/stress-3d/).
+Click **Enable spatial audio** after the scene loads.
 
-![2D tutorial and stress examples](assets/gifs/examples-2d.gif)
+The 2D stress capture shows 16 moving emitters against 32 wall segments:
 
-![3D tutorial and stress examples](assets/gifs/examples-3d.gif)
+![Animated 2D stress scene with 16 moving emitters and 32 wall segments](assets/gifs/examples-2d.gif)
 
-Each GIF alternates between the tutorial route and its stress route. The
-browser review loaded all four routes, enabled each Web Audio context after a
-click, and confirmed that the gallery and stress pages fit a 390-pixel viewport
-without horizontal overflow.
+The 3D stress capture shows 16 moving emitters against 32 wall triangles:
 
-Open the [live browser gallery](https://sagan-software.github.io/bevy-raytraced-audio/)
-to run each example in its own WebAssembly page and enable browser audio with a
-click. See the [example guide](docs/EXAMPLES.md) for controls and workload sizes.
+![Animated 3D stress scene with 16 moving emitters and 32 wall triangles](assets/gifs/examples-3d.gif)
+
+Both GIFs show continuous scene motion recorded from the hardware WebGL path.
+See the [example guide](docs/EXAMPLES.md) for controls and workload sizes.
 
 Run the native examples with:
 
@@ -159,7 +160,7 @@ nix run .#test
 nix run .#bench -- --quick --noplot
 ```
 
-The 2026-10-06 local check passed 107 workspace tests and reports 99.07% line
+The 2026-10-06 local check passed 108 workspace tests and reports 99.07% line
 coverage, 98.43% region coverage, and 99.57% function coverage. Criterion
 completed all 34 workloads declared by the benchmark suite. These figures
 describe code coverage and named workload execution; they do not certify
@@ -188,11 +189,14 @@ same Bevy multithreaded setup.
 
 Each measured adapter update schedule fits within the 11.11 ms time available
 to a 90 FPS frame on this CPU. These measurements exclude rendering, audio
-output, and browser presentation, so they do not establish a complete game's
-frame rate. A headless SwiftShader run sampled 334 FPS for 2D stress, 4 FPS for
-3D stress, 4 FPS for minimal 2D, and 98 FPS for minimal 3D. Those samples do not
-establish steady performance on physical graphics hardware. See the
-[measured limits and remaining coverage gaps](docs/TESTING-AND-BENCHMARKS.md).
+output, and browser presentation.
+
+On an Intel UHD Graphics 620, Chromium's uncapped browser animation-frame
+callbacks measured 131–153 per second in 3D and 163–174 per second in 2D across
+15 consecutive one-second samples. The canvas measured 1,134 × 638 pixels. The
+run used ANGLE Vulkan with frame limiting and GPU VSync disabled. It clears the
+90 FPS target on this GPU; physical display presentation still follows the
+display refresh rate. See the [test method and remaining limits](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Documentation
 

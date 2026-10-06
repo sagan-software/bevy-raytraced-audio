@@ -12,7 +12,7 @@ Each page supplies a canvas element. The example selects that canvas and fits it
 
 Bevy uses the browser's Web Audio context. Browsers can keep an `AudioContext` suspended until a user gesture. The page waits for Bevy to create its context, then enables an audio button. A click calls `AudioContext.resume()` on Bevy's context. In local Chromium, all four routes loaded and the contexts changed from `suspended` to `running` after a click. This check does not verify audible output on a physical device.
 
-The examples use Bevy's built-in audio plugin and a generated WAV asset. The pages do not create a second audio engine.
+The examples use Bevy's built-in audio plugin and a generated WAV asset. The example manifest enables Bevy's optional `wav` feature; the default audio feature set does not decode this fixture. The `audio_fixture` integration test decodes it through Bevy's `Decodable` implementation.
 
 ## Build and publish
 
@@ -20,7 +20,11 @@ Cargo.lock pins `wasm-bindgen` 0.2.129. The web build installs that CLI version 
 
 The local `nix run .#web-build` completed and produced the gallery, book, and four browser routes. The GitHub Pages workflow builds one static artifact and deploys it with GitHub's Pages actions. The published gallery links to each route and the book.
 
-The browser stress routes use 16 emitters and 32 surfaces. Local Chromium loaded all routes, and each audio context changed to `running` after a click. The gallery and stress pages had no horizontal overflow at a 390-pixel viewport. A headless SwiftShader run sampled 334 FPS for 2D stress, 4 FPS for 3D stress, 4 FPS for minimal 2D, and 98 FPS for minimal 3D. These samples do not establish physical-device performance; steady 90 FPS remains unverified.
+The browser stress routes use 16 emitters and 32 surfaces. Local Chromium loaded all four routes, and each audio context changed to `running` after a click. A DevTools Web Audio trace of the 3D stress route showed 59 `AudioBufferSource` nodes connected to a running `AudioDestination` at 44.1 kHz. This verifies the browser output graph, but not physical speaker output.
+
+The gallery and stress pages had no horizontal overflow at a 390-pixel viewport. The README GIFs contain 12 sampled frames from each stress route, recorded on Intel UHD Graphics 620 through ANGLE Vulkan.
+
+For the uncapped browser frame measurement, Chromium disabled frame limiting and GPU VSync. At a 1,134 × 638 canvas size, 15 one-second bins ranged from 131 to 153 browser animation-frame callbacks per second in 3D and from 163 to 174 in 2D. The means were 143.47 and 168.67. Every bin exceeded 90 callbacks per second; physical display presentation remains unverified.
 
 ## Sources
 

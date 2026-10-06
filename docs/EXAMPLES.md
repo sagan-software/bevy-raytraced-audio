@@ -2,6 +2,8 @@
 
 The Bevy native and browser examples use Bevy 0.19.1. Each browser route has its own WebAssembly module and WAV asset. Select **Enable spatial audio** after the scene loads to resume Bevy's Web Audio context.
 
+The example package enables Bevy's optional `wav` feature for the bundled sound. The `audio_fixture` integration test decodes that WAV with Bevy's audio decoder.
+
 | Example | Scene and controls | What it demonstrates |
 | --- | --- | --- |
 | `minimal_2d` | One listener; looping sound starts across a partially transmitting wall; arrow keys move the listener | 2D plugin; explicit surface; 20%, 40%, and 60% amplitude by band; mean sink gain |
@@ -49,9 +51,13 @@ The local server listens on `http://127.0.0.1:8000`. The [GitHub Pages gallery](
 
 ## Observed behavior and limits
 
-The local Chromium review loaded all routes and changed each Web Audio context from `suspended` to `running` after a click. This verifies browser activation, not audible output on a physical device. The README GIFs alternate between tutorial and stress routes; they do not record continuous scene motion.
+Local Chromium loaded all four routes. A click changed each browser audio context to `running`. The 3D stress route created 59 `AudioBufferSource` nodes connected to a running 44.1 kHz `AudioDestination`. This verifies that Bevy decoded and scheduled the WAV into the browser output graph. Physical speakers were not tested.
 
-The headless SwiftShader browser run sampled 334 FPS for 2D stress, 4 FPS for 3D stress, 4 FPS for minimal 2D, and 98 FPS for minimal 3D. Those software-rendered samples do not establish hardware browser performance. The full 90 FPS target remains unverified.
+The README GIFs show continuous motion from the 2D and 3D stress scenes. Their captures used the Intel UHD Graphics 620 through ANGLE Vulkan at the browser's normal 60 Hz frame cap.
+
+For an uncapped hardware measurement, Chromium ran with `--disable-frame-rate-limit` and `--disable-gpu-vsync`. The 1,134 × 638 canvas delivered 15 consecutive one-second bins of 131–153 browser animation-frame callbacks in 3D, with a 143.47 mean. The 2D scene delivered 163–174 callbacks per second, with a 168.67 mean. Every measured bin exceeded 90 callbacks per second.
+
+The uncapped callback count measures browser frame scheduling. It does not measure physical display presentation or native window output. With normal headless synchronization, the on-canvas diagnostic showed 55–61 FPS. Native window rendering and physical audio output remain unverified.
 
 The browser stress scenes trace 16 marked emitters against 32 surfaces and play one looping sound. The 2026-10-06 quick Criterion run measured this schedule at 62.15 microseconds in 2D and 62.78 microseconds in 3D with the task pool. The serial path measured 65.38 microseconds and 64.51 microseconds.
 

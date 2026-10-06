@@ -2,7 +2,7 @@
 
 ## Verification snapshot
 
-The local verification run used Rust 1.99.0 on Linux 6.18.49, on an Intel Core i7-8565U laptop CPU. On 2026-10-06, `nix run .#check` passed formatting, strict Clippy, Bevy 0.17–0.20 release-candidate checks, 107 workspace tests, doctests, rustdoc, benchmark compilation, and the coverage threshold. `nix run .#features` compiled all four Bevy selections. `nix run .#dylint` passed the `correctness`, `perf`, and `suspicious` lint groups.
+The local verification run used Rust 1.99.0 on Linux 6.18.49, on an Intel Core i7-8565U laptop CPU. On 2026-10-06, `nix run .#check` passed formatting, strict Clippy, Bevy 0.17–0.20 release-candidate checks, 108 workspace tests, doctests, rustdoc, benchmark compilation, and the coverage threshold. `nix run .#features` compiled all four Bevy selections. `nix run .#dylint` passed the `correctness`, `perf`, and `suspicious` lint groups.
 
 The additional Liamc fast Rust lint failed on repository-wide findings. Its `src/lib.rs` module-fan-out rule allows 7 modules; the file had 24 declarations at `HEAD` and has 25 now. It also reported documentation findings in unchanged files.
 
@@ -35,17 +35,25 @@ The adapter uses sequential iteration below 16 emitters and when Bevy's compute 
 
 The 90 FPS target allows 11.11 ms per frame. Every measured adapter update schedule fits within that time on this CPU. These schedules exclude rendering, audio output, and browser presentation, so they do not establish a full-game frame rate.
 
-The headless SwiftShader browser run sampled 334 FPS for 2D stress, 4 FPS for 3D stress, 4 FPS for minimal 2D, and 98 FPS for minimal 3D. These are software-rendered route samples, not sustained measurements on physical graphics hardware. Rendered 90 FPS remains unverified.
+The measured Bevy update schedules exclude browser rendering and presentation. A separate hardware-backed browser run measured uncapped frame callbacks on the Intel UHD Graphics 620 through ANGLE Vulkan. Chromium ran with `--disable-frame-rate-limit` and `--disable-gpu-vsync` at a 1,134 × 638 canvas size.
+
+The run collected 15 consecutive one-second bins per stress scene. The 3D samples ranged from 131 to 153 callbacks per second, with a 143.47 mean. The 2D samples ranged from 163 to 174, with a 168.67 mean. Each bin exceeded the 90 FPS target.
+
+These are uncapped browser animation-frame callbacks, not physical display presentations. With normal headless synchronization, the on-canvas diagnostic showed 55–61 FPS. The physical display refresh rate and native window presentation remain unverified.
 
 ## Browser checks
 
 `nix run .#web-build` built the gallery, Markdown book, and four separate WebAssembly examples with the material-transmission example positions. The repository's GitHub Pages workflow deploys the gallery and book at [the published site](https://sagan-software.github.io/bevy-raytraced-audio/).
 
-The local Chromium review loaded all four routes. After a click, each Bevy Web Audio context changed to `running`. This confirms browser audio activation, not audible output on a physical device. At a 390-pixel viewport, the gallery and both stress pages had no horizontal overflow. The committed GIFs alternate between each tutorial page and its stress page; they are route comparisons, not continuous motion recordings.
+The local Chromium review loaded all four routes. After a click, each Bevy Web Audio context changed to `running` at 44.1 kHz. A DevTools Web Audio trace of the 3D stress page showed 59 `AudioBufferSource` nodes connected to a running `AudioDestination`; the reported callback interval mean was 10.66 ms. This verifies the browser output graph, but it does not verify sound from physical speakers.
+
+The example package enables Bevy's `wav` feature for the shared fixture. The `audio_fixture` integration test calls Bevy's decoder and passes. The latest browser build included the WAV decoder, and all four routes loaded without WebAssembly exceptions. Bevy also requested optional `.wav.meta` sidecars; those requests returned 404 while the WAV files loaded with HTTP 200.
+
+At a 390-pixel viewport, the gallery and both stress pages had no horizontal overflow. The README GIFs contain 12 sampled frames from each hardware-rendered stress route.
 
 ## Scope not verified
 
 - GPU tracing is not implemented. `AudioBackendPreference::Auto` logs that GPU compute is unavailable and keeps CPU tracing active. The new adapter tests cover that no-renderer fallback, but they do not exercise GPU device detection, pipeline failures, device loss, readback, or CPU/GPU parity.
 - Reflections are response data only. The adapter scales sink volume by the mean direct amplitude gain and does not process samples with filters, reflection taps, or late reverb.
 - The benchmark suite has no allocation counter and does not measure the audio callback. It measures geometry queries and scheduled Bevy updates.
-- Native example rendering, audible output, and steady 90 FPS have not been verified on a physical GPU and audio device.
+- Native window rendering and sound from a physical audio device have not been verified. The browser frame samples exceeded 90 callbacks per second with VSync disabled; that run does not test a physical display's refresh rate.
