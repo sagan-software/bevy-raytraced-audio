@@ -46,6 +46,81 @@ fn auto_preference_uses_cpu_without_render_app() -> Result<(), bevy_raytraced_au
     Ok(())
 }
 
+/// `Auto` keeps CPU responses working in a renderer-enabled build without `RenderApp`.
+#[cfg(feature = "renderer_0_19")]
+#[test]
+fn renderer_enabled_auto_preference_uses_cpu_without_render_app()
+-> Result<(), bevy_raytraced_audio::GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(
+        RaytracedAudio2dPlugin::default().with_backend_preference(AudioBackendPreference::Auto),
+    );
+    app.world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    let emitter = app
+        .world_mut()
+        .spawn((RaytracedAudioEmitter2d, Transform::from_xyz(-1.0, 0.0, 0.0)))
+        .id();
+    app.world_mut().spawn((
+        RaytracedAudioSurface2d::new(
+            Vec2::new(0.0, -1.0),
+            Vec2::new(0.0, 1.0),
+            AcousticMaterial::default(),
+        )?,
+        Transform::default(),
+    ));
+
+    app.update();
+
+    let response = app
+        .world()
+        .get::<RaytracedAudioResponse2d>(emitter)
+        .expect("renderer-enabled Auto still publishes a CPU response without RenderApp")
+        .response();
+    assert!(response.direct.is_occluded());
+    Ok(())
+}
+
+/// `Auto` keeps 3D CPU responses working in a renderer-enabled build without `RenderApp`.
+#[cfg(feature = "renderer_0_19")]
+#[test]
+fn renderer_enabled_auto_preference_uses_cpu_without_render_app_3d()
+-> Result<(), bevy_raytraced_audio::GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(
+        RaytracedAudio3dPlugin::default().with_backend_preference(AudioBackendPreference::Auto),
+    );
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    let emitter = app
+        .world_mut()
+        .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(-1.0, 0.0, 0.0)))
+        .id();
+    app.world_mut().spawn((
+        RaytracedAudioSurface3d::new(
+            [
+                Vec3::new(0.0, -1.0, -1.0),
+                Vec3::new(0.0, 1.0, -1.0),
+                Vec3::new(0.0, 0.0, 1.0),
+            ],
+            AcousticMaterial::default(),
+        )?,
+        Transform::default(),
+    ));
+
+    app.update();
+
+    let response = app
+        .world()
+        .get::<RaytracedAudioResponse3d>(emitter)
+        .expect("renderer-enabled Auto still publishes a CPU response without RenderApp")
+        .response();
+    assert!(response.direct.is_occluded());
+    Ok(())
+}
+
 /// `Auto` keeps the CPU path active for 3D when the application has no renderer.
 #[test]
 fn auto_preference_uses_cpu_without_render_app_3d()

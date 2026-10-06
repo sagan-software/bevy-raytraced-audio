@@ -9,6 +9,9 @@ autobins = false
 autobenches = false
 autotests = false
 
+[features]
+renderer_0_19 = ["bevy-raytraced-audio-compat-0-19/renderer"]
+
 [[test]]
 name = "public_adapters"
 path = "tests/public_adapters.rs"
@@ -29,6 +32,7 @@ harness = false
 [dev-dependencies]
 bevy = { version = "0.19.1", default-features = false, features = ["bevy_audio", "multi_threaded"] }
 bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
+bevy-raytraced-audio-compat-0-19 = { path = "../../crates/bevy-raytraced-audio-compat-0-19", version = "0.1.0" }
 bevy-raytraced-audio-2d = { path = "../../crates/bevy-raytraced-audio-2d", version = "0.1.0", default-features = false, features = ["bevy_0_19"] }
 bevy-raytraced-audio-3d = { path = "../../crates/bevy-raytraced-audio-3d", version = "0.1.0", default-features = false, features = ["bevy_0_19"] }
 criterion.workspace = true

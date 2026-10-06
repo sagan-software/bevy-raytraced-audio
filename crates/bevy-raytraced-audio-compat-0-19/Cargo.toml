@@ -6,6 +6,9 @@ rust-version.workspace = true
 license.workspace = true
 description = "Bevy 0.19 compatibility implementation for ray-traced audio adapters"
 
+[features]
+renderer = ["bevy/bevy_render"]
+
 [dependencies]
 bevy = { version = "0.19.1", default-features = false, features = ["bevy_audio"] }
 bevy_ecs = "0.19.1"
