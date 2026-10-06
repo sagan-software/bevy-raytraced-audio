@@ -53,4 +53,8 @@ The local Chromium review loaded all routes and changed each Web Audio context f
 
 The headless SwiftShader browser run sampled 334 FPS for 2D stress, 4 FPS for 3D stress, 4 FPS for minimal 2D, and 98 FPS for minimal 3D. Those software-rendered samples do not establish hardware browser performance. The full 90 FPS target remains unverified.
 
-The browser stress scenes trace 16 marked emitters against 32 surfaces and play one looping sound. The 2026-10-06 quick Criterion run measured the adapter schedule with 128 emitters and 256 surfaces at 0.381 ms in 2D and 0.436 ms in 3D. At 256 emitters and 1,024 surfaces, it measured 4.036 ms and 4.281 ms. The displayed FPS includes Bevy rendering and scheduling. These schedule measurements do not verify steady rendered 90 FPS. The response reports direct transmission and first-order reflections; the adapter applies direct transmission through sink volume only.
+The browser stress scenes trace 16 marked emitters against 32 surfaces and play one looping sound. The 2026-10-06 quick Criterion run measured this schedule at 62.15 microseconds in 2D and 62.78 microseconds in 3D with the task pool. The serial path measured 65.38 microseconds and 64.51 microseconds.
+
+At 128 emitters and 256 surfaces, the schedule measured 0.361 ms and 0.427 ms. At 256 emitters and 1,024 surfaces, it measured 3.657 ms and 4.719 ms. The displayed FPS includes Bevy rendering and scheduling. These schedule measurements do not verify steady rendered 90 FPS.
+
+The response reports direct transmission and first-order reflections. The adapter applies direct transmission through sink volume only.

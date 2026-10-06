@@ -120,7 +120,10 @@ query API in their ECS source ([0.17.3](https://github.com/bevyengine/bevy/blob/
 [0.19.1](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_ecs/src/system/query.rs),
 [0.20.0-rc.2](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_ecs/src/system/query.rs)).
 
-The 2026-10-06 quick benchmark measured 0.381 ms in 2D and 0.436 ms in 3D at
-128 emitters and 256 surfaces. At 256 emitters and 1,024 surfaces, it measured
-4.036 ms and 4.281 ms. These results exclude rendering, audio output, and
-browser presentation, so they do not establish rendered 90 FPS.
+The 2026-10-06 quick benchmark measured the 16-emitter/32-surface stress
+schedule at 65.379 microseconds in 2D and 64.512 microseconds in 3D on the
+serial path. The task-pool path measured 62.148 microseconds and 62.780
+microseconds. At 128 emitters and 256 surfaces, it measured 0.361 ms in 2D and
+0.427 ms in 3D. At 256 emitters and 1,024 surfaces, it measured 3.657 ms and
+4.719 ms. These results exclude rendering, audio output, and browser
+presentation, so they do not establish rendered 90 FPS.

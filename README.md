@@ -161,17 +161,23 @@ nix run .#bench -- --quick --noplot
 
 The 2026-10-06 local check passed 107 workspace tests and reports 99.07% line
 coverage, 98.43% region coverage, and 99.57% function coverage. Criterion
-completed all 26 named workloads. These figures describe code and workload
-execution coverage; they do not certify real-time audio quality or rendered
-frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
+completed all 34 workloads declared by the benchmark suite. These figures
+describe code coverage and named workload execution; they do not certify
+real-time audio quality or rendered frame rate. See
+[testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Performance status
 
 On the local Intel Core i7-8565U laptop CPU, the 2026-10-06 quick benchmark
-measured the 64-emitter/64-surface schedule at 93.690 microseconds in 2D and
-111.370 microseconds in 3D. The 128/256 schedule measured 0.381 ms and 0.436
-ms. The 256/1,024 schedule measured 4.036 ms and 4.281 ms. Each pair lists 2D,
-then 3D.
+measured the 16-emitter/32-surface stress schedule at 62.15 microseconds in 2D
+and 62.78 microseconds in 3D with the task pool. The serial path measured
+65.38 microseconds and 64.51 microseconds. At 64 emitters and 64 surfaces, the
+task-pool estimates were 93.39 microseconds in 2D and 115.05 microseconds in
+3D; serial estimates were 98.36 microseconds and 113.82 microseconds. These
+are short quick-run estimates.
+
+The 128/256 schedule measured 0.361 ms in 2D and 0.427 ms in 3D. The 256/1,024
+schedule measured 3.657 ms and 4.719 ms. Each pair lists 2D, then 3D.
 
 The adapter processes fewer than 16 emitters sequentially. At 16 or more, it
 uses Bevy's parallel query when the compute task pool is initialized. Without
