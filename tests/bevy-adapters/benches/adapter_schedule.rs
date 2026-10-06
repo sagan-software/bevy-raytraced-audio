@@ -19,6 +19,7 @@ fn main() -> Result<(), GeometryError> {
     let mut criterion = Criterion::default().configure_from_args();
     benchmark_2d(&mut criterion)?;
     benchmark_3d(&mut criterion)?;
+    benchmark_dispatch_policy(&mut criterion)?;
     criterion.final_summary();
     Ok(())
 }
@@ -33,7 +34,7 @@ fn benchmark_2d(criterion: &mut Criterion) -> Result<(), GeometryError> {
         (128, 256),
         (256, 1024),
     ] {
-        let mut app = app_2d(emitter_count, surface_count)?;
+        let mut app = app_2d(emitter_count, surface_count, true)?;
         app.update();
         group.throughput(Throughput::Elements(
             u64::try_from(emitter_count).unwrap_or(u64::MAX),
@@ -60,7 +61,7 @@ fn benchmark_3d(criterion: &mut Criterion) -> Result<(), GeometryError> {
         (128, 256),
         (256, 1024),
     ] {
-        let mut app = app_3d(emitter_count, surface_count)?;
+        let mut app = app_3d(emitter_count, surface_count, true)?;
         app.update();
         group.throughput(Throughput::Elements(
             u64::try_from(emitter_count).unwrap_or(u64::MAX),
@@ -77,10 +78,79 @@ fn benchmark_3d(criterion: &mut Criterion) -> Result<(), GeometryError> {
     Ok(())
 }
 
+/// Compares serial and task-pool dispatch at the stress workload and crossover boundary.
+fn benchmark_dispatch_policy(criterion: &mut Criterion) -> Result<(), GeometryError> {
+    benchmark_dispatch_policy_2d(criterion)?;
+    benchmark_dispatch_policy_3d(criterion)?;
+    Ok(())
+}
+
+/// Measures serial and task-pool dispatch for 2D workload sizes near the parallel threshold.
+fn benchmark_dispatch_policy_2d(criterion: &mut Criterion) -> Result<(), GeometryError> {
+    let mut group = criterion.benchmark_group("adapter_schedule/dispatch_policy/2d");
+    for (emitter_count, surface_count) in [(16_usize, 32_usize), (64, 64)] {
+        for with_task_pool in [false, true] {
+            let dispatch = if with_task_pool {
+                "task_pool"
+            } else {
+                "serial"
+            };
+            let mut app = app_2d(emitter_count, surface_count, with_task_pool)?;
+            app.update();
+            group.throughput(Throughput::Elements(
+                u64::try_from(emitter_count).unwrap_or(u64::MAX),
+            ));
+            let id = BenchmarkId::new(
+                "sources_surfaces_dispatch",
+                format!("{emitter_count}_{surface_count}_{dispatch}"),
+            );
+            group.bench_function(id, |bencher| {
+                bencher.iter(|| black_box(&mut app).update());
+            });
+        }
+    }
+    group.finish();
+    Ok(())
+}
+
+/// Measures serial and task-pool dispatch for 3D workload sizes near the parallel threshold.
+fn benchmark_dispatch_policy_3d(criterion: &mut Criterion) -> Result<(), GeometryError> {
+    let mut group = criterion.benchmark_group("adapter_schedule/dispatch_policy/3d");
+    for (emitter_count, surface_count) in [(16_usize, 32_usize), (64, 64)] {
+        for with_task_pool in [false, true] {
+            let dispatch = if with_task_pool {
+                "task_pool"
+            } else {
+                "serial"
+            };
+            let mut app = app_3d(emitter_count, surface_count, with_task_pool)?;
+            app.update();
+            group.throughput(Throughput::Elements(
+                u64::try_from(emitter_count).unwrap_or(u64::MAX),
+            ));
+            let id = BenchmarkId::new(
+                "sources_surfaces_dispatch",
+                format!("{emitter_count}_{surface_count}_{dispatch}"),
+            );
+            group.bench_function(id, |bencher| {
+                bencher.iter(|| black_box(&mut app).update());
+            });
+        }
+    }
+    group.finish();
+    Ok(())
+}
+
 /// Builds a warmed headless 2D Bevy app with deterministic geometry.
-fn app_2d(emitter_count: usize, surface_count: usize) -> Result<App, GeometryError> {
+fn app_2d(
+    emitter_count: usize,
+    surface_count: usize,
+    with_task_pool: bool,
+) -> Result<App, GeometryError> {
     let mut app = App::new();
-    app.add_plugins(TaskPoolPlugin::default());
+    if with_task_pool {
+        app.add_plugins(TaskPoolPlugin::default());
+    }
     app.add_plugins((TransformPlugin, RaytracedAudio2dPlugin::default()));
     app.world_mut()
         .spawn((RaytracedAudioListener2d, Transform::from_xyz(0.0, 0.0, 0.0)));
@@ -111,9 +181,15 @@ fn app_2d(emitter_count: usize, surface_count: usize) -> Result<App, GeometryErr
 }
 
 /// Builds a warmed headless 3D Bevy app with deterministic triangles.
-fn app_3d(emitter_count: usize, surface_count: usize) -> Result<App, GeometryError> {
+fn app_3d(
+    emitter_count: usize,
+    surface_count: usize,
+    with_task_pool: bool,
+) -> Result<App, GeometryError> {
     let mut app = App::new();
-    app.add_plugins(TaskPoolPlugin::default());
+    if with_task_pool {
+        app.add_plugins(TaskPoolPlugin::default());
+    }
     app.add_plugins((TransformPlugin, RaytracedAudio3dPlugin::default()));
     app.world_mut()
         .spawn((RaytracedAudioListener3d, Transform::from_xyz(0.0, 0.0, 0.0)));
