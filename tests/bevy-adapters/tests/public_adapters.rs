@@ -1,5 +1,6 @@
 //! Exercises both adapters through their consumer-facing Bevy APIs.
 
+use bevy::app::TaskPoolPlugin;
 use bevy::audio::{AudioSinkPlayback, SpatialAudioSink, Volume};
 use bevy::prelude::{App, GlobalTransform, Transform, TransformPlugin, Vec2, Vec3};
 use bevy_raytraced_audio::{AcousticMaterial, GeometryError, Point2, Point3};
@@ -690,4 +691,87 @@ fn spatial_audio_volume(app: &App, entity: bevy::prelude::Entity) -> f32 {
         .expect("emitter retains its spatial audio sink")
         .volume()
         .to_linear()
+}
+
+/// The public 2D plugin publishes independent responses for many emitters.
+#[test]
+fn public_2d_plugin_processes_many_emitters_independently() -> Result<(), GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TaskPoolPlugin::default());
+    app.add_plugins((TransformPlugin, RaytracedAudio2dPlugin::default()));
+    app.world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    let mut emitters = Vec::with_capacity(64);
+    for index in 0..64 {
+        let is_occluded = index < 32;
+        let x = if is_occluded { -1.0 } else { 2.0 };
+        let entity = app
+            .world_mut()
+            .spawn((RaytracedAudioEmitter2d, Transform::from_xyz(x, 0.0, 0.0)))
+            .id();
+        emitters.push((entity, is_occluded));
+    }
+    app.world_mut().spawn((
+        RaytracedAudioSurface2d::new(
+            Vec2::new(0.0, -1.0),
+            Vec2::new(0.0, 1.0),
+            AcousticMaterial::default(),
+        )?,
+        Transform::default(),
+    ));
+
+    app.update();
+
+    for (entity, expected_occlusion) in emitters {
+        let response = app
+            .world()
+            .get::<RaytracedAudioResponse2d>(entity)
+            .expect("the plugin update publishes every emitter response")
+            .response();
+        assert_eq!(response.direct.is_occluded(), expected_occlusion);
+    }
+    Ok(())
+}
+
+/// The public 3D plugin publishes independent responses for many emitters.
+#[test]
+fn public_3d_plugin_processes_many_emitters_independently() -> Result<(), GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TaskPoolPlugin::default());
+    app.add_plugins((TransformPlugin, RaytracedAudio3dPlugin::default()));
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    let mut emitters = Vec::with_capacity(64);
+    for index in 0..64 {
+        let is_occluded = index < 32;
+        let x = if is_occluded { -1.0 } else { 2.0 };
+        let entity = app
+            .world_mut()
+            .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(x, 0.0, 0.0)))
+            .id();
+        emitters.push((entity, is_occluded));
+    }
+    app.world_mut().spawn((
+        RaytracedAudioSurface3d::new(
+            [
+                Vec3::new(0.0, -1.0, -1.0),
+                Vec3::new(0.0, 1.0, -1.0),
+                Vec3::new(0.0, 0.0, 1.0),
+            ],
+            AcousticMaterial::default(),
+        )?,
+        Transform::default(),
+    ));
+
+    app.update();
+
+    for (entity, expected_occlusion) in emitters {
+        let response = app
+            .world()
+            .get::<RaytracedAudioResponse3d>(entity)
+            .expect("the plugin update publishes every emitter response")
+            .response();
+        assert_eq!(response.direct.is_occluded(), expected_occlusion);
+    }
+    Ok(())
 }

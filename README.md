@@ -155,26 +155,32 @@ nix run .#test
 nix run .#bench -- --quick --noplot
 ```
 
-The latest local run passed 101 workspace tests and reports 98.10% line
-coverage, 98.89% region coverage, and 99.52% function coverage. Criterion
+The latest local check passed 105 workspace tests and reports 99.06% line
+coverage, 98.42% region coverage, and 99.57% function coverage. Criterion
 completed all 26 named workloads. These figures describe code and workload
 execution coverage; they do not certify real-time audio quality or rendered
 frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Performance status
 
-On the local Intel Core i7-8565U laptop CPU, the 128-emitter and 256-surface
-adapter schedule measured 0.814 ms in 2D and 1.157 ms in 3D. The 256-emitter,
-1,024-surface schedule measured 9.512 ms in 2D and 12.950 ms in 3D. These
-benchmarks measure Bevy scheduling without rendering or audio output.
+On the local Intel Core i7-8565U laptop CPU, the latest quick benchmark measured
+the 64-emitter/64-surface schedule at 90 microseconds in 2D and 107 microseconds
+in 3D. The 128/256 schedule measured 0.402 ms and 0.460 ms. The 256/1,024
+schedule measured 7.510 ms and 4.121 ms. Each pair lists 2D, then 3D.
 
-The 128-emitter and 256-surface schedule and the 2D 256-emitter and
-1,024-surface schedule fit the 11.11 ms propagation budget for 90 FPS. The
-largest 3D schedule takes 12.950 ms. These are update-schedule results, not
-rendered frame measurements. In a headless SwiftShader run, the sampled browser
-readouts were 334 FPS for 2D stress, 4 FPS for 3D stress, 4 FPS for minimal 2D,
-and 98 FPS for minimal 3D. Those samples do not establish steady performance
-on physical graphics hardware. See the
+The adapter processes fewer than 16 emitters sequentially. At 16 or more, it
+uses Bevy's parallel query when the compute task pool is initialized. Without
+that pool, it falls back to sequential processing. A separate 30-sample
+comparison measured the serial 256/1,024 schedule at 10.726 ms in 2D and
+13.043 ms in 3D. The parallel path measured 5.508 ms and 6.006 ms under the
+same Bevy multithreaded setup.
+
+Each measured adapter update schedule fits within the 11.11 ms time available
+to a 90 FPS frame on this CPU. These measurements exclude rendering, audio
+output, and browser presentation, so they do not establish a complete game's
+frame rate. A headless SwiftShader run sampled 334 FPS for 2D stress, 4 FPS for
+3D stress, 4 FPS for minimal 2D, and 98 FPS for minimal 3D. Those samples do not
+establish steady performance on physical graphics hardware. See the
 [measured limits and remaining coverage gaps](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Documentation

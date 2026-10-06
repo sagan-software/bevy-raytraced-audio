@@ -4,7 +4,7 @@
 
 The workspace contains a CPU acoustic propagation core, separate Bevy 2D and 3D adapters, four compatibility crates, native and browser examples, a Markdown book, and Nix workflows. The adapters preserve Bevy's audio plugin and player model. They use explicit acoustic surfaces, multiply per-band direct amplitude transmission, and apply the arithmetic mean to existing sink volume. Callers can attach an optional per-emitter component to read first-order reflection paths. The minimal examples draw those paths; the adapter does not apply them to audio samples.
 
-The latest local check passes 101 tests and reports 98.10% line coverage, 98.89% region coverage, and 99.52% function coverage. Criterion completed all 26 named workloads. The 128-emitter/256-surface schedule measured 0.814 ms in 2D and 1.157 ms in 3D. At 256 emitters and 1,024 surfaces, 2D measured 9.512 ms and 3D measured 12.950 ms; the 3D schedule exceeds the 11.11 ms budget. The four browser routes load, audio contexts resume after a click, and README route-comparison GIFs are current. Physical-device audio and steady rendered 90 FPS remain unverified.
+The latest local check passes 105 tests and reports 99.06% line coverage, 98.42% region coverage, and 99.57% function coverage. Criterion completed all 26 named workloads. At 128 emitters and 256 surfaces, the update schedule measured 0.402 ms in 2D and 0.460 ms in 3D. At 256 emitters and 1,024 surfaces, it measured 7.510 ms and 4.121 ms. Each update fits within 11.11 ms on the local CPU, but rendering and audio output are excluded. The four browser routes load, audio contexts resume after a click, and README route-comparison GIFs are current. Physical-device audio and steady rendered 90 FPS remain unverified.
 
 ## Publication gates
 

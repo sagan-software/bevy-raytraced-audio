@@ -1,5 +1,6 @@
 //! Measures complete warmed Bevy acoustic updates for source and surface counts.
 
+use bevy::app::TaskPoolPlugin;
 use bevy::prelude::{App, Transform, TransformPlugin, Vec2, Vec3};
 use bevy_raytraced_audio::{AcousticMaterial, GeometryError};
 use bevy_raytraced_audio_2d::{
@@ -79,6 +80,7 @@ fn benchmark_3d(criterion: &mut Criterion) -> Result<(), GeometryError> {
 /// Builds a warmed headless 2D Bevy app with deterministic geometry.
 fn app_2d(emitter_count: usize, surface_count: usize) -> Result<App, GeometryError> {
     let mut app = App::new();
+    app.add_plugins(TaskPoolPlugin::default());
     app.add_plugins((TransformPlugin, RaytracedAudio2dPlugin::default()));
     app.world_mut()
         .spawn((RaytracedAudioListener2d, Transform::from_xyz(0.0, 0.0, 0.0)));
@@ -111,6 +113,7 @@ fn app_2d(emitter_count: usize, surface_count: usize) -> Result<App, GeometryErr
 /// Builds a warmed headless 3D Bevy app with deterministic triangles.
 fn app_3d(emitter_count: usize, surface_count: usize) -> Result<App, GeometryError> {
     let mut app = App::new();
+    app.add_plugins(TaskPoolPlugin::default());
     app.add_plugins((TransformPlugin, RaytracedAudio3dPlugin::default()));
     app.world_mut()
         .spawn((RaytracedAudioListener3d, Transform::from_xyz(0.0, 0.0, 0.0)));

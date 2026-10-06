@@ -106,8 +106,18 @@ not own an audio callback and does not add a second sound engine. It changes
 volume on existing sink components and leaves playback lifecycle controls with
 Bevy.
 
-The current plugin rebuilds a scene from explicit ECS surfaces per update. The
-benchmark suite measures core path queries and adapter update schedules. The
-128-emitter, 256-surface schedule measured 0.814 ms in 2D and 1.157 ms in 3D on
-the local CPU. Those results exclude rendering, audio output, and browser
-presentation, so they do not establish rendered 90 FPS.
+The current plugin rebuilds a scene from explicit ECS surfaces per update. It
+processes fewer than 16 emitters sequentially. At 16 or more emitters, it uses
+`Query::par_iter_mut` when `ComputeTaskPool::try_get` finds an initialized
+compute pool; otherwise, it processes emitters sequentially. Each emitter owns
+its mutable response and sink components, while every trace reads the shared
+cached scene. Bevy 0.17.3, 0.18.1, 0.19.1, and 0.20.0-rc.2 expose this parallel
+query API in their ECS source ([0.17.3](https://github.com/bevyengine/bevy/blob/v0.17.3/crates/bevy_ecs/src/system/query.rs),
+[0.18.1](https://github.com/bevyengine/bevy/blob/v0.18.1/crates/bevy_ecs/src/system/query.rs),
+[0.19.1](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_ecs/src/system/query.rs),
+[0.20.0-rc.2](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_ecs/src/system/query.rs)).
+
+The latest quick benchmark measured 0.402 ms in 2D and 0.460 ms in 3D at 128
+emitters and 256 surfaces. At 256 emitters and 1,024 surfaces, it measured
+7.510 ms and 4.121 ms. These results exclude rendering, audio output, and
+browser presentation, so they do not establish rendered 90 FPS.

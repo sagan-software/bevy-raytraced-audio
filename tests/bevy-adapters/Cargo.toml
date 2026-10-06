@@ -13,13 +13,17 @@ autotests = false
 name = "public_adapters"
 path = "tests/public_adapters.rs"
 
+[[test]]
+name = "without_task_pool"
+path = "tests/without_task_pool.rs"
+
 [[bench]]
 name = "adapter_schedule"
 path = "benches/adapter_schedule.rs"
 harness = false
 
 [dev-dependencies]
-bevy = { version = "0.19.1", default-features = false, features = ["bevy_audio"] }
+bevy = { version = "0.19.1", default-features = false, features = ["bevy_audio", "multi_threaded"] }
 bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
 bevy-raytraced-audio-2d = { path = "../../crates/bevy-raytraced-audio-2d", version = "0.1.0", default-features = false, features = ["bevy_0_19"] }
 bevy-raytraced-audio-3d = { path = "../../crates/bevy-raytraced-audio-3d", version = "0.1.0", default-features = false, features = ["bevy_0_19"] }
