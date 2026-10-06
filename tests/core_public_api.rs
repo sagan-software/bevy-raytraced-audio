@@ -63,6 +63,167 @@ fn same_side_segment_contributes_reflected_energy() -> Result<(), GeometryError>
     Ok(())
 }
 
+/// A reflection query returns geometric data in stable surface insertion order.
+#[test]
+fn reflection_paths_expose_surface_point_distance_and_energy() -> Result<(), GeometryError> {
+    let surface = Segment2d::try_new(
+        Point2::try_new(1.0, -1.0)?,
+        Point2::try_new(1.0, 3.0)?,
+        AcousticMaterial::new(BandAbsorption::try_new(0.0, 0.0, 0.0)?),
+    )?;
+    let mut scene = AcousticScene2d::default();
+    scene.add_segment(surface);
+    let emitter = Emitter2d::new(Point2::try_new(-1.0, 0.0)?);
+    let listener = Listener2d::new(Point2::try_new(-1.0, 2.0)?);
+
+    let paths: Vec<_> = scene.reflection_paths(emitter, listener).collect();
+
+    assert_eq!(paths.len(), 1);
+    let Some(path) = paths.first() else {
+        panic!("the visible wall must produce one first-order reflection");
+    };
+    assert_eq!(path.surface_index().index(), 0);
+    assert_eq!(path.reflection_point().x_m(), 1.0);
+    assert_eq!(path.reflection_point().y_m(), 1.0);
+    assert_eq!(path.image_source().x_m(), 3.0);
+    assert_eq!(path.image_source().y_m(), 0.0);
+    assert!((path.distance_m() - 20.0_f64.sqrt()).abs() < 1.0e-6);
+    assert!((path.relative_energy().low() - 0.2).abs() < 1.0e-6);
+    assert!((path.relative_energy().mid() - 0.2).abs() < 1.0e-6);
+    assert!((path.relative_energy().high() - 0.2).abs() < 1.0e-6);
+    assert_eq!(
+        scene.trace(emitter, listener).reflected_energy,
+        path.relative_energy()
+    );
+    Ok(())
+}
+
+/// A three-dimensional reflection query reports its triangle, virtual source, distance, and energy.
+#[test]
+fn three_dimensional_reflection_path_exposes_geometry_and_energy() -> Result<(), GeometryError> {
+    let surface = Triangle3d::try_new(
+        [
+            Point3::try_new(-2.0, -2.0, 1.0)?,
+            Point3::try_new(2.0, -2.0, 1.0)?,
+            Point3::try_new(0.0, 3.0, 1.0)?,
+        ],
+        AcousticMaterial::new(BandAbsorption::try_new(0.0, 0.0, 0.0)?),
+    )?;
+    let mut scene = AcousticScene3d::default();
+    scene.add_triangle(surface);
+    let emitter = Emitter3d::new(Point3::try_new(0.0, 0.0, 0.0)?);
+    let listener = Listener3d::new(Point3::try_new(0.0, 2.0, 0.0)?);
+
+    let path = scene.reflection_paths(emitter, listener).next();
+
+    let Some(path) = path else {
+        panic!("the finite triangle must produce one first-order reflection");
+    };
+    assert_eq!(path.surface_index().index(), 0);
+    assert_eq!(path.reflection_point().x_m(), 0.0);
+    assert_eq!(path.reflection_point().y_m(), 1.0);
+    assert_eq!(path.reflection_point().z_m(), 1.0);
+    assert_eq!(path.image_source().x_m(), 0.0);
+    assert_eq!(path.image_source().y_m(), 0.0);
+    assert_eq!(path.image_source().z_m(), 2.0);
+    assert!((path.distance_m() - 8.0_f64.sqrt()).abs() < 1.0e-6);
+    assert!((path.relative_energy().low() - 0.5).abs() < 1.0e-6);
+    assert!((path.relative_energy().mid() - 0.5).abs() < 1.0e-6);
+    assert!((path.relative_energy().high() - 0.5).abs() < 1.0e-6);
+    assert_eq!(
+        scene.trace(emitter, listener).reflected_energy,
+        path.relative_energy()
+    );
+    Ok(())
+}
+
+/// Both scene dimensions report reflection surface indices in insertion order.
+#[test]
+fn reflection_paths_follow_surface_insertion_order() -> Result<(), GeometryError> {
+    let segment = Segment2d::try_new(
+        Point2::try_new(1.0, -1.0)?,
+        Point2::try_new(1.0, 3.0)?,
+        AcousticMaterial::default(),
+    )?;
+    let mut scene2d = AcousticScene2d::default();
+    scene2d.add_segment(segment);
+    scene2d.add_segment(segment);
+    let emitter2d = Emitter2d::new(Point2::try_new(-1.0, 0.0)?);
+    let listener2d = Listener2d::new(Point2::try_new(-1.0, 2.0)?);
+    let indices2d: Vec<_> = scene2d
+        .reflection_paths(emitter2d, listener2d)
+        .map(|path| path.surface_index().index())
+        .collect();
+
+    let triangle = Triangle3d::try_new(
+        [
+            Point3::try_new(-2.0, -2.0, 1.0)?,
+            Point3::try_new(2.0, -2.0, 1.0)?,
+            Point3::try_new(0.0, 3.0, 1.0)?,
+        ],
+        AcousticMaterial::default(),
+    )?;
+    let mut scene3d = AcousticScene3d::default();
+    scene3d.add_triangle(triangle);
+    scene3d.add_triangle(triangle);
+    let emitter3d = Emitter3d::new(Point3::try_new(0.0, 0.0, 0.0)?);
+    let listener3d = Listener3d::new(Point3::try_new(0.0, 2.0, 0.0)?);
+    let indices3d: Vec<_> = scene3d
+        .reflection_paths(emitter3d, listener3d)
+        .map(|path| path.surface_index().index())
+        .collect();
+
+    assert_eq!(indices2d, [0, 1]);
+    assert_eq!(indices3d, [0, 1]);
+    let aggregate2d = scene2d.trace(emitter2d, listener2d).reflected_energy;
+    let aggregate3d = scene3d.trace(emitter3d, listener3d).reflected_energy;
+    assert!((aggregate2d.low() - 0.4).abs() < 1.0e-6);
+    assert!((aggregate2d.mid() - 0.4).abs() < 1.0e-6);
+    assert!((aggregate2d.high() - 0.4).abs() < 1.0e-6);
+    assert!((aggregate3d.low() - 1.0).abs() < 1.0e-6);
+    assert!((aggregate3d.mid() - 1.0).abs() < 1.0e-6);
+    assert!((aggregate3d.high() - 1.0).abs() < 1.0e-6);
+    Ok(())
+}
+
+/// Coincident emitters and listeners have no finite reflected path in either scene dimension.
+#[test]
+fn coincident_source_and_listener_have_no_reflection_paths() -> Result<(), GeometryError> {
+    let segment = Segment2d::try_new(
+        Point2::try_new(1.0, -1.0)?,
+        Point2::try_new(1.0, 3.0)?,
+        AcousticMaterial::default(),
+    )?;
+    let mut scene2d = AcousticScene2d::default();
+    scene2d.add_segment(segment);
+    let point2 = Point2::try_new(-1.0, 0.0)?;
+    assert!(
+        scene2d
+            .reflection_paths(Emitter2d::new(point2), Listener2d::new(point2))
+            .next()
+            .is_none()
+    );
+
+    let triangle = Triangle3d::try_new(
+        [
+            Point3::try_new(-2.0, -2.0, 1.0)?,
+            Point3::try_new(2.0, -2.0, 1.0)?,
+            Point3::try_new(0.0, 3.0, 1.0)?,
+        ],
+        AcousticMaterial::default(),
+    )?;
+    let mut scene3d = AcousticScene3d::default();
+    scene3d.add_triangle(triangle);
+    let point3 = Point3::try_new(0.0, 0.0, 0.0)?;
+    assert!(
+        scene3d
+            .reflection_paths(Emitter3d::new(point3), Listener3d::new(point3))
+            .next()
+            .is_none()
+    );
+    Ok(())
+}
+
 /// A second segment blocks the reflector's source-to-surface leg.
 #[test]
 fn segment_blocks_a_reflected_path() -> Result<(), GeometryError> {
@@ -87,6 +248,8 @@ fn segment_blocks_a_reflected_path() -> Result<(), GeometryError> {
 
     assert!(!response.direct.is_occluded());
     assert_eq!(response.reflected_energy, BandEnergy::ZERO);
+    let paths: Vec<_> = scene.reflection_paths(emitter, listener).collect();
+    assert!(!paths.iter().any(|path| path.surface_index().index() == 0));
     Ok(())
 }
 
@@ -117,6 +280,16 @@ fn absorption_reduces_reflected_energy_per_band() -> Result<(), GeometryError> {
     assert_eq!(absorptive_energy.low(), 0.0);
     assert!(absorptive_energy.mid() < reflective_energy.mid());
     assert_eq!(absorptive_energy.high(), reflective_energy.high());
+
+    let paths: Vec<_> = absorptive_scene
+        .reflection_paths(emitter, listener)
+        .collect();
+    let Some(path) = paths.first() else {
+        panic!("the reflective wall must retain a visible path");
+    };
+    assert_eq!(path.relative_energy().low(), 0.0);
+    assert!((path.relative_energy().mid() - 0.1).abs() < 1.0e-6);
+    assert!((path.relative_energy().high() - 0.2).abs() < 1.0e-6);
     Ok(())
 }
 
@@ -295,6 +468,13 @@ fn triangle_blocks_a_reflected_path() -> Result<(), GeometryError> {
 
     assert!(!response.direct.is_occluded());
     assert_eq!(response.reflected_energy, BandEnergy::ZERO);
+    let paths: Vec<_> = scene.reflection_paths(emitter, listener).collect();
+    assert!(!paths.iter().any(|path| path.surface_index().index() == 0));
+    assert!(
+        paths
+            .iter()
+            .all(|path| path.relative_energy() == BandEnergy::ZERO)
+    );
     Ok(())
 }
 

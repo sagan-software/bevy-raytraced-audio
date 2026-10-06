@@ -120,21 +120,23 @@ nix run .#test
 nix run .#bench -- --quick --noplot
 ```
 
-The latest local coverage run reports 98.18% executable-line coverage,
-100.00% region coverage, and 98.98% function coverage. The quick Criterion run
-executes all 22 named workload scenarios. These figures describe code and
-workload execution coverage; they do not certify real-time audio quality or
-rendered frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
+The latest local coverage run reports 99.08% executable-line coverage,
+98.43% region coverage, and 100.00% function coverage. The quick Criterion run
+completes all 24 named workloads. These figures describe code and workload
+execution coverage; they do not certify real-time audio quality or rendered
+frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Performance status
 
-The 128-emitter and 256-surface adapter schedule benchmark measured 1.52 ms in
-2D and 4.51 ms in 3D on an Intel Core i7-8565U laptop CPU. This benchmark
-measures the Bevy schedule without rendering or browser presentation.
+On the local Intel Core i7-8565U laptop CPU, the 128-emitter and 256-surface
+adapter schedule measured 0.96 ms in 2D and 2.45 ms in 3D. The 256-emitter,
+1,024-surface schedule measured 13.96 ms in 2D and 25.47 ms in 3D. These
+benchmarks measure Bevy scheduling without rendering or audio output.
 
-The 90 FPS target is not verified. On this host, the visible browser check uses
-SwiftShader through Xvfb and reports roughly 1–5 FPS. Native display validation
-is unavailable here. See the [measured limits and remaining coverage gaps](docs/TESTING-AND-BENCHMARKS.md).
+The 90 FPS target is not met by the largest schedule workload and is not
+verified for a rendered application. The local browser check used SwiftShader
+through Xvfb and reported roughly 1–5 FPS. Native display validation is
+unavailable here. See the [measured limits and remaining coverage gaps](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Documentation
 

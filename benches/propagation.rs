@@ -79,6 +79,27 @@ fn benchmark_small_scenes(
         bencher.iter(|| black_box(reflected3d.trace(black_box(emitter3d), black_box(listener3d))));
     });
     group.finish();
+
+    let mut reflection_group = criterion.benchmark_group("propagation/reflection_path_iteration");
+    reflection_group.bench_function("2d/single_reflector", |bencher| {
+        bencher.iter(|| {
+            black_box(
+                reflected2d
+                    .reflection_paths(black_box(emitter2d), black_box(listener2d))
+                    .count(),
+            )
+        });
+    });
+    reflection_group.bench_function("3d/single_reflector", |bencher| {
+        bencher.iter(|| {
+            black_box(
+                reflected3d
+                    .reflection_paths(black_box(emitter3d), black_box(listener3d))
+                    .count(),
+            )
+        });
+    });
+    reflection_group.finish();
 }
 
 /// Measures full-scene misses as 2D wall count grows.

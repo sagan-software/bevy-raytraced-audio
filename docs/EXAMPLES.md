@@ -1,6 +1,6 @@
 # Examples
 
-The native and browser examples use Bevy 0.19.1. Each browser route has its own WebAssembly module and WAV asset. Select **Enable spatial audio** after the scene loads; this user gesture resumes Bevy's Web Audio context.
+The Bevy native and browser examples use Bevy 0.19.1. Each browser route has its own WebAssembly module and WAV asset. Select **Enable spatial audio** after the scene loads; this user gesture resumes Bevy's Web Audio context.
 
 | Example | Scene and controls | What it demonstrates |
 | --- | --- | --- |
@@ -8,6 +8,8 @@ The native and browser examples use Bevy 0.19.1. Each browser route has its own 
 | `minimal_3d` | One listener, a moving sound, a finite wall made from two triangles, and a floor. | Configure Bevy spatial audio, attach a response component, and inspect direct paths. |
 | `stress_2d` | 128 moving emitters, 256 wall segments, one looping sound. | Measure the scheduled update and display a frame-rate readout. |
 | `stress_3d` | 128 moving emitters, 256 wall triangles, one looping sound. | Measure the 3D update with the same source and surface counts. |
+
+The core crate also provides `cargo run --example trace_2d` inside `nix develop`. It prints the direct response and each visible first-order reflection, including the reflection point, image source, distance, and per-band relative energy. The browser catalogue currently contains the four Bevy scenes in the table.
 
 Each scene has comments describing plugin setup, entity markers, material configuration, and the systems that read responses. Start with the minimal example for the dimension you need, then compare the stress scene's higher entity count.
 
@@ -29,7 +31,7 @@ nix run .#web-build
 nix run .#web-serve
 ```
 
-The local server listens on `http://127.0.0.1:8000`. The [GitHub Pages gallery](https://sagan-software.github.io/bevy-raytraced-audio/) links to all four scenes and the Markdown book. The website build uses Bevy 0.19.1 with WebAssembly and WebGL2 features; the other Bevy versions are tested through native compatibility crates.
+The local server listens on `http://127.0.0.1:8000`. The [GitHub Pages gallery](https://sagan-software.github.io/bevy-raytraced-audio/) links to all four scenes and the Markdown book. Each Bevy scene builds into its own WebAssembly route. The website build uses Bevy 0.19.1 with WebAssembly and WebGL2 features; the other Bevy versions are tested through native compatibility crates.
 
 ## Observed behavior and limits
 

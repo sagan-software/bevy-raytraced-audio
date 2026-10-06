@@ -1,6 +1,6 @@
 # Bevy audio API research
 
-Research date: 2026-10-04. The API inventory uses Bevy 0.19.1 documentation and tagged sources; the implementation must repeat the check for every supported minor.
+Research date: 2026-10-05. Stable Bevy is 0.19.1. Bevy 0.20.0-rc.2 is the tested release candidate. Tagged Bevy source files below were checked for each supported minor.
 
 ## Built-in playback model
 
@@ -14,9 +14,9 @@ Bevy documents its built-in spatial mode as simple stereo panning. It does not p
 
 ## `Decodable` extension point
 
-Bevy's [Decodable example](https://github.com/bevyengine/bevy/blob/v0.19.1/examples/audio/decodable.rs) implements a custom asset, decoder iterator, `rodio::Source`, and `Decodable`, then registers it with `AddAudioSource`. A custom decoder is created for playback. This is the best public seam to prototype because it retains Bevy's `AudioPlayer`, asset, and playback lifecycle.
+Bevy's [Decodable example](https://github.com/bevyengine/bevy/blob/v0.19.1/examples/audio/decodable.rs) implements a custom asset, decoder iterator, `rodio::Source`, and `Decodable`, then registers it with `AddAudioSource::add_audio_source`. A custom decoder is created for playback. This is the public seam to prototype because it retains Bevy's `AudioPlayer`, asset, and playback lifecycle for a custom source asset.
 
-There is a version boundary. Bevy 0.17 and 0.18 define `DecoderItem` and constrain the decoder item through `rodio::Sample`; Bevy 0.19 and 0.20 use `rodio::Sample` directly on the decoder type. Compare the tagged [0.17.3 source](https://github.com/bevyengine/bevy/blob/v0.17.3/crates/bevy_audio/src/audio_source.rs), [0.18.1 source](https://github.com/bevyengine/bevy/blob/v0.18.1/crates/bevy_audio/src/audio_source.rs), [0.19.1 source](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_audio/src/audio_source.rs), and [0.20.0-rc.2 source](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_audio/src/audio_source.rs).
+There is a version boundary. Bevy 0.17 and 0.18 define the associated `DecoderItem` and constrain it through `rodio::Sample`; Bevy 0.19 and 0.20 use `Iterator<Item = rodio::Sample>` directly. Each version requires the custom source asset to implement `Asset + Decodable`. Compare the tagged [0.17.3 source](https://github.com/bevyengine/bevy/blob/v0.17.3/crates/bevy_audio/src/audio_source.rs), [0.18.1 source](https://github.com/bevyengine/bevy/blob/v0.18.1/crates/bevy_audio/src/audio_source.rs), [0.19.1 source](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_audio/src/audio_source.rs), and [0.20.0-rc.2 source](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_audio/src/audio_source.rs).
 
 Prototype per-playback parameter ownership before choosing this API. A custom source can create a decoder per playback, but it does not receive the Bevy entity or acoustic result as a `decoder()` argument. Shared asset state can accidentally make multiple players share effect state. The design must show how each voice reads its own bounded, lock-free acoustic parameters.
 
@@ -29,7 +29,7 @@ Prototype per-playback parameter ownership before choosing this API. A custom so
 
 ## Integration conclusion
 
-Inference from the public API: a plugin can keep the built-in `AudioPlugin` and modify sink controls Bevy exposes, including volume. A plugin cannot promise arbitrary live filtering, convolution, early reflections, or reverb on an existing `AudioPlayer<AudioSource>` through a public sink insertion API.
+Inference from the public API: a plugin can keep the built-in `AudioPlugin` and modify sink controls Bevy exposes, including volume. The custom `Decodable` seam requires a custom source asset, so it does not add processing to an existing `AudioPlayer<AudioSource>`. Bevy does not expose a public sink insertion API for arbitrary live filtering, convolution, early reflections, or reverb.
 
 For full effects, prototype a custom `Decodable` asset and decoder or an optional audio graph adapter. A Seedling/Firewheel adapter gives a graph for custom DSP, but Seedling asks projects to disable Bevy's `bevy_audio` feature and use its own `SamplePlayer`. That is a larger migration and should remain optional.
 

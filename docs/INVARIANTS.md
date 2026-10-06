@@ -25,3 +25,11 @@
 - Malformed input covers non-finite coordinates, out-of-range coefficients, and degenerate geometry.
 - Policy failures cover a requested acceleration mode unavailable in a selected adapter profile.
 - Runtime fallback covers GPU adapter, device, shader, or dispatch failure and continues through the CPU path when fallback is enabled.
+
+## Reflection path queries
+
+- A query yields only finite, visible, first-order specular reflections; coincident source and listener positions yield none.
+- Paths follow surface insertion order. A surface index identifies one entry in the current scene and changes when that scene is rebuilt.
+- Reflection point, mirrored image-source position, path distance, and per-band relative energy derive from scene geometry and material absorption. Solver output points retain double precision.
+- The iterator borrows the scene and keeps constant query state. Full traversal is quadratic in surface count because each candidate checks every other surface.
+- The existing `AcousticResponse` remains copyable and continues to report aggregate reflected energy.
