@@ -17,5 +17,6 @@
   - [Prior art](research/prior-art.md)
   - [Bevy template](research/template.md)
   - [Rust and Bevy versions](research/toolchain.md)
+  - [GPU compute technical report](research/technical-bevy-gpu-compute-acoustics-2026-10-06.md)
   - [Vercidium Audio repositories](research/vercidium-audio.md)
   - [Videos](research/videos.md)

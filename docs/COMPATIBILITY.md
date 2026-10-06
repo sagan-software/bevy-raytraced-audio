@@ -33,7 +33,7 @@ manifests. See the versioned Bevy audio sources in
 ## Rust versions
 
 The manifest `rust-version` and Clippy `msrv` are `1.96.1`. The compatibility
-workflow tests Rust `1.96.1`, `1.97.0`, `1.98.1`, and `1.99.0`. The 1.96 minimum
+workflow tests Rust `1.96.1`, `1.97.1`, `1.98.1`, and `1.99.0`. The 1.96 minimum
 matches the Bevy 0.20 release candidate's declared minimum.
 
 ## Test matrix

@@ -8,7 +8,7 @@ use bevy::{
     window::{PresentMode, WindowResolution},
     winit::WinitSettings,
 };
-use bevy_raytraced_audio::{AcousticMaterial, BandGain};
+use bevy_raytraced_audio::{AcousticMaterial, AudioBackendPreference, BandGain};
 use bevy_raytraced_audio_2d::{
     RaytracedAudio2dPlugin, RaytracedAudioEmitter2d, RaytracedAudioListener2d,
     RaytracedAudioReflectionPaths2d, RaytracedAudioResponse2d, RaytracedAudioSurface2d,
@@ -42,7 +42,7 @@ fn main() {
         )
         .add_plugins((
             FrameTimeDiagnosticsPlugin::default(),
-            RaytracedAudio2dPlugin::default(),
+            RaytracedAudio2dPlugin::default().with_backend_preference(AudioBackendPreference::Auto),
         ))
         .insert_resource(WinitSettings::continuous())
         .add_systems(Startup, setup)

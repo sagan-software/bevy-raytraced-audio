@@ -9,6 +9,7 @@ description = "Bevy 0.20 release-candidate compatibility implementation for ray-
 [dependencies]
 bevy = { version = "=0.20.0-rc.2", default-features = false, features = ["bevy_audio"] }
 bevy_ecs = "=0.20.0-rc.2"
+log = "0.4"
 bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
 
 [dev-dependencies]

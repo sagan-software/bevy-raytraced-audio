@@ -86,18 +86,20 @@ late reverb, and source decoding changes are outside this version.
 ## Update flow
 
 Each adapter reads marked emitters, listeners, and surfaces after transform
-propagation. It clears and rebuilds a local core scene, queries direct paths and
-first-order reflections, stores a response component, and updates the built-in
-sink volume. The local scene retains collection capacity between frames. Core
-queries build and cache a BVH after the surfaces change; the adapter currently
-rebuilds that hierarchy each frame because it reconstructs the scene. It does
-not use change-tracked surfaces or an incremental refit.
+propagation. It retains a local core scene and rebuilds that scene when a
+surface component or transform changes, a surface is added or removed, a
+surface lacks a transform, or the listener becomes invalid. Core queries build
+and cache a BVH after the scene changes. The adapter does not incrementally
+refit the hierarchy.
 
 ## Backend boundary
 
 The core uses CPU ray queries. It does not require a render plugin or GPU
-device. GPU compute and automatic GPU-to-CPU fallback are follow-up work, not
-implemented API options. The Nix and browser builds compile the CPU backend.
+device. Both dimension plugins expose `with_backend_preference`. The default
+`AudioBackendPreference::Cpu` selects CPU tracing. `Auto` currently logs that
+the GPU backend is unavailable, then uses CPU tracing. GPU dispatch and
+automatic GPU-to-CPU fallback are not implemented. The Nix and browser builds
+compile the CPU backend.
 
 ## Runtime constraints
 
@@ -106,8 +108,9 @@ not own an audio callback and does not add a second sound engine. It changes
 volume on existing sink components and leaves playback lifecycle controls with
 Bevy.
 
-The current plugin rebuilds a scene from explicit ECS surfaces per update. It
-processes fewer than 16 emitters sequentially. At 16 or more emitters, it uses
+The current plugin retains a scene built from explicit ECS surfaces between
+surface changes. It processes fewer than 16 emitters sequentially. At 16 or
+more emitters, it uses
 `Query::par_iter_mut` when `ComputeTaskPool::try_get` finds an initialized
 compute pool; otherwise, it processes emitters sequentially. Each emitter owns
 its mutable response and sink components, while every trace reads the shared

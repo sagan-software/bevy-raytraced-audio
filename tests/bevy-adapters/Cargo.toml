@@ -17,6 +17,10 @@ path = "tests/public_adapters.rs"
 name = "without_task_pool"
 path = "tests/without_task_pool.rs"
 
+[[test]]
+name = "backend_preference"
+path = "tests/backend_preference.rs"
+
 [[bench]]
 name = "adapter_schedule"
 path = "benches/adapter_schedule.rs"

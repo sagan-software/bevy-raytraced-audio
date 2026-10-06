@@ -1,6 +1,6 @@
 # Bevy and Rust version findings
 
-Research date: 2026-10-05.
+Research date: 2026-10-06.
 
 ## Bevy support targets
 
@@ -10,7 +10,7 @@ The Bevy root manifests declare Rust 1.88.0 for 0.17.3, 1.89.0 for 0.18.1, 1.95.
 
 ## Rust stable support
 
-Rust 1.99.0 became stable on 2026-10-01. Rust 1.96, 1.97, 1.98, and 1.99 are the four latest stable minor versions in this research snapshot. The project MSRV and Clippy `msrv` are set to 1.96.1; CI tests 1.96.1, 1.97.0, 1.98.1, and 1.99.0. Source: [Rust 1.99.0 announcement](https://blog.rust-lang.org/2026/10/01/Rust-1.99.0/).
+Rust 1.99.0 became stable on 2026-10-01. Rust 1.96, 1.97, 1.98, and 1.99 are the four latest stable minor versions in this research snapshot. The project MSRV and Clippy `msrv` are set to 1.96.1; CI tests 1.96.1, 1.97.1, 1.98.1, and 1.99.0. Rust 1.97.1 is used instead of 1.97.0 because the official release list shows the patch release is available. Source: [Rust release announcements](https://blog.rust-lang.org/releases/).
 
 ## Template and lint sources
 

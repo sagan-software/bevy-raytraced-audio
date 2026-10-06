@@ -80,6 +80,10 @@ is nonzero.
 Surface setup, error handling, and the corresponding 3D version are shown in
 the [tutorial examples](docs/EXAMPLES.md).
 
+Both plugins accept `AudioBackendPreference`. `Cpu` is the default. `Auto`
+currently logs that GPU compute is unavailable and continues on CPU; the GPU
+backend is not implemented yet.
+
 For a Bevy 0.17, 0.18, or 0.20 project, set the adapter feature to `bevy_0_17`,
 `bevy_0_18`, or `bevy_0_20`. Disable default features when selecting a version.
 Use one Bevy adapter version per application. The current 0.20 adapter targets
@@ -123,7 +127,7 @@ nix run .#stress-3d
 | `bevy_0_19` | 0.19.1 | Default feature; examples use this version |
 | `bevy_0_20` | 0.20.0-rc.2 | Release-candidate compatibility only |
 
-The workspace MSRV is Rust 1.96.1. CI tests Rust 1.96.1, 1.97.0, 1.98.1, and
+The workspace MSRV is Rust 1.96.1. CI tests Rust 1.96.1, 1.97.1, 1.98.1, and
 1.99.0. The local verification host uses Rust 1.99.0. See the
 [compatibility notes](docs/COMPATIBILITY.md) for the tested matrix and release
 sources.

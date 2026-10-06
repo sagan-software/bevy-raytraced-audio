@@ -11,5 +11,6 @@ Research snapshot: 2026-10-06. Links below point to upstream sources. The local 
 - [Bevy and Rust version findings](toolchain.md)
 - [Bevy template discovery](template.md)
 - [GPU compute references](gpu-compute.md)
+- [GPU compute technical research and implementation contract](technical-bevy-gpu-compute-acoustics-2026-10-06.md)
 
 Research distinguishes upstream facts from design inferences. Re-check current releases, crate manifests, licenses, and API documentation when changing a compatibility or browser contract.

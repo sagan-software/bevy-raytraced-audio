@@ -1,11 +1,18 @@
 # GPU compute research
 
-Research date: 2026-10-04.
+Research date: 2026-10-06.
 
-The [WebGPU specification](https://gpuweb.github.io/gpuweb/) defines general GPU compute and rendering APIs. [`wgpu::ComputePipeline`](https://docs.rs/wgpu/latest/wgpu/struct.ComputePipeline.html) provides the Rust abstraction for dispatching compute shaders. These are sufficient references for a portable compute-shader prototype, but they do not establish that the project has a portable hardware ray-tracing acceleration API.
+The project does not yet implement a GPU backend. The current 2D and 3D
+adapters use the CPU tracer and keep it available without a Bevy renderer.
+The [technical GPU report](technical-bevy-gpu-compute-acoustics-2026-10-06.md)
+records the Bevy render integration, compatibility sources, proposed state
+machine, numerical limits, testing contract, and implementation roadmap.
 
-Proposed scope: GPU ray traversal in compute shaders over project-owned acceleration data, initially BVH nodes and primitive arrays. CPU remains the reference and fallback. Hardware RT extensions are outside the first design until Bevy and wgpu support and test the same behavior across target systems.
+Use an optional Bevy `RenderApp` compute backend over project-owned BVH data.
+Keep CPU processing as the default and fallback. The proposed first GPU slice
+computes direct-path transmission; first-order reflections continue on CPU.
+WebGL2 uses CPU fallback because wgpu documents that WebGL2 and GLES3 do not
+support compute shaders.
 
-Bevy's [Solari example](https://github.com/bevyengine/bevy/blob/main/examples/3d/solari.rs) is an engine renderer precedent for GPU ray-traced lighting. It is not an audio propagation implementation and does not remove the need to profile a separate acoustic workload.
-
-The API spike must verify access to Bevy's render device from a plugin without adding `bevy_render` to CPU-only builds. It must also measure upload and synchronization costs, device loss, shader compilation errors, workgroup limits, dispatch size, and the crossover point where GPU execution beats CPU for representative scenes.
+The GPU design remains experimental until it passes CPU parity, GPU resource
+recovery, readback freshness, and full transfer-inclusive performance checks.

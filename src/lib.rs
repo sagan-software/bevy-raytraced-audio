@@ -1,6 +1,14 @@
 //! Bevy-independent acoustic propagation primitives shared by the 2D and 3D adapters.
+//!
+//! `Scene2d` and `Scene3d` trace direct paths and first-order reflection paths
+//! through explicit segments and triangles. `AcousticMaterial`, `BandAbsorption`,
+//! and `BandGain` validate per-band energy absorption and amplitude transmission.
+//! The Bevy adapters consume response values without replacing Bevy's audio
+//! playback system. This crate has no Bevy dependency, so each adapter can target
+//! its own supported Bevy release.
 
 mod acoustic_material;
+mod backend_preference;
 mod band_absorption;
 mod band_energy;
 mod band_gain;
@@ -26,6 +34,7 @@ mod solver_point3d;
 mod triangle3d;
 
 pub use self::acoustic_material::AcousticMaterial;
+pub use self::backend_preference::AudioBackendPreference;
 pub use self::band_absorption::BandAbsorption;
 pub use self::band_energy::BandEnergy;
 pub use self::band_gain::BandGain;

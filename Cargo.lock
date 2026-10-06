@@ -470,6 +470,7 @@ dependencies = [
  "bevy 0.17.3",
  "bevy-raytraced-audio",
  "bevy_ecs 0.17.3",
+ "log",
  "rodio 0.20.1",
 ]
 
@@ -480,6 +481,7 @@ dependencies = [
  "bevy 0.18.1",
  "bevy-raytraced-audio",
  "bevy_ecs 0.18.1",
+ "log",
  "rodio 0.20.1",
 ]
 
@@ -490,6 +492,7 @@ dependencies = [
  "bevy 0.19.1",
  "bevy-raytraced-audio",
  "bevy_ecs 0.19.1",
+ "log",
  "rodio 0.22.2",
 ]
 
@@ -500,6 +503,7 @@ dependencies = [
  "bevy 0.20.0-rc.2",
  "bevy-raytraced-audio",
  "bevy_ecs 0.20.0-rc.2",
+ "log",
  "rodio 0.22.2",
 ]
 
