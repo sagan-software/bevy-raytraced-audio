@@ -120,7 +120,7 @@ query API in their ECS source ([0.17.3](https://github.com/bevyengine/bevy/blob/
 [0.19.1](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_ecs/src/system/query.rs),
 [0.20.0-rc.2](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_ecs/src/system/query.rs)).
 
-The latest quick benchmark measured 0.402 ms in 2D and 0.460 ms in 3D at 128
-emitters and 256 surfaces. At 256 emitters and 1,024 surfaces, it measured
-7.510 ms and 4.121 ms. These results exclude rendering, audio output, and
+The 2026-10-06 quick benchmark measured 0.381 ms in 2D and 0.436 ms in 3D at
+128 emitters and 256 surfaces. At 256 emitters and 1,024 surfaces, it measured
+4.036 ms and 4.281 ms. These results exclude rendering, audio output, and
 browser presentation, so they do not establish rendered 90 FPS.

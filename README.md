@@ -159,18 +159,19 @@ nix run .#test
 nix run .#bench -- --quick --noplot
 ```
 
-The latest local check passed 105 workspace tests and reports 99.06% line
-coverage, 98.42% region coverage, and 99.57% function coverage. Criterion
+The 2026-10-06 local check passed 107 workspace tests and reports 99.07% line
+coverage, 98.43% region coverage, and 99.57% function coverage. Criterion
 completed all 26 named workloads. These figures describe code and workload
 execution coverage; they do not certify real-time audio quality or rendered
 frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Performance status
 
-On the local Intel Core i7-8565U laptop CPU, the latest quick benchmark measured
-the 64-emitter/64-surface schedule at 90 microseconds in 2D and 107 microseconds
-in 3D. The 128/256 schedule measured 0.402 ms and 0.460 ms. The 256/1,024
-schedule measured 7.510 ms and 4.121 ms. Each pair lists 2D, then 3D.
+On the local Intel Core i7-8565U laptop CPU, the 2026-10-06 quick benchmark
+measured the 64-emitter/64-surface schedule at 93.690 microseconds in 2D and
+111.370 microseconds in 3D. The 128/256 schedule measured 0.381 ms and 0.436
+ms. The 256/1,024 schedule measured 4.036 ms and 4.281 ms. Each pair lists 2D,
+then 3D.
 
 The adapter processes fewer than 16 emitters sequentially. At 16 or more, it
 uses Bevy's parallel query when the compute task pool is initialized. Without
