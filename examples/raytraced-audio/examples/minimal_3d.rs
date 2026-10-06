@@ -112,12 +112,12 @@ fn setup(
         PlaybackSettings::LOOP.with_spatial(true),
         Mesh3d(meshes.add(Sphere::new(0.2).mesh().uv(24, 16))),
         MeshMaterial3d(materials.add(Color::srgb(0.25, 0.6, 1.0))),
-        Transform::from_xyz(-2.0, 1.0, 0.0),
+        Transform::from_xyz(2.0, 1.0, 0.0),
         MovingEmitter,
     ));
 
     commands.spawn((
-        Text::new("The emitter moves. Green/red: direct path. Cyan: reflections."),
+        Text::new("Emitter moves. Green: clear path. Red: wall attenuation. Cyan: reflections."),
         Node {
             position_type: PositionType::Absolute,
             top: px(12),

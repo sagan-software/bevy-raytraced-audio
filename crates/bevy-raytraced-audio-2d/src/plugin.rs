@@ -9,19 +9,19 @@ use bevy_raytraced_audio::{BandGain, GeometryError};
 /// Bevy plugin that traces explicit 2D acoustic surfaces after transform propagation.
 #[derive(Clone, Copy, Debug)]
 pub struct RaytracedAudio2dPlugin {
-    /// Linear sink volume multiplier applied while a direct path is occluded.
+    /// Linear sink volume fallback for a direct path with zero transmission in every band.
     occluded_gain: f32,
 }
 
 impl Default for RaytracedAudio2dPlugin {
-    /// Uses zero direct-path gain when a surface blocks the source.
+    /// Uses zero sink-volume fallback for fully opaque direct paths.
     fn default() -> Self {
         Self { occluded_gain: 0.0 }
     }
 }
 
 impl RaytracedAudio2dPlugin {
-    /// Sets the sink volume multiplier used for an occluded direct path.
+    /// Sets the sink-volume fallback for a direct path with zero transmission in every band.
     ///
     /// # Errors
     ///

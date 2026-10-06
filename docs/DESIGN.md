@@ -4,10 +4,10 @@
 
 | Crate | Responsibility | Bevy dependency |
 | --- | --- | --- |
-| `bevy-raytraced-audio` | Validated acoustic materials, geometry, 2D/3D scenes, CPU path queries, and response values. | None |
-| `bevy-raytraced-audio-2d` | 2D listener, emitter, explicit segment surfaces, plugin, and response components. | Select one `bevy_0_17` through `bevy_0_20` feature. |
-| `bevy-raytraced-audio-3d` | 3D listener, emitter, explicit triangle surfaces, plugin, and response components. | Select one `bevy_0_17` through `bevy_0_20` feature. |
-| `bevy-raytraced-audio-compat-0-17` through `-0-20` | Version-specific Bevy audio sink access. | One exact Bevy minor per crate. |
+| `bevy-raytraced-audio` | Validated acoustic materials, geometry, 2D/3D scenes, CPU path queries, and response values | None |
+| `bevy-raytraced-audio-2d` | 2D listener, emitter, explicit segment surfaces, plugin, and response components | Select one `bevy_0_17` through `bevy_0_20` feature |
+| `bevy-raytraced-audio-3d` | 3D listener, emitter, explicit triangle surfaces, plugin, and response components | Select one `bevy_0_17` through `bevy_0_20` feature |
+| `bevy-raytraced-audio-compat-0-17` through `-0-20` | Version-specific Bevy audio sink access | One exact Bevy minor per crate |
 
 The 2D and 3D crates are separate workspace members. One project uses one Bevy
 minor feature on each adapter. The core has no Bevy, renderer, or audio-device
@@ -33,19 +33,34 @@ commands.spawn((
 ```
 
 `RaytracedAudio2dPlugin::with_occluded_gain` and its 3D equivalent select the
-linear sink volume used when a direct path is occluded. The default is zero.
-Invalid gains return `GeometryError` before plugin construction.
+linear sink volume used when all three accumulated direct-path gains are zero.
+The default is zero. Invalid gains return `GeometryError` before plugin
+construction.
 
 ## Propagation model
 
-The core estimates direct visibility and first-order image-source reflections.
-It accepts 2D line segments and 3D triangles with validated coordinates and
-acoustic materials. The 2D adapter projects positions onto XY; z is render
-ordering only. The 3D adapter uses transformed world positions. Surface
-materials are explicit and do not inherit Bevy rendering materials.
+The core estimates direct transmission and first-order image-source
+reflections. It accepts 2D line segments and 3D triangles with validated
+coordinates and acoustic materials. The 2D adapter projects positions onto XY;
+z is render ordering only. The 3D adapter uses transformed world positions.
+Surface materials are explicit and do not inherit Bevy rendering materials.
 
-The response is data, not rendered sound. The Bevy adapter uses direct-path
-occlusion to scale the existing `AudioSink` or `SpatialAudioSink` volume.
+For each frequency band, `A` is the fraction of incident energy absorbed and
+`T` is the amplitude fraction transmitted. Both values are dimensionless and
+must satisfy `A + T² <= 1`. The remaining reflected energy fraction is
+`R = 1 - A - T²`. A direct ray multiplies each crossed segment or triangle's
+amplitude transmission by band. The path is marked occluded if any band gain
+differs from one.
+
+`AcousticMaterial::default()` has zero absorption and zero transmission. It
+therefore blocks direct transmission and leaves all incident energy available
+for reflection. A fully transmitting surface has zero absorption and unit
+transmission, so it contributes no reflected energy.
+
+The response is data, not rendered sound. The Bevy adapter scales the existing
+`AudioSink` or `SpatialAudioSink` volume by the arithmetic mean of the three
+accumulated amplitude gains. It uses the configured fallback only when all
+three gains are zero. The scalar sink cannot apply frequency-dependent gains.
 Reflection results are available to the caller but do not change samples.
 
 ## Per-emitter reflection paths
@@ -60,17 +75,23 @@ entries.
 
 The component is absent by default. Existing projects can add it only to
 emitters whose path data they consume. The minimal examples use it to draw
-reflection polylines. This output does not change Bevy audio samples.
-Filtering, reflection playback, late reverb, and source decoding changes are
-outside this version.
+reflection polylines. Each candidate path is omitted if another registered
+surface crosses either open reflection leg, regardless of that surface's
+transmission.
+
+The reflecting surface itself is excluded from those tests. This output does
+not change Bevy audio samples. Filtering, reflection playback,
+late reverb, and source decoding changes are outside this version.
 
 ## Update flow
 
 Each adapter reads marked emitters, listeners, and surfaces after transform
-propagation. It builds the corresponding core scene, queries direct paths and
+propagation. It clears and rebuilds a local core scene, queries direct paths and
 first-order reflections, stores a response component, and updates the built-in
-sink volume for direct occlusion. The current scene construction does not use an
-incremental BVH or scene refit.
+sink volume. The local scene retains collection capacity between frames. Core
+queries build and cache a BVH after the surfaces change; the adapter currently
+rebuilds that hierarchy each frame because it reconstructs the scene. It does
+not use change-tracked surfaces or an incremental refit.
 
 ## Backend boundary
 
@@ -85,6 +106,8 @@ not own an audio callback and does not add a second sound engine. It changes
 volume on existing sink components and leaves playback lifecycle controls with
 Bevy.
 
-The current plugin rebuilds a small scene from explicit ECS surfaces per update.
-The benchmark suite measures core path queries and adapter update schedules;
-the 90 FPS target is not guaranteed across renderers, devices, or browsers.
+The current plugin rebuilds a scene from explicit ECS surfaces per update. The
+benchmark suite measures core path queries and adapter update schedules. The
+128-emitter, 256-surface schedule measured 0.842 ms in 2D and 1.269 ms in 3D on
+the local CPU. Those results exclude rendering, audio output, and browser
+presentation, so they do not establish rendered 90 FPS.

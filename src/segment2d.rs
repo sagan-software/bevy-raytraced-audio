@@ -9,7 +9,7 @@ pub struct Segment2d {
     start: Point2,
     /// Second endpoint in meters.
     end: Point2,
-    /// Frequency-dependent absorption at this surface.
+    /// Frequency-dependent absorption and direct transmission at this surface.
     material: AcousticMaterial,
 }
 

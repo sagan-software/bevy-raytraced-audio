@@ -1,4 +1,4 @@
-//! Validation failures for coordinates, coefficients, and scene geometry.
+//! Validation failures for coordinates, material energy, coefficients, and geometry.
 
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -10,6 +10,8 @@ pub enum GeometryError {
     NonFiniteValue,
     /// A gain or absorption coefficient is outside its supported range.
     CoefficientOutOfRange,
+    /// Per-band absorption and transmitted energy exceed the incident energy.
+    MaterialEnergyExceedsIncidentEnergy,
     /// An aggregate reflected-energy value is negative.
     NegativeEnergy,
     /// A line segment has zero length or a triangle has zero area.
@@ -22,6 +24,9 @@ impl Display for GeometryError {
         let message = match self {
             Self::NonFiniteValue => "value must be finite",
             Self::CoefficientOutOfRange => "coefficient must be in the inclusive range [0, 1]",
+            Self::MaterialEnergyExceedsIncidentEnergy => {
+                "material absorption plus transmitted energy must not exceed 1"
+            }
             Self::NegativeEnergy => "reflected energy must be non-negative",
             Self::DegeneratePrimitive => "acoustic geometry primitive must have nonzero measure",
         };

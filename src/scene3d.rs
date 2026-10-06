@@ -1,10 +1,10 @@
-//! CPU acoustic propagation over explicit triangular surfaces in 3D.
+//! CPU acoustic propagation over material-bearing triangles in 3D.
 
 use crate::bvh::{BoundingVolumeHierarchy, Bounds, SceneDimensions};
 use crate::math3d::Vector3;
 use crate::{
-    AcousticResponse, BandAbsorption, BandEnergy, BandGain, Emitter3d, Listener3d, PathResponse,
-    ReflectionPath3d, ReflectionSurfaceIndex, SolverPoint3d, Triangle3d,
+    AcousticResponse, BandEnergy, BandGain, Emitter3d, Listener3d, PathResponse, ReflectionPath3d,
+    ReflectionSurfaceIndex, SolverPoint3d, Triangle3d,
 };
 use std::sync::OnceLock;
 
@@ -17,7 +17,7 @@ const PARALLEL_EPSILON: f64 = 1.0e-12;
 /// A three-dimensional acoustic scene using meter coordinates.
 #[derive(Clone, Debug, Default)]
 pub struct AcousticScene3d {
-    /// Explicitly registered opaque and reflective triangles.
+    /// Explicitly registered triangles with absorption and transmission.
     triangles: Vec<Triangle3d>,
     /// Lazily rebuilt broad-phase bounds after the last surface mutation.
     acceleration: OnceLock<SceneAcceleration3d>,
@@ -42,13 +42,16 @@ impl AcousticScene3d {
         self.triangles.len()
     }
 
-    /// Traces direct visibility and first-order reflections between two points.
+    /// Traces direct transmission and first-order reflections between two points.
     #[must_use]
     pub fn trace(&self, emitter: Emitter3d, listener: Listener3d) -> AcousticResponse {
         self.trace_internal(emitter, listener, None)
     }
 
-    /// Returns geometrically visible first-order reflections lazily in triangle insertion order; indices refer to this scene's current registration sequence.
+    /// Returns visible first-order reflections lazily in triangle insertion order.
+    ///
+    /// Any other registered triangle crossing either open reflection leg omits the path,
+    /// regardless of that triangle's direct transmission value.
     pub fn reflection_paths(
         &self,
         emitter: Emitter3d,
@@ -88,26 +91,28 @@ impl AcousticScene3d {
         let receiver = Vector3::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
 
-        // If source and listener coincide, the path has no interior where an opaque surface can block it.
+        // If source and listener coincide, the path has no interior where a surface can attenuate it.
         let acceleration = self.acceleration();
-        let direct_occluded = direct_distance > 0.0
-            && acceleration.hierarchy.any_intersection(
+        let mut direct_occluded = false;
+        let mut direct_gain = BandGain::UNITY;
+        if direct_distance > 0.0 {
+            let _traversal_completed = acceleration.hierarchy.visit_candidates_until(
                 Bounds::path_3d(
                     (source.x, source.y, source.z),
                     (receiver.x, receiver.y, receiver.z),
                 ),
                 None,
                 |index| {
-                    acceleration.triangles.get(index).is_some_and(|triangle| {
-                        path_intersects_triangle(source, receiver, triangle)
-                    })
+                    if let Some(triangle) = acceleration.triangles.get(index)
+                        && path_intersects_triangle(source, receiver, triangle)
+                    {
+                        direct_occluded |= triangle.transmission != BandGain::UNITY;
+                        direct_gain = direct_gain.multiply(triangle.transmission);
+                    }
+                    direct_gain != BandGain::ZERO
                 },
             );
-        let direct_gain = if direct_occluded {
-            BandGain::ZERO
-        } else {
-            BandGain::UNITY
-        };
+        }
         let direct = PathResponse::new(direct_distance, direct_gain, direct_occluded);
 
         // Fused accumulation preserves the existing aggregate result for every visible path.
@@ -115,14 +120,12 @@ impl AcousticScene3d {
         let mut reflected_mid = 0.0;
         let mut reflected_high = 0.0;
         for path in self.reflection_paths_between(source, receiver, direct_distance) {
-            let (distance_ratio_squared, absorption) = path.accumulation_terms();
+            let (distance_ratio_squared, reflected_fraction) = path.accumulation_terms();
             // Fused accumulation adds each reflected path with one rounding per band.
-            reflected_low =
-                distance_ratio_squared.mul_add(1.0 - f64::from(absorption.low()), reflected_low);
-            reflected_mid =
-                distance_ratio_squared.mul_add(1.0 - f64::from(absorption.mid()), reflected_mid);
+            reflected_low = distance_ratio_squared.mul_add(reflected_fraction.low(), reflected_low);
+            reflected_mid = distance_ratio_squared.mul_add(reflected_fraction.mid(), reflected_mid);
             reflected_high =
-                distance_ratio_squared.mul_add(1.0 - f64::from(absorption.high()), reflected_high);
+                distance_ratio_squared.mul_add(reflected_fraction.high(), reflected_high);
 
             // The optional path output uses the same validated candidate as aggregate energy.
             if let Some(output) = paths.as_deref_mut() {
@@ -171,12 +174,12 @@ impl AcousticScene3d {
                     SolverPoint3d::new(image_source.x, image_source.y, image_source.z),
                     reflected_distance,
                     distance_ratio * distance_ratio,
-                    reflector.absorption,
+                    reflector.reflected_fraction,
                 ))
             })
     }
 
-    /// Checks whether another registered triangle intersects an open path interior.
+    /// Checks whether another registered triangle crosses an open reflection leg.
     fn segment_is_occluded(
         &self,
         start: Vector3,
@@ -243,13 +246,16 @@ struct TriangleGeometry {
     barycentric_basis: BarycentricBasis,
     /// Triangle bounds padded by the narrow-phase barycentric tolerance.
     bounds: Bounds,
-    /// Material absorption used by reflected paths.
-    absorption: BandAbsorption,
+    /// Incident-energy fraction available for reflection in each band.
+    reflected_fraction: BandEnergy,
+    /// Material transmission applied when a direct ray crosses this triangle.
+    transmission: BandGain,
 }
 
 impl TriangleGeometry {
     /// Converts one validated triangle into reusable double-precision geometry.
     fn new(triangle: Triangle3d) -> Self {
+        let material = triangle.material();
         let [first, second, third] = triangle.vertices();
         let origin = Vector3::from_point(first);
         let second = Vector3::from_point(second);
@@ -279,7 +285,8 @@ impl TriangleGeometry {
             edge_b_length: edge_b.length(),
             barycentric_basis,
             bounds,
-            absorption: triangle.material().absorption(),
+            reflected_fraction: material.reflected_fraction(),
+            transmission: material.transmission(),
         }
     }
 

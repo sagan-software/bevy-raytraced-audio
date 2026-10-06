@@ -78,6 +78,109 @@ fn skipped_surface_does_not_reach_exact_predicate() {
     assert_eq!(predicate_calls, 0);
 }
 
+/// Candidate traversal visits overlapping branch and leaf surfaces and honors skips in both.
+#[test]
+fn candidate_visitation_covers_all_overlapping_nodes() {
+    let hierarchy = BoundingVolumeHierarchy::build(
+        (0..6).map(|index| (index, planar_bounds(fixture_x(index)))),
+        SceneDimensions::Two,
+    );
+    let query_bounds = Bounds::path_2d((-1.0, -1.0), (6.0, 1.0));
+
+    for skipped_surface in [None, Some(0), Some(3)] {
+        let mut candidates = Vec::new();
+        let completed =
+            hierarchy.visit_candidates_until(query_bounds, skipped_surface, |surface_index| {
+                candidates.push(surface_index);
+                true
+            });
+        candidates.sort_unstable();
+
+        let expected = (0..6)
+            .filter(|surface_index| Some(*surface_index) != skipped_surface)
+            .collect::<Vec<_>>();
+        assert!(completed);
+        assert_eq!(candidates, expected);
+    }
+}
+
+/// Candidate traversal stops as soon as its visitor reports that no more surfaces are needed.
+#[test]
+fn candidate_visitation_can_stop_early() {
+    let hierarchy = BoundingVolumeHierarchy::build(
+        (0..6).map(|index| (index, planar_bounds(fixture_x(index)))),
+        SceneDimensions::Two,
+    );
+    let query_bounds = Bounds::path_2d((-1.0, -1.0), (6.0, 1.0));
+    let mut visited = Vec::new();
+
+    let completed = hierarchy.visit_candidates_until(query_bounds, None, |surface_index| {
+        visited.push(surface_index);
+        false
+    });
+
+    assert!(!completed);
+    assert_eq!(visited.len(), 1);
+}
+
+/// A stop request from a nested child propagates to the root before sibling traversal.
+#[test]
+fn candidate_visitation_propagates_a_nested_stop() {
+    let hierarchy = BoundingVolumeHierarchy::build(
+        (0..6).map(|index| (index, planar_bounds(fixture_x(index)))),
+        SceneDimensions::Two,
+    );
+    let query_bounds = Bounds::path_2d((-1.0, -1.0), (6.0, 1.0));
+    let mut visited = Vec::new();
+
+    let completed = hierarchy.visit_candidates_until(query_bounds, None, |surface_index| {
+        visited.push(surface_index);
+        surface_index != 0
+    });
+
+    assert!(!completed);
+    assert!(visited.len() > 1, "the stop must originate below the root");
+    assert_eq!(visited.last(), Some(&0));
+    assert!(
+        !visited.contains(&5),
+        "the right sibling must not be visited after the stop"
+    );
+}
+
+/// Invalid node indices complete candidate traversal without calling its visitor.
+#[test]
+fn candidate_visitation_ignores_an_invalid_node_index() {
+    let hierarchy = BoundingVolumeHierarchy::build([(0, planar_bounds(0.0))], SceneDimensions::Two);
+    let mut visitor_calls = 0;
+
+    let completed =
+        hierarchy.visit_candidate_node(usize::MAX, planar_bounds(0.0), None, &mut |_| {
+            visitor_calls += 1;
+            true
+        });
+
+    assert!(completed);
+    assert_eq!(visitor_calls, 0);
+}
+
+/// An invalid private leaf range completes traversal without calling its visitor.
+#[test]
+fn candidate_visitation_ignores_an_invalid_leaf_range() {
+    let mut hierarchy =
+        BoundingVolumeHierarchy::build([(0, planar_bounds(0.0))], SceneDimensions::Two);
+    let root = hierarchy.root.expect("one surface creates a root leaf");
+    hierarchy.surface_indices.clear();
+    let mut visitor_calls = 0;
+
+    let completed = hierarchy.visit_candidate_node(root, planar_bounds(0.0), None, &mut |_| {
+        visitor_calls += 1;
+        true
+    });
+
+    assert!(completed);
+    assert_eq!(visitor_calls, 0);
+}
+
 /// The widest z axis is included only for a three-dimensional tree.
 #[test]
 fn split_axis_respects_scene_dimension() {

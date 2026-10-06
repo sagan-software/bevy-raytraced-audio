@@ -1,6 +1,6 @@
 //! First-order reflected paths in three-dimensional space.
 
-use crate::{BandAbsorption, BandEnergy, ReflectionSurfaceIndex, SolverPoint3d};
+use crate::{BandEnergy, ReflectionSurfaceIndex, SolverPoint3d};
 
 /// One visible first-order reflection returned by a three-dimensional scene query.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -15,8 +15,8 @@ pub struct ReflectionPath3d {
     distance_m: f64,
     /// Squared direct-to-reflected distance ratio used by energy accumulation.
     distance_ratio_squared: f64,
-    /// Absorbed energy fraction for the reflecting triangle in each frequency band.
-    absorption: BandAbsorption,
+    /// Incident-energy fraction available for reflection in each band.
+    reflected_fraction: BandEnergy,
 }
 
 impl ReflectionPath3d {
@@ -47,15 +47,16 @@ impl ReflectionPath3d {
     /// Returns per-band reflected energy relative to an unobstructed direct path.
     #[must_use]
     pub fn relative_energy(self) -> BandEnergy {
-        let low = self.distance_ratio_squared * (1.0 - f64::from(self.absorption.low()));
-        let mid = self.distance_ratio_squared * (1.0 - f64::from(self.absorption.mid()));
-        let high = self.distance_ratio_squared * (1.0 - f64::from(self.absorption.high()));
+        // A unitless squared distance ratio scales each band's unitless reflected-energy fraction.
+        let low = self.distance_ratio_squared * self.reflected_fraction.low();
+        let mid = self.distance_ratio_squared * self.reflected_fraction.mid();
+        let high = self.distance_ratio_squared * self.reflected_fraction.high();
         BandEnergy::from_solver(low, mid, high)
     }
 
-    /// Returns the distance ratio and absorption used to preserve fused aggregate accumulation.
-    pub(crate) const fn accumulation_terms(self) -> (f64, BandAbsorption) {
-        (self.distance_ratio_squared, self.absorption)
+    /// Returns the distance ratio and material reflectivity for aggregate accumulation.
+    pub(crate) const fn accumulation_terms(self) -> (f64, BandEnergy) {
+        (self.distance_ratio_squared, self.reflected_fraction)
     }
 
     /// Creates a path from geometry and validated scene material values.
@@ -65,7 +66,7 @@ impl ReflectionPath3d {
         image_source: SolverPoint3d,
         distance_m: f64,
         distance_ratio_squared: f64,
-        absorption: BandAbsorption,
+        reflected_fraction: BandEnergy,
     ) -> Self {
         Self {
             surface_index,
@@ -73,7 +74,7 @@ impl ReflectionPath3d {
             image_source,
             distance_m,
             distance_ratio_squared,
-            absorption,
+            reflected_fraction,
         }
     }
 }

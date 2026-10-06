@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
-description = "Bevy 3D acoustic propagation and built-in audio occlusion"
+description = "Bevy 3D acoustic propagation and built-in sink attenuation"
 readme = "README.md"
 repository.workspace = true
 

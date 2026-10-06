@@ -1,4 +1,4 @@
-//! CPU acoustic propagation over explicit line-segment surfaces in XY.
+//! CPU acoustic propagation over material-bearing line segments in XY.
 
 use crate::bvh::{BoundingVolumeHierarchy, Bounds, SceneDimensions};
 use crate::math2d::Vector2;
@@ -17,7 +17,7 @@ const PARALLEL_EPSILON: f64 = 1.0e-12;
 /// A two-dimensional acoustic scene using meter coordinates in the XY plane.
 #[derive(Clone, Debug, Default)]
 pub struct AcousticScene2d {
-    /// Explicitly registered opaque and reflective line segments.
+    /// Explicitly registered line segments with absorption and transmission.
     segments: Vec<Segment2d>,
     /// Lazily rebuilt broad-phase bounds after the last surface mutation.
     acceleration: OnceLock<BoundingVolumeHierarchy>,
@@ -42,13 +42,16 @@ impl AcousticScene2d {
         self.segments.len()
     }
 
-    /// Traces direct visibility and first-order reflections between two points.
+    /// Traces direct transmission and first-order reflections between two points.
     #[must_use]
     pub fn trace(&self, emitter: Emitter2d, listener: Listener2d) -> AcousticResponse {
         self.trace_internal(emitter, listener, None)
     }
 
-    /// Returns geometrically visible first-order reflections lazily in surface insertion order; indices refer to this scene's current registration sequence.
+    /// Returns visible first-order reflections lazily in surface insertion order.
+    ///
+    /// Any other registered segment crossing either open reflection leg omits the path, regardless
+    /// of that segment's direct transmission value.
     pub fn reflection_paths(
         &self,
         emitter: Emitter2d,
@@ -88,27 +91,30 @@ impl AcousticScene2d {
         let receiver = Vector2::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
 
-        // If source and listener coincide, the path has no interior where an opaque surface can block it.
-        let direct_occluded = direct_distance > 0.0
-            && self.acceleration().any_intersection(
+        // If source and listener coincide, the path has no interior where a surface can attenuate it.
+        let mut direct_occluded = false;
+        let mut direct_gain = BandGain::UNITY;
+        if direct_distance > 0.0 {
+            let _traversal_completed = self.acceleration().visit_candidates_until(
                 Bounds::path_2d((source.x, source.y), (receiver.x, receiver.y)),
                 None,
                 |index| {
-                    self.segments.get(index).is_some_and(|segment| {
-                        path_intersects_segment(
+                    if let Some(segment) = self.segments.get(index)
+                        && path_intersects_segment(
                             source,
                             receiver,
                             Vector2::from_point(segment.start()),
                             Vector2::from_point(segment.end()),
                         )
-                    })
+                    {
+                        let transmission = segment.material().transmission();
+                        direct_occluded |= transmission != BandGain::UNITY;
+                        direct_gain = direct_gain.multiply(transmission);
+                    }
+                    direct_gain != BandGain::ZERO
                 },
             );
-        let direct_gain = if direct_occluded {
-            BandGain::ZERO
-        } else {
-            BandGain::UNITY
-        };
+        }
         let direct = PathResponse::new(direct_distance, direct_gain, direct_occluded);
 
         // Fused accumulation preserves the existing aggregate result for every visible path.
@@ -116,14 +122,12 @@ impl AcousticScene2d {
         let mut reflected_mid = 0.0;
         let mut reflected_high = 0.0;
         for path in self.reflection_paths_between(source, receiver, direct_distance) {
-            let (distance_ratio_squared, absorption) = path.accumulation_terms();
+            let (distance_ratio_squared, reflected_fraction) = path.accumulation_terms();
             // Fused accumulation adds each reflected path with one rounding per band.
-            reflected_low =
-                distance_ratio_squared.mul_add(1.0 - f64::from(absorption.low()), reflected_low);
-            reflected_mid =
-                distance_ratio_squared.mul_add(1.0 - f64::from(absorption.mid()), reflected_mid);
+            reflected_low = distance_ratio_squared.mul_add(reflected_fraction.low(), reflected_low);
+            reflected_mid = distance_ratio_squared.mul_add(reflected_fraction.mid(), reflected_mid);
             reflected_high =
-                distance_ratio_squared.mul_add(1.0 - f64::from(absorption.high()), reflected_high);
+                distance_ratio_squared.mul_add(reflected_fraction.high(), reflected_high);
 
             // The optional path output uses the same validated candidate as aggregate energy.
             if let Some(output) = paths.as_deref_mut() {
@@ -172,12 +176,12 @@ impl AcousticScene2d {
                     SolverPoint2d::new(image_source.x, image_source.y),
                     reflected_distance,
                     distance_ratio * distance_ratio,
-                    reflector.material().absorption(),
+                    reflector.material().reflected_fraction(),
                 ))
             })
     }
 
-    /// Checks whether another registered segment intersects an open path interior.
+    /// Checks whether another registered segment crosses an open reflection leg.
     fn segment_is_occluded(
         &self,
         start: Vector2,

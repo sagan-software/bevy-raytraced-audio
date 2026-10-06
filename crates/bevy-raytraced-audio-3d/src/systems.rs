@@ -9,9 +9,9 @@ use super::surface::RaytracedAudioSurface3d;
 use super::volume::RaytracedAudioBaseVolume;
 use bevy::audio::Volume;
 use bevy::prelude::*;
-use bevy_raytraced_audio::{AcousticScene3d, Emitter3d, Listener3d, Point3, Triangle3d};
+use bevy_raytraced_audio::{AcousticScene3d, BandGain, Emitter3d, Listener3d, Point3, Triangle3d};
 
-/// Rebuilds a reusable scene, updates responses, and applies direct-path occlusion.
+/// Rebuilds a reusable scene, updates responses, and applies direct-path transmission to sinks.
 pub(super) fn update_raytraced_audio(
     mut commands: Commands<'_, '_>,
     settings: Res<'_, RaytracedAudioSettings>,
@@ -101,11 +101,14 @@ pub(super) fn update_raytraced_audio(
                 }
                 _ => current_linear,
             };
+            // The sink accepts one dimensionless linear amplitude gain, so use the bands' arithmetic mean.
             let visibility_gain = response.map_or(1.0, |response| {
-                if response.direct.is_occluded() {
+                let direct = response.direct;
+                let transmission = direct.gain();
+                if direct.is_occluded() && transmission == BandGain::ZERO {
                     settings.occluded_gain
                 } else {
-                    1.0
+                    (transmission.low() + transmission.mid() + transmission.high()) / 3.0
                 }
             });
             let output_linear = base_linear * visibility_gain;

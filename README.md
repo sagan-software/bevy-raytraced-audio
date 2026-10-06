@@ -5,12 +5,14 @@ adapters are opt-in: existing `AudioPlayer`, `PlaybackSettings`, and Bevy audio
 plugins keep controlling playback. Mark only the listeners, emitters, and
 surfaces that should take part in acoustic queries.
 
-**Current scope:** direct-path occlusion changes the existing Bevy sink volume.
-The core also reports first-order reflection paths and band energy. Attach
-`RaytracedAudioReflectionPaths2d` or `RaytracedAudioReflectionPaths3d` to an
-emitter to read its individual paths. Those reflection values do not yet modify
-audio samples. There is no GPU backend, mesh extraction, filter, or reverb DSP
-in this version.
+**Current scope:** explicit surfaces control direct-path transmission through
+Bevy's existing sink volume. Each material stores per-band absorption energy
+`A` and amplitude transmission `T`, with `A + T² <= 1`; remaining energy
+contributes to first-order reflections. The core reports reflection paths and
+energy by band. Attach `RaytracedAudioReflectionPaths2d` or
+`RaytracedAudioReflectionPaths3d` to an emitter to read individual paths. The
+adapter does not filter samples or play reflection taps. GPU tracing, mesh
+extraction, and reverb DSP are not implemented.
 
 ## Quick start
 
@@ -48,11 +50,35 @@ fn spawn_audio(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 ```
 
-The default plugin silences an emitter when an explicit surface blocks its
-direct path. Configure another linear gain with
-`RaytracedAudio2dPlugin::default().with_occluded_gain(0.15)?`. Surface setup,
-error handling, and the corresponding 3D version are shown in the
-[tutorial examples](docs/EXAMPLES.md).
+Default materials transmit zero amplitude, so the default plugin silences an
+emitter behind an opaque surface. Set a fallback linear gain for paths whose
+three accumulated band gains are zero with
+`RaytracedAudio2dPlugin::default().with_occluded_gain(0.15)?`. Other paths scale
+the sink by the arithmetic mean of their three accumulated amplitude gains.
+
+Create a partially transmitting 2D surface like this:
+
+```rust,ignore
+let material = AcousticMaterial::default()
+    .try_with_transmission(BandGain::try_new(0.2, 0.4, 0.6)?)?;
+let wall = RaytracedAudioSurface2d::new(
+    Vec2::new(0.0, -1.0),
+    Vec2::new(0.0, 1.0),
+    material,
+)?;
+```
+
+Each amplitude transmission must be in `[0, 1]`. For each band, absorption
+energy plus squared transmission amplitude must be at most `1`. The remaining
+energy contributes to first-order reflections. Direct-path transmission
+multiplies the gains of crossed surface primitives. The Bevy sink accepts one
+linear volume value, so the adapter uses the arithmetic mean of the low, mid,
+and high gains; it does not apply a frequency filter. A surface crossed by a
+reflection leg still blocks that reflection, even when its direct transmission
+is nonzero.
+
+Surface setup, error handling, and the corresponding 3D version are shown in
+the [tutorial examples](docs/EXAMPLES.md).
 
 For a Bevy 0.17, 0.18, or 0.20 project, set the adapter feature to `bevy_0_17`,
 `bevy_0_18`, or `bevy_0_20`. Disable default features when selecting a version.
@@ -69,6 +95,10 @@ first-order reflection paths in cyan and direct paths in green or red.
 ![2D tutorial and stress examples](assets/gifs/examples-2d.gif)
 
 ![3D tutorial and stress examples](assets/gifs/examples-3d.gif)
+
+These recordings predate the current wall-crossing emitter placement. The
+routes need a new visible browser review before replacement GIFs can be
+recorded.
 
 Open the [live browser gallery](https://sagan-software.github.io/bevy-raytraced-audio/)
 to run each example in its own WebAssembly page and enable browser audio with a
@@ -124,24 +154,25 @@ nix run .#test
 nix run .#bench -- --quick --noplot
 ```
 
-The latest local coverage run reports 99.06% line coverage, 98.34% region
-coverage, and 99.51% function coverage. The quick Criterion run completes all
-26 named workloads. These figures describe code and workload
+The latest local run passed 99 workspace tests and reports 98.86% line
+coverage, 98.15% region coverage, and 99.52% function coverage. Criterion
+completed all 26 named workloads. These figures describe code and workload
 execution coverage; they do not certify real-time audio quality or rendered
 frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Performance status
 
 On the local Intel Core i7-8565U laptop CPU, the 128-emitter and 256-surface
-adapter schedule measured 0.85 ms in 2D and 1.25 ms in 3D. The 256-emitter,
-1,024-surface schedule measured 9.79 ms in 2D and 13.02 ms in 3D. These
+adapter schedule measured 0.842 ms in 2D and 1.269 ms in 3D. The 256-emitter,
+1,024-surface schedule measured 9.939 ms in 2D and 13.444 ms in 3D. These
 benchmarks measure Bevy scheduling without rendering or audio output.
 
-The 90 FPS target is met by the 128-emitter and 256-surface schedule in both
-dimensions and by the 2D 256-emitter and 1,024-surface schedule. The largest
-3D schedule measures 13.02 ms. Rendered 90 FPS is not verified. The local
-browser check used SwiftShader through Xvfb and reported roughly 1–5 FPS.
-Native display validation is unavailable here. See the
+The 128-emitter and 256-surface schedule and the 2D 256-emitter and
+1,024-surface schedule fit the 11.11 ms propagation budget for 90 FPS. The
+largest 3D schedule takes 13.444 ms. These are update-schedule results, not
+rendered frame measurements. The earlier software-rendered browser check used
+SwiftShader through Xvfb and reported roughly 1–5 FPS. Native display and
+current browser playback validation are unavailable here. See the
 [measured limits and remaining coverage gaps](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Documentation

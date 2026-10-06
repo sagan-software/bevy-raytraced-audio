@@ -25,7 +25,7 @@ mod tests {
     use super::{RaytracedAudioResponse2d, RaytracedAudioSurface2d};
     use bevy::audio::{AudioSink, AudioSinkPlayback, Volume};
     use bevy::prelude::{App, Entity, Transform, TransformPlugin, Vec2};
-    use bevy_raytraced_audio::AcousticMaterial;
+    use bevy_raytraced_audio::{AcousticMaterial, BandGain};
 
     /// The plugin writes an occluded response after transforms propagate.
     #[test]
@@ -85,7 +85,11 @@ mod tests {
     {
         let mut app = App::new();
         app.add_plugins(TransformPlugin);
-        app.add_plugins(RaytracedAudio2dPlugin::default());
+        app.add_plugins(
+            RaytracedAudio2dPlugin::default()
+                .with_occluded_gain(0.25)
+                .expect("valid opaque-path fallback"),
+        );
         app.world_mut()
             .spawn((RaytracedAudioListener2d, Transform::from_xyz(1.0, 0.0, 0.0)));
         let mut sink = crate::test_support::test_audio_sink();
@@ -111,18 +115,59 @@ mod tests {
             .id();
 
         app.update();
-        assert_eq!(audio_volume(&app, emitter), 0.0);
+        assert!((audio_volume(&app, emitter) - 0.1).abs() < 1.0e-6);
 
         app.world_mut()
             .get_mut::<AudioSink>(emitter)
             .expect("emitter retains its audio sink")
             .set_volume(Volume::Linear(0.2));
         app.update();
-        assert_eq!(audio_volume(&app, emitter), 0.0);
+        assert!((audio_volume(&app, emitter) - 0.05).abs() < 1.0e-6);
 
         assert!(app.world_mut().despawn(wall));
         app.update();
         assert_eq!(audio_volume(&app, emitter), 0.2);
+        Ok(())
+    }
+
+    /// Sink volume uses the mean direct transmission when an intersected surface passes sound.
+    #[test]
+    fn sink_volume_uses_surface_transmission() -> Result<(), bevy_raytraced_audio::GeometryError> {
+        let mut app = App::new();
+        app.add_plugins(TransformPlugin);
+        app.add_plugins(RaytracedAudio2dPlugin::default());
+        app.world_mut()
+            .spawn((RaytracedAudioListener2d, Transform::from_xyz(1.0, 0.0, 0.0)));
+        let mut sink = crate::test_support::test_audio_sink();
+        sink.set_volume(Volume::Linear(0.4));
+        let emitter = app
+            .world_mut()
+            .spawn((
+                RaytracedAudioEmitter2d,
+                Transform::from_xyz(-1.0, 0.0, 0.0),
+                sink,
+            ))
+            .id();
+        app.world_mut().spawn((
+            RaytracedAudioSurface2d::new(
+                Vec2::new(0.0, -1.0),
+                Vec2::new(0.0, 1.0),
+                AcousticMaterial::default()
+                    .try_with_transmission(BandGain::try_new(0.2, 0.4, 0.6)?)?,
+            )?,
+            Transform::default(),
+        ));
+
+        app.update();
+
+        let response = app
+            .world()
+            .get::<RaytracedAudioResponse2d>(emitter)
+            .expect("the adapter publishes the per-band direct transmission")
+            .response();
+        assert!(response.direct.is_occluded());
+        assert_eq!(response.direct.gain(), BandGain::try_new(0.2, 0.4, 0.6)?);
+        assert!((audio_volume(&app, emitter) - 0.16).abs() < 1.0e-6);
         Ok(())
     }
 

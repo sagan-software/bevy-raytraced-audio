@@ -8,7 +8,7 @@ use crate::{AcousticMaterial, GeometryError, Point3};
 pub struct Triangle3d {
     /// Triangle vertices in meters and counter-clockwise winding.
     vertices: [Point3; 3],
-    /// Frequency-dependent absorption at this surface.
+    /// Frequency-dependent absorption and direct transmission at this surface.
     material: AcousticMaterial,
 }
 

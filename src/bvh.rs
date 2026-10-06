@@ -230,6 +230,19 @@ impl BoundingVolumeHierarchy {
         })
     }
 
+    /// Visits candidates until the callback returns false and reports whether traversal completed.
+    pub(crate) fn visit_candidates_until(
+        &self,
+        path_bounds: Bounds,
+        skipped_surface: Option<usize>,
+        mut visit_surface: impl FnMut(usize) -> bool,
+    ) -> bool {
+        let Some(root) = self.root else {
+            return true;
+        };
+        self.visit_candidate_node(root, path_bounds, skipped_surface, &mut visit_surface)
+    }
+
     /// Partitions one nonempty slice and appends its node after all child nodes.
     fn build_node(
         primitives: &mut [PrimitiveBounds],
@@ -328,6 +341,49 @@ impl BoundingVolumeHierarchy {
                         skipped_surface,
                         intersects_surface,
                     )
+            }
+        }
+    }
+
+    /// Visits overlapping branch and leaf candidates without allocating traversal storage.
+    fn visit_candidate_node(
+        &self,
+        node_index: usize,
+        path_bounds: Bounds,
+        skipped_surface: Option<usize>,
+        visit_surface: &mut impl FnMut(usize) -> bool,
+    ) -> bool {
+        let Some(node) = self.nodes.get(node_index) else {
+            return true;
+        };
+        if !node.bounds.overlaps(path_bounds) {
+            return true;
+        }
+
+        match &node.kind {
+            NodeKind::Leaf { indices } => {
+                if let Some(surface_indices) = self.surface_indices.get(indices.clone()) {
+                    for surface_index in surface_indices {
+                        if skipped_surface != Some(*surface_index) && !visit_surface(*surface_index)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                true
+            }
+            NodeKind::Branch {
+                surface_index,
+                left,
+                right,
+            } => {
+                if skipped_surface != Some(*surface_index) && !visit_surface(*surface_index) {
+                    return false;
+                }
+                if !self.visit_candidate_node(*left, path_bounds, skipped_surface, visit_surface) {
+                    return false;
+                }
+                self.visit_candidate_node(*right, path_bounds, skipped_surface, visit_surface)
             }
         }
     }

@@ -8,7 +8,7 @@ use bevy::{
     window::{PresentMode, WindowResolution},
     winit::WinitSettings,
 };
-use bevy_raytraced_audio::AcousticMaterial;
+use bevy_raytraced_audio::{AcousticMaterial, BandGain};
 use bevy_raytraced_audio_2d::{
     RaytracedAudio2dPlugin, RaytracedAudioEmitter2d, RaytracedAudioListener2d,
     RaytracedAudioReflectionPaths2d, RaytracedAudioResponse2d, RaytracedAudioSurface2d,
@@ -55,6 +55,13 @@ fn main() {
 
 /// Adds a camera, a looping spatial source, one listener, and one explicit wall.
 fn setup(mut commands: Commands<'_, '_>, asset_server: Res<'_, AssetServer>) {
+    // The sink reduces volume by the mean; it does not filter individual frequency bands.
+    let wall_material = AcousticMaterial::default()
+        .try_with_transmission(
+            BandGain::try_new(0.2, 0.4, 0.6).expect("transmission values are bounded"),
+        )
+        .expect("the wall material stays within its energy budget");
+
     commands.spawn((
         Camera2d,
         Projection::Orthographic(OrthographicProjection {
@@ -80,7 +87,7 @@ fn setup(mut commands: Commands<'_, '_>, asset_server: Res<'_, AssetServer>) {
         AudioPlayer::new(asset_server.load("audio/bevy-raytraced-audio-chime.wav")),
         PlaybackSettings::LOOP.with_spatial(true),
         Sprite::from_color(Color::srgb(0.25, 0.6, 1.0), Vec2::splat(0.3)),
-        Transform::from_xyz(-2.0, 0.0, 1.0),
+        Transform::from_xyz(2.0, 0.0, 1.0),
         MovingEmitter,
     ));
 
@@ -89,7 +96,7 @@ fn setup(mut commands: Commands<'_, '_>, asset_server: Res<'_, AssetServer>) {
         RaytracedAudioSurface2d::new(
             Vec2::new(0.0, -WALL_HALF_HEIGHT_METERS),
             Vec2::new(0.0, WALL_HALF_HEIGHT_METERS),
-            AcousticMaterial::default(),
+            wall_material,
         )
         .expect("the example wall has distinct finite endpoints"),
         Sprite::from_color(
@@ -100,7 +107,7 @@ fn setup(mut commands: Commands<'_, '_>, asset_server: Res<'_, AssetServer>) {
     ));
 
     commands.spawn((
-        Text::new("Arrow keys move the listener. Green/red: direct path. Cyan: reflections."),
+        Text::new("Arrows move listener. Red: attenuated. Cyan: reflections. Wall amplitude transmission: 20%, 40%, 60%; sink applies the mean."),
         Node {
             position_type: PositionType::Absolute,
             top: px(12),

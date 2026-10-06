@@ -41,6 +41,184 @@ fn crossed_segment_blocks_direct_path() -> Result<(), GeometryError> {
     Ok(())
 }
 
+/// A direct path multiplies each crossed segment's transmission independently per band.
+#[test]
+fn crossed_2d_surfaces_multiply_band_transmission() -> Result<(), GeometryError> {
+    let first_material = AcousticMaterial::new(BandAbsorption::try_new(0.1, 0.2, 0.3)?)
+        .try_with_transmission(BandGain::try_new(0.5, 0.75, 0.8)?)?;
+    let second_material = AcousticMaterial::new(BandAbsorption::try_new(0.4, 0.5, 0.6)?)
+        .try_with_transmission(BandGain::try_new(0.4, 0.25, 0.3)?)?;
+    let first_wall = Segment2d::try_new(
+        Point2::try_new(-0.5, -1.0)?,
+        Point2::try_new(-0.5, 1.0)?,
+        first_material,
+    )?;
+    let second_wall = Segment2d::try_new(
+        Point2::try_new(0.5, -1.0)?,
+        Point2::try_new(0.5, 1.0)?,
+        second_material,
+    )?;
+    let mut scene = AcousticScene2d::default();
+    scene.add_segment(first_wall);
+    scene.add_segment(second_wall);
+    for x in [10.0, 20.0, 30.0] {
+        scene.add_segment(Segment2d::try_new(
+            Point2::try_new(x, 5.0)?,
+            Point2::try_new(x, 6.0)?,
+            AcousticMaterial::default(),
+        )?);
+    }
+    let emitter = Emitter2d::new(Point2::try_new(-1.0, 0.0)?);
+    let listener = Listener2d::new(Point2::try_new(1.0, 0.0)?);
+
+    let response = scene.trace(emitter, listener);
+    let gain = response.direct.gain();
+
+    assert!(response.direct.is_occluded());
+    assert!((gain.low() - 0.2).abs() < 1.0e-6);
+    assert!((gain.mid() - 0.1875).abs() < 1.0e-6);
+    assert!((gain.high() - 0.24).abs() < 1.0e-6);
+    Ok(())
+}
+
+/// A direct path multiplies each crossed triangle's transmission independently per band.
+#[test]
+fn crossed_3d_surfaces_multiply_band_transmission() -> Result<(), GeometryError> {
+    let first_material =
+        AcousticMaterial::default().try_with_transmission(BandGain::try_new(0.5, 0.75, 1.0)?)?;
+    let second_material =
+        AcousticMaterial::default().try_with_transmission(BandGain::try_new(0.4, 0.25, 0.8)?)?;
+    let first_wall = Triangle3d::try_new(
+        [
+            Point3::try_new(-0.5, -1.0, -1.0)?,
+            Point3::try_new(-0.5, 1.0, -1.0)?,
+            Point3::try_new(-0.5, 0.0, 1.0)?,
+        ],
+        first_material,
+    )?;
+    let second_wall = Triangle3d::try_new(
+        [
+            Point3::try_new(0.5, -1.0, -1.0)?,
+            Point3::try_new(0.5, 1.0, -1.0)?,
+            Point3::try_new(0.5, 0.0, 1.0)?,
+        ],
+        second_material,
+    )?;
+    let mut scene = AcousticScene3d::default();
+    scene.add_triangle(first_wall);
+    scene.add_triangle(second_wall);
+    for x in [10.0, 20.0, 30.0] {
+        scene.add_triangle(Triangle3d::try_new(
+            [
+                Point3::try_new(x, 5.0, -1.0)?,
+                Point3::try_new(x, 6.0, -1.0)?,
+                Point3::try_new(x, 5.5, 1.0)?,
+            ],
+            AcousticMaterial::default(),
+        )?);
+    }
+    let emitter = Emitter3d::new(Point3::try_new(-1.0, 0.0, 0.0)?);
+    let listener = Listener3d::new(Point3::try_new(1.0, 0.0, 0.0)?);
+
+    let response = scene.trace(emitter, listener);
+    let gain = response.direct.gain();
+
+    assert!(response.direct.is_occluded());
+    assert!((gain.low() - 0.2).abs() < 1.0e-6);
+    assert!((gain.mid() - 0.1875).abs() < 1.0e-6);
+    assert!((gain.high() - 0.8).abs() < 1.0e-6);
+    Ok(())
+}
+
+/// A fully transmitting surface leaves the path unoccluded in both dimensions.
+#[test]
+fn fully_transmitting_surfaces_preserve_direct_visibility() -> Result<(), GeometryError> {
+    let material = AcousticMaterial::default().try_with_transmission(BandGain::UNITY)?;
+    let emitter2d = Emitter2d::new(Point2::try_new(-1.0, 0.0)?);
+    let listener2d = Listener2d::new(Point2::try_new(1.0, 0.0)?);
+    let mut scene2d = AcousticScene2d::default();
+    scene2d.add_segment(Segment2d::try_new(
+        Point2::try_new(0.0, -1.0)?,
+        Point2::try_new(0.0, 1.0)?,
+        material,
+    )?);
+    let response2d = scene2d.trace(emitter2d, listener2d);
+
+    assert!(!response2d.direct.is_occluded());
+    assert_eq!(response2d.direct.gain(), BandGain::UNITY);
+
+    let emitter3d = Emitter3d::new(Point3::try_new(-1.0, 0.0, 0.0)?);
+    let listener3d = Listener3d::new(Point3::try_new(1.0, 0.0, 0.0)?);
+    let mut scene3d = AcousticScene3d::default();
+    scene3d.add_triangle(Triangle3d::try_new(
+        [
+            Point3::try_new(0.0, -1.0, -1.0)?,
+            Point3::try_new(0.0, 1.0, -1.0)?,
+            Point3::try_new(0.0, 0.0, 1.0)?,
+        ],
+        material,
+    )?);
+    let response3d = scene3d.trace(emitter3d, listener3d);
+
+    assert!(!response3d.direct.is_occluded());
+    assert_eq!(response3d.direct.gain(), BandGain::UNITY);
+    Ok(())
+}
+
+/// A material rejects per-band absorbed and transmitted energy above the incident budget.
+#[test]
+fn material_transmission_respects_absorption_energy_budget() -> Result<(), GeometryError> {
+    for (absorption, transmission) in [
+        (
+            BandAbsorption::try_new(0.8, 0.0, 0.0)?,
+            BandGain::try_new(0.5, 0.0, 0.0)?,
+        ),
+        (
+            BandAbsorption::try_new(0.0, 0.8, 0.0)?,
+            BandGain::try_new(0.0, 0.5, 0.0)?,
+        ),
+        (
+            BandAbsorption::try_new(0.0, 0.0, 0.8)?,
+            BandGain::try_new(0.0, 0.0, 0.5)?,
+        ),
+    ] {
+        let material = AcousticMaterial::new(absorption);
+        assert_eq!(material.absorption(), absorption);
+        let result = material.try_with_transmission(transmission);
+        assert_eq!(
+            result,
+            Err(GeometryError::MaterialEnergyExceedsIncidentEnergy)
+        );
+    }
+
+    let valid_boundary = AcousticMaterial::new(BandAbsorption::try_new(0.75, 0.5, 0.0)?)
+        .try_with_transmission(BandGain::try_new(0.5, 0.5, 1.0)?);
+    assert!(valid_boundary.is_ok());
+
+    // Each band rejects positive absorption alongside full transmission, including f32 subnormals.
+    let smallest_positive_absorption = f32::from_bits(1);
+    for (absorption, transmission) in [
+        (
+            BandAbsorption::try_new(smallest_positive_absorption, 0.0, 0.0)?,
+            BandGain::try_new(1.0, 0.0, 0.0)?,
+        ),
+        (
+            BandAbsorption::try_new(0.0, smallest_positive_absorption, 0.0)?,
+            BandGain::try_new(0.0, 1.0, 0.0)?,
+        ),
+        (
+            BandAbsorption::try_new(0.0, 0.0, smallest_positive_absorption)?,
+            BandGain::try_new(0.0, 0.0, 1.0)?,
+        ),
+    ] {
+        assert_eq!(
+            AcousticMaterial::new(absorption).try_with_transmission(transmission),
+            Err(GeometryError::MaterialEnergyExceedsIncidentEnergy)
+        );
+    }
+    Ok(())
+}
+
 /// Adding and clearing surfaces after a trace keeps the public query current.
 #[test]
 fn scene_mutations_after_queries_update_both_dimensions() -> Result<(), GeometryError> {
@@ -404,6 +582,46 @@ fn absorption_reduces_reflected_energy_per_band() -> Result<(), GeometryError> {
     Ok(())
 }
 
+/// Reflected energy uses the energy left after absorption and squared transmission.
+#[test]
+fn transmission_reduces_reflected_energy_per_band() -> Result<(), GeometryError> {
+    let absorption = BandAbsorption::try_new(0.1, 0.2, 0.3)?;
+    let transmission = BandGain::try_new(0.5, 0.6, 0.7)?;
+    let material = AcousticMaterial::new(absorption).try_with_transmission(transmission)?;
+    let segment = Segment2d::try_new(
+        Point2::try_new(1.0, -1.0)?,
+        Point2::try_new(1.0, 3.0)?,
+        material,
+    )?;
+    let triangle = Triangle3d::try_new(
+        [
+            Point3::try_new(-2.0, -2.0, 1.0)?,
+            Point3::try_new(2.0, -2.0, 1.0)?,
+            Point3::try_new(0.0, 3.0, 1.0)?,
+        ],
+        material,
+    )?;
+    let mut scene2d = AcousticScene2d::default();
+    scene2d.add_segment(segment);
+    let mut scene3d = AcousticScene3d::default();
+    scene3d.add_triangle(triangle);
+    let emitter2d = Emitter2d::new(Point2::try_new(-1.0, 0.0)?);
+    let listener2d = Listener2d::new(Point2::try_new(-1.0, 2.0)?);
+    let emitter3d = Emitter3d::new(Point3::try_new(0.0, 0.0, 0.0)?);
+    let listener3d = Listener3d::new(Point3::try_new(0.0, 2.0, 0.0)?);
+
+    let energy2d = scene2d.trace(emitter2d, listener2d).reflected_energy;
+    let energy3d = scene3d.trace(emitter3d, listener3d).reflected_energy;
+
+    assert!((energy2d.low() - 0.13).abs() < 1.0e-6);
+    assert!((energy2d.mid() - 0.088).abs() < 1.0e-6);
+    assert!((energy2d.high() - 0.042).abs() < 1.0e-6);
+    assert!((energy3d.low() - 0.325).abs() < 1.0e-6);
+    assert!((energy3d.mid() - 0.22).abs() < 1.0e-6);
+    assert!((energy3d.high() - 0.105).abs() < 1.0e-6);
+    Ok(())
+}
+
 /// Non-finite coordinates are rejected at point construction.
 #[test]
 fn points_reject_non_finite_coordinates() {
@@ -475,6 +693,10 @@ fn geometry_error_messages_cover_each_category() {
     assert_eq!(
         GeometryError::CoefficientOutOfRange.to_string(),
         "coefficient must be in the inclusive range [0, 1]"
+    );
+    assert_eq!(
+        GeometryError::MaterialEnergyExceedsIncidentEnergy.to_string(),
+        "material absorption plus transmitted energy must not exceed 1"
     );
     assert_eq!(
         GeometryError::NegativeEnergy.to_string(),

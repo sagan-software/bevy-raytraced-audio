@@ -2,14 +2,14 @@
 
 use crate::{BandEnergy, BandGain};
 
-/// Distance, obstruction, and transmission for one source-to-listener path.
+/// Distance, direct transmission, and obstruction for one source-to-listener path.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PathResponse {
     /// Geometric path distance in meters.
     distance_m: f64,
-    /// Obstruction and material transmission; excludes distance attenuation.
+    /// Product of crossed-surface amplitude transmission by band; excludes distance attenuation.
     gain: BandGain,
-    /// Whether any opaque scene primitive blocks the path.
+    /// Whether any crossed scene surface attenuates at least one band.
     occluded: bool,
 }
 
@@ -20,13 +20,13 @@ impl PathResponse {
         self.distance_m
     }
 
-    /// Returns per-band transmission, excluding distance attenuation.
+    /// Returns direct-path amplitude transmission by band, excluding distance attenuation.
     #[must_use]
     pub const fn gain(self) -> BandGain {
         self.gain
     }
 
-    /// Returns whether the direct path intersects an opaque primitive.
+    /// Returns whether a crossed surface attenuates at least one transmission band.
     #[must_use]
     pub const fn is_occluded(self) -> bool {
         self.occluded
