@@ -1,31 +1,40 @@
-# Example catalogue
+# Examples
 
-Use tutorial-style Rust examples with comments that explain how each entity, component, and resource affects the sound. Each example should compile independently, use deterministic generated audio where possible, and state what the user should hear and see.
+The native and browser examples use Bevy 0.19.1. Each browser route has its own WebAssembly module and WAV asset. Select **Enable spatial audio** after the scene loads; this user gesture resumes Bevy's Web Audio context.
 
-## First set
-
-| Example | Setup and purpose | Expected demonstration |
+| Example | Scene and controls | What it demonstrates |
 | --- | --- | --- |
-| `minimal_2d` | Add the 2D plugin, one listener, a tone emitter, and a few explicit planar surfaces | Compare direct sound as an emitter passes behind a wall; render a top-down path view |
-| `minimal_3d` | Add the 3D plugin to `DefaultPlugins`, use `SpatialListener`, `AudioPlayer`, `PlaybackSettings`, and a small acoustic room | Move an emitter around a listener and hear direct attenuation and room response |
-| `brownfield_bevy_audio` | Start with ordinary Bevy playback, then opt one source and surfaces into the plugin | Show unchanged unmarked playback beside a processed source and document any source-type adapter |
-| `materials` | Compare concrete, wood, glass, and open surfaces using explicit acoustic properties | Show and hear material-dependent filtering/transmission; expose current coefficients in diagnostics |
-| `moving_door` | Change a door's transform between open and closed states | Show scene invalidation and the resulting direct-path change without rebuilding unrelated geometry |
-| `reflections_and_reverb` | Place an impulse or short tone in a room with adjustable dimensions | Compare first reflection delay, reflection directions, and late decay |
-| `ambience_and_transmission` | Place rain or room tone outside a room and a source behind a transmissive material | Separate ambient filtering, occlusion, and transmission behavior |
-| `debug_visualization` | Draw source/listener markers, current rays, reflection paths, surface IDs, and backend status | Explain the visualization is an inspection aid and pair it with A/B audio |
-| `cpu_gpu_compare` | Run matched seeded inputs through CPU and GPU backends | Show selected backend, fallback reason, numerical difference, and elapsed simulation time |
-| `many_emitters` | Add many moving emitters and static/dynamic geometry | Show budget controls, simulation age, queue pressure, and measured work scaling |
+| `minimal_2d` | One listener, a looping spatial sound, one wall; arrow keys move the listener. | Add the 2D plugin, mark a listener, emitter, and explicit surface, then read the direct-path response. |
+| `minimal_3d` | One listener, a moving sound, a finite wall made from two triangles, and a floor. | Configure Bevy spatial audio, attach a response component, and inspect direct paths. |
+| `stress_2d` | 128 moving emitters, 256 wall segments, one looping sound. | Measure the scheduled update and display a frame-rate readout. |
+| `stress_3d` | 128 moving emitters, 256 wall triangles, one looping sound. | Measure the 3D update with the same source and surface counts. |
 
-## Later examples
+Each scene has comments describing plugin setup, entity markers, material configuration, and the systems that read responses. Start with the minimal example for the dimension you need, then compare the stress scene's higher entity count.
 
-- `custom_material`: define and register project-specific material coefficients.
-- `custom_geometry`: feed geometry that is not a Bevy `Mesh3d` or standard 2D shape.
-- `seedling_graph`: route simulation results into a Firewheel graph when the optional adapter is available.
-- `no_gpu`: force CPU execution and prove startup without a render plugin or GPU device.
-- `asset_loading`: use a custom decoded source with Bevy's asset loader while retaining `PlaybackSettings` semantics.
-- `quality_profiles`: tune ray count, update rate, reflection count, and latency budget while displaying their cost.
+## Run native examples
 
-## Visual and listening review
+```sh
+nix run .#demo-2d
+nix run .#demo-3d
+nix run .#stress-2d
+nix run .#stress-3d
+```
 
-Review desktop and mobile layout only if an example includes a responsive web page. For native demos, inspect default window size, overlay readability, keyboard controls, and whether the first frame shows useful content. A visual ray display does not substitute for recorded listening comparisons or numerical tests.
+Native examples require a working display, graphics adapter, and audio output. They build in Nix even when those runtime devices are unavailable.
+
+## Build browser examples
+
+```sh
+nix run .#web-build
+nix run .#web-serve
+```
+
+The local server listens on `http://127.0.0.1:8000`. The [GitHub Pages gallery](https://sagan-software.github.io/bevy-raytraced-audio/) links to all four scenes and the Markdown book. The website build uses Bevy 0.19.1 with WebAssembly and WebGL2 features; the other Bevy versions are tested through native compatibility crates.
+
+## Observed behavior and limits
+
+In local Chromium, all routes loaded and their Web Audio contexts changed from `suspended` to `running` after a click. This verifies browser activation, not audible output on a physical device.
+
+The visible browser check used SwiftShader in Xvfb and reported about 1–5 FPS. That software-rendered result does not establish hardware browser performance. The full 90 FPS target remains unverified.
+
+The stress scenes trace every marked emitter and play one sound voice. The displayed FPS includes Bevy rendering and scheduling. The response reports direct visibility and first-order reflections, but only direct occlusion changes the Bevy sink volume.

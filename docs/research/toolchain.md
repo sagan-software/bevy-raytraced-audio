@@ -1,25 +1,19 @@
 # Bevy and Rust version findings
 
-Research date: 2026-10-04.
+Research date: 2026-10-05.
 
 ## Bevy support targets
 
-Bevy's GitHub release page listed stable 0.17.3, 0.18.1, and 0.19.1. Bevy 0.20.0-rc.2 was the current release candidate, published 2026-09-28. The 0.20 support row must remain provisional until a stable release is tested.
+The official Bevy release list contains stable 0.17.3, 0.18.1, and 0.19.1. It lists `0.20.0-rc.2`, released 2026-09-28, as the latest 0.20 build. Bevy 0.20 support therefore remains a release-candidate check until stable 0.20 is tested. Sources: [Bevy releases](https://github.com/bevyengine/bevy/releases) and the [0.20 milestone](https://github.com/bevyengine/bevy/milestone/43).
 
-Bevy root manifests declare `rust-version` 1.88.0 for 0.17.3, 1.89.0 for 0.18.1, 1.95.0 for 0.19.1, and 1.96.0 for 0.20.0-rc.2. The 0.20 release candidate sets the minimum for a project that supports every requested engine version.
+The Bevy root manifests declare Rust 1.88.0 for 0.17.3, 1.89.0 for 0.18.1, 1.95.0 for 0.19.1, and 1.96.0 for 0.20.0-rc.2. The project uses Rust 1.96.1 as its MSRV so one toolchain can build every selected engine version.
 
 ## Rust stable support
 
-Rust 1.99.0 was announced on 2026-10-01. The four latest stable minor versions are 1.96, 1.97, 1.98, and 1.99. The copied template sets workspace `rust-version` and Clippy `msrv` to 1.96.1. Keep that minimum unless Bevy 0.20 can be validated against an earlier 1.96 patch; do not promise Rust 1.95 while supporting the 0.20 release candidate.
+Rust 1.99.0 became stable on 2026-10-01. Rust 1.96, 1.97, 1.98, and 1.99 are the four latest stable minor versions in this research snapshot. The project MSRV and Clippy `msrv` are set to 1.96.1; CI tests 1.96.1, 1.97.0, 1.98.1, and 1.99.0. Source: [Rust 1.99.0 announcement](https://blog.rust-lang.org/2026/10/01/Rust-1.99.0/).
 
-## Template findings from the owner's local project notes
+## Template and lint sources
 
-The imported `sagan-software/template-bevy` at `da85b65` is a Bevy 0.19.1 networked 2D demo, edition 2024, resolver 3, workspace MSRV 1.96.1, and Clippy MSRV 1.96.1. Its Nix flake uses nixpkgs, rust-overlay, crane, and treefmt-nix with Bevy-oriented checks. Exact origin and import notes are in [template research](template.md).
+The imported [`template-bevy`](https://github.com/sagan-software/template-bevy) clone is at `da85b65ffbad26f78d23c953d379a5b0d624e1ed`. It uses Bevy 0.19.1, edition 2024, resolver 3, and Rust 1.96.1. Its Nix flake uses nixpkgs, rust-overlay, crane, and treefmt-nix. See [template research](template.md) for the retained files and import record.
 
-The template is now imported at commit `da85b65`. The scaffold's build validation is tracked separately from the planned Bevy and Rust compatibility matrix. See [template research](template.md) for the retained source and current limits.
-
-## Dylints findings
-
-The local Sagan Dylints checkout at `~/Code/github.com/sagan-software/dylints` is at HEAD `a36bee004e66257eaa8109e848ad56a8870fe131` and has pre-existing working-tree changes. Its README documents revision `483b64d83e38352994d509eacf4a56db1892f1a3` as the tested setup pin. Use that committed revision as the reproducible project dependency unless the owner chooses a later reviewed commit. Leave the dirty checkout unchanged. The README and AGENTS guide configure Dylint libraries with `[[workspace.metadata.dylint.libraries]]`, a pinned `git` revision, and a `pattern`; this is tool configuration, not an application dependency. It contains a `lints/crates/bevy` library.
-
-The current Sagan runner uses `nightly-2026-07-15` and Dylint 6.0.3. The setup must be tested against this project's actual feature matrix because a Dylint compiler can impose a narrower compiler/dependency range than stable builds.
+The Sagan Dylints clone is at `9bc21efeccdd1236e3e64cf7bb607823c60d4600`. Its README Quick Start configures `main`, selects `correctness`, `perf`, and `suspicious`, and documents Dylint 6.0.3 with `nightly-2026-07-15`. The project passes those selected groups through `nix run .#dylint`; see [Dylints integration](../DYLINTS.md).

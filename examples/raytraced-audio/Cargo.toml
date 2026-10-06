@@ -1,0 +1,39 @@
+[package]
+name = "bevy-raytraced-audio-examples"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+autobins = false
+autobenches = false
+autoexamples = false
+autotests = false
+
+[features]
+webgl2 = ["bevy/webgl2", "bevy/web"]
+
+[[example]]
+name = "minimal_2d"
+path = "examples/minimal_2d.rs"
+
+[[example]]
+name = "minimal_3d"
+path = "examples/minimal_3d.rs"
+
+[[example]]
+name = "stress_2d"
+path = "examples/stress_2d.rs"
+
+[[example]]
+name = "stress_3d"
+path = "examples/stress_3d.rs"
+
+[dependencies]
+bevy = "0.19.1"
+bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
+bevy-raytraced-audio-2d = { path = "../../crates/bevy-raytraced-audio-2d", version = "0.1.0", features = ["bevy_0_19"] }
+bevy-raytraced-audio-3d = { path = "../../crates/bevy-raytraced-audio-3d", version = "0.1.0", features = ["bevy_0_19"] }
+
+[lints]
+workspace = true

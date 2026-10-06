@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Explore four Bevy ray-traced audio examples in the browser."
+    />
+    <title>Bevy Raytraced Audio — Examples</title>
+    <link rel="stylesheet" href="./site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="./">Bevy Raytraced Audio</a>
+      <nav aria-label="Main navigation">
+        <a aria-current="page" href="./">Examples</a>
+        <a href="./docs/">Documentation</a>
+        <a href="https://github.com/sagan-software/bevy-raytraced-audio">GitHub</a>
+      </nav>
+    </header>
+
+    <main class="landing">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <h1 id="page-title">Browser examples</h1>
+          <p class="hero-description">
+            Four Bevy 0.19.1 WebAssembly scenes demonstrate 2D and 3D acoustic
+            paths, spatial playback, and stress workloads. Open a scene, then
+            enable its spatial audio.
+          </p>
+          <a class="button-link" href="#examples">Browse examples <span aria-hidden="true">↓</span></a>
+        </div>
+        <figure class="hero-art" aria-label="A sound path bending around an acoustic wall">
+          <svg viewBox="0 0 520 330" role="img" aria-labelledby="ray-title">
+            <title id="ray-title">Direct and reflected sound paths around a wall</title>
+            <path class="room" d="M30 30h460v270H30z" />
+            <path class="wall" d="M273 30v94m0 78v98" />
+            <circle class="listener" cx="112" cy="164" r="17" />
+            <circle class="source" cx="416" cy="164" r="15" />
+            <path class="ray ray-direct" d="M130 164h126M290 164h111" />
+            <path class="ray ray-reflected" d="M130 164 252 72 291 72 401 154" />
+            <path class="ray ray-reflected ray-second" d="M130 172 251 258 291 258 401 174" />
+            <path class="sound-mark" d="M78 146q-18 18 0 36m-13-49q-31 31 0 62" />
+          </svg>
+          <figcaption><span class="legend-dot listener-dot"></span> listener <span class="legend-dot source-dot"></span> emitter <span class="legend-line"></span> traced path</figcaption>
+        </figure>
+      </section>
+
+      <section class="examples-section" id="examples" aria-labelledby="examples-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="examples-title">Examples</h2>
+          </div>
+          <p>Open a demo, then enable its spatial audio.</p>
+        </div>
+        <div class="example-grid">
+          <a class="example-card" href="./examples/minimal-2d/">
+            <div class="card-top"><span class="kind">2D · Tutorial</span><span class="card-arrow" aria-hidden="true">↗</span></div>
+            <h3>Minimal 2D</h3>
+            <p>Move the listener around a wall and watch the direct path update.</p>
+            <span class="card-detail">Arrow keys move the listener</span>
+          </a>
+          <a class="example-card" href="./examples/minimal-3d/">
+            <div class="card-top"><span class="kind">3D · Tutorial</span><span class="card-arrow" aria-hidden="true">↗</span></div>
+            <h3>Minimal 3D</h3>
+            <p>Follow a spatial source as it moves around a finite triangle wall.</p>
+            <span class="card-detail">Direct path and response component</span>
+          </a>
+          <a class="example-card" href="./examples/stress-2d/">
+            <div class="card-top"><span class="kind">2D · Stress</span><span class="card-arrow" aria-hidden="true">↗</span></div>
+            <h3>128 sources in 2D</h3>
+            <p>Trace 128 moving emitters against 256 wall segments, with one sound playing.</p>
+            <span class="card-detail">Live frame-rate readout</span>
+          </a>
+          <a class="example-card" href="./examples/stress-3d/">
+            <div class="card-top"><span class="kind">3D · Stress</span><span class="card-arrow" aria-hidden="true">↗</span></div>
+            <h3>128 sources in 3D</h3>
+            <p>Trace 128 moving emitters against 256 wall triangles, with one sound playing.</p>
+            <span class="card-detail">Live frame-rate readout</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="capability-note" aria-labelledby="capability-title">
+        <div class="capability-mark" aria-hidden="true">CPU</div>
+        <div>
+          <h2 id="capability-title">What these demos implement</h2>
+          <p>CPU ray queries estimate direct occlusion and first-order reflections. The adapters adjust Bevy audio sink volume for direct-path occlusion; they do not insert reflection or reverb DSP.</p>
+        </div>
+        <a href="./docs/">Read the book <span aria-hidden="true">→</span></a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Bevy Raytraced Audio</span>
+      <a href="https://github.com/sagan-software/bevy-raytraced-audio">Source and issue tracker</a>
+    </footer>
+  </body>
+</html>

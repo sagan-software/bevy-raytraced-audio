@@ -1,0 +1,30 @@
+[package]
+name = "bevy-raytraced-audio-public-tests"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+autobins = false
+autobenches = false
+autotests = false
+
+[[test]]
+name = "public_adapters"
+path = "tests/public_adapters.rs"
+
+[[bench]]
+name = "adapter_schedule"
+path = "benches/adapter_schedule.rs"
+harness = false
+
+[dev-dependencies]
+bevy = { version = "0.19.1", default-features = false, features = ["bevy_audio"] }
+bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
+bevy-raytraced-audio-2d = { path = "../../crates/bevy-raytraced-audio-2d", version = "0.1.0", default-features = false, features = ["bevy_0_19"] }
+bevy-raytraced-audio-3d = { path = "../../crates/bevy-raytraced-audio-3d", version = "0.1.0", default-features = false, features = ["bevy_0_19"] }
+criterion.workspace = true
+rodio = { version = "0.22", default-features = false }
+
+[lints]
+workspace = true

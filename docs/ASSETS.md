@@ -1,15 +1,14 @@
-# Asset plan
+# Asset provenance
 
-No external assets have been downloaded for this research repository. Use procedural meshes, generated tones, and impulses for the first examples and tests. This keeps the acoustic fixtures reproducible and avoids unresolved rights.
+The examples use generated geometry and one locally generated audio file. The
+README GIFs are captures of the browser example pages. No external asset or
+third-party sound file is bundled.
 
-For later demos, choose assets that improve a named example and verify the exact license for each file. [Poly Haven states that its assets are CC0](https://polyhaven.com/license); its live API has separate service terms, so direct downloads with per-asset metadata are preferable to adding runtime API access. Audio sources still need an individual license review before inclusion.
+| Path | Contents | License and provenance |
+| --- | --- | --- |
+| `assets/audio/bevy-raytraced-audio-chime.wav` | 2-second mono PCM chime, 44.1 kHz, 16-bit. | Generated locally for this project; no external creator or license applies. SHA-256: `04d9e0bb1a906761e38f598084184830588221065a308fdc80ba3e91b11c0ec4`. |
+| `assets/gifs/examples-2d.gif` | Browser page captures for the minimal and stress 2D routes. | Recorded locally from the project's own WebAssembly examples; no external assets are included. |
+| `assets/gifs/examples-3d.gif` | Browser page captures for the minimal and stress 3D routes. | Recorded locally from the project's own WebAssembly examples; no external assets are included. |
 
-For each asset, record:
-
-- Relative path and content checksum.
-- Asset title, creator, source page, and direct file URL.
-- Exact license name and license URL as shown for that file.
-- Retrieval date and any edits, conversions, or generated derivatives.
-- Required attribution in `assets/ATTRIBUTION.md` even when the license does not require it.
-
-Do not bundle video extracts, commercial SDK assets, or files whose license terms are unclear. Keep audio fixtures small, deterministic, and independent of network access.
+The browser builder copies the same WAV file beside each example route. It does
+not fetch audio or geometry at runtime.

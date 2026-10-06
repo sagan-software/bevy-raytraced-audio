@@ -1,35 +1,30 @@
-# Dylints integration plan
+# Sagan Dylints
 
-The root `Cargo.toml` now selects Sagan Dylints libraries through `workspace.metadata.dylint.libraries`, pinned to revision `483b64d83e38352994d509eacf4a56db1892f1a3`. This is Dylint's workspace metadata mechanism; lint libraries are not application dependencies. The configured groups are correctness, performance, suspicious, and Bevy-specific.
+This workspace follows the [Quick Start](https://github.com/sagan-software/dylints#quick-start) in the Sagan Dylints README. It tracks upstream `main` and selects its `correctness`, `perf`, and `suspicious` groups through Cargo workspace metadata. The local checkout was updated to `9bc21efeccdd1236e3e64cf7bb607823c60d4600`; upstream has no `master` branch.
 
-The local Sagan Dylints clone is at `/home/sagan/Code/github.com/sagan-software/dylints`, HEAD `a36bee004e66257eaa8109e848ad56a8870fe131`, with pre-existing working-tree changes. Its README documents the selected commit as a tested setup pin. The local checkout was not modified. Its [setup guide](https://github.com/sagan-software/dylints/blob/483b64d83e38352994d509eacf4a56db1892f1a3/docs/usage.md) describes workspace metadata and runner usage.
+## Cargo setup
 
-## Proposed workspace configuration
+The workspace root contains:
 
 ```toml
 [[workspace.metadata.dylint.libraries]]
 git = "https://github.com/sagan-software/dylints"
-rev = "483b64d83e38352994d509eacf4a56db1892f1a3"
-pattern = [
-  "lints/correctness",
-  "lints/perf",
-  "lints/suspicious",
-  "lints/crates/bevy",
-]
+branch = "main"
+pattern = ["lints/correctness", "lints/perf", "lints/suspicious"]
 ```
 
-Keep the pin in the workspace root or root `dylint.toml`, not both. Preserve any template entries and add the Dylints library names to the appropriate unexpected-configuration allowance if the setup guide requires them.
+This config selects lints at development and CI time. It does not add a runtime dependency. The selected libraries are listed in `unexpected_cfgs` so stable Rust builds recognize their conditional attributes.
 
-## Verification
+## Verified command
 
-Run the pinned Sagan runner against the project. Before claiming the setup works, verify one known diagnostic and one clean example. Keep the Dylint compiler gate separate from the four stable Rust compatibility matrix; the documented Dylints pin uses `nightly-2026-07-15` and Dylint 6.0.3. Do not use or modify the dirty local runner checkout for validation.
-
-The fast runner completed on 2026-10-05 after receiving the native-library paths from this flake, but the imported template baseline did not pass. Clippy reported six errors, including an unused `log` dependency and two deprecated `Atomic::fetch_update` calls under the pinned nightly. The workspace check reported dependency-order issues and 269 errors across the temporary networked demo. No ray-traced audio crate exists yet, so treat this as a baseline failure and rerun after removing the demo scaffold. The custom lint setup and known-diagnostic/clean-example pair are not yet verified as a passing gate.
-
-The Dylints repository already has a Bevy-specific lint group at `lints/crates/bevy`. Use that group first. Add a new audio/Bevy lint to Dylints only after a repeated project rule has a clear, type-aware detector and positive and negative UI cases. The current research does not justify inventing a new lint.
-
-Run the pinned runner from the project root through the Nix development shell. The shell supplies the native libraries needed by Bevy's audio and windowing dependencies:
+The project wraps the Dylint Quick Start command with a Nix development shell that provides Bevy's native dependencies:
 
 ```sh
-nix develop --command nix run github:sagan-software/dylints/483b64d83e38352994d509eacf4a56db1892f1a3 -- --repo . --fast
+nix run .#dylint
 ```
+
+On 2026-10-05, this command passed all three configured groups across the workspace. It used Dylint 6.0.3 and `nightly-2026-07-15`. Run `nix run .#check` for strict Clippy, Bevy compatibility checks, tests, doctests, docs, benchmark compilation, and coverage.
+
+The separate Liamc personal-lint workflow reported Rust documentation and style findings on 2026-10-05. Those findings are tracked separately from the Sagan Quick Start gate; see the testing report and final handoff before treating that workflow as clean.
+
+Upstream lint changes can change compiler and source requirements. Review the Dylints README and rerun the version matrix when updating the branch or runner.

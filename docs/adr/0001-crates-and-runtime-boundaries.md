@@ -1,21 +1,21 @@
 ---
-status: proposed
-date: 2026-10-04
+status: accepted
+date: 2026-10-05
 ---
 
 # ADR 0001: Separate acoustic simulation from Bevy and audio backends
 
 ## Context
 
-The project must support Bevy 0.17 through 0.20, separate 2D and 3D use, CPU fallback, optional GPU acceleration, and brownfield installation. Bevy's built-in audio path uses `AudioPlayer<Source>` with `Source: Asset + Decodable`; the public sink exposes playback controls but not a general DSP graph. Bevy 0.17/0.18 and 0.19/0.20 have different `Decodable` trait shapes.
+The project must support Bevy 0.17 through 0.20, separate 2D and 3D use, optional GPU acceleration, and brownfield installation. Bevy's built-in audio path uses `AudioPlayer<Source>` with `Source: Asset + Decodable`; the public sink exposes playback controls but not a general DSP graph. Bevy 0.17/0.18 and 0.19/0.20 have different `Decodable` trait shapes.
 
-The research found both a Bevy integration around Steam Audio and a direct Firewheel/Seedling integration. It also found `omg-audio`, a closely related Rust propagation engine with an Apache-2.0 core. The current recommendation is an independent solver and API, with no source copied from either Vercidium or OMG. The owner can request a separate reuse audit before implementation. The imported template supplies the initial crate and Nix scaffold; template-specific gameplay remains temporary.
+The research found a Bevy integration around Steam Audio, Firewheel and Seedling integrations, and `omg-audio`, a related Rust propagation engine. This project uses an independent solver and API, with no source copied from Vercidium or OMG. The imported template supplied the initial Nix and Bevy scaffold; template gameplay was removed.
 
-## Proposed decision
+## Decision
 
-Keep the acoustic core independent of Bevy and audio devices. Publish distinct 2D and 3D Bevy integration crates. Treat CPU as the required reference backend and GPU compute as optional. Keep audio output integration as a separate adapter so users do not have to replace Bevy audio merely to add the plugin. Implement the solver independently unless an approved follow-up audit selects reuse of `omg-audio` code.
+Keep the acoustic core independent of Bevy and audio devices. Use distinct 2D and 3D Bevy integration crates and one compatibility crate per Bevy minor. Keep the current CPU solver as the executable reference. Keep audio output integration in the adapters so users can retain Bevy's built-in playback path.
 
-Before committing to the API, prototype the custom `Decodable` route and compare it with a Seedling/Firewheel graph node. Provide a built-in sink path only for effects Bevy can express. The full-effects API must name any source or audio-backend migration it requires.
+The current adapters adjust existing sink volume for direct-path occlusion. They expose reflection results as data. A future processed-audio API must name any source or audio-backend migration it requires and must not promise DSP through the current sink interface.
 
 ## Consequences
 
@@ -23,7 +23,7 @@ Before committing to the API, prototype the custom `Decodable` route and compare
 - Separate Bevy 2D and 3D crates keep dimensional contracts explicit.
 - Bevy-minor adapter code may be needed for `Decodable` and other API changes.
 - A single plugin cannot promise to add filter and reverb inserts to already-playing built-in audio through the current public sink API.
-- GPU failure cannot stop CPU-capable applications from producing the core simulation output.
+- GPU acceleration, device selection, and GPU-to-CPU fallback are not implemented by this decision.
 
 ## Evidence
 
@@ -33,6 +33,6 @@ Before committing to the API, prototype the custom `Decodable` route and compare
 - [AudioNimbus Bevy example](https://github.com/MaxenceMaire/audionimbus/tree/master/audionimbus/examples/bevy)
 - [Bevy Seedling](https://github.com/CorvusPrudens/bevy_seedling)
 
-## Review gate
+## Implementation status
 
-Keep this ADR proposed until the owner approves the audio migration and solver-reuse boundaries, the template is imported, and the compatibility spike passes.
+The workspace implements the independent core and adapter boundary, and the local Bevy compatibility checks pass. GPU compute and processed audio remain separate design and implementation gates.

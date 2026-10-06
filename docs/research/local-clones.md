@@ -1,10 +1,12 @@
 # Local research clones
 
-Research snapshot: 2026-10-04. The research clones are kept outside this project under `/home/sagan/Code/github.com/` so they remain available for inspection without vendoring upstream code. Most are shallow clones; `template-bevy` retains its full history. The listed commit identifies the snapshot researched; recheck the upstream repository before implementation.
+Research snapshot: 2026-10-05. The research clones are kept outside this project under `/home/sagan/Code/github.com/` so they remain available for inspection without vendoring upstream code. Most are shallow clones; `template-bevy` retains its full history. The listed commit identifies the snapshot researched; recheck the upstream repository before implementation.
 
 ## Vercidium Audio organization
 
 All 18 public repositories were cloned under `/home/sagan/Code/github.com/vercidium-audio/`. The repository inventory, purpose, and commit snapshots are in [the organization research](vercidium-audio.md).
+
+The latest fetch found no `master` branch. The local clone is clean and follows `main` at `9bc21efeccdd1236e3e64cf7bb607823c60d4600`.
 
 ## Bevy and Rust audio references
 
@@ -21,6 +23,6 @@ All 18 public repositories were cloned under `/home/sagan/Code/github.com/vercid
 | `/home/sagan/Code/github.com/AudioGroupCologne/wavefront` | `73a1f2c79e66bbd332dfc77cfc425e776703dcd9` | 2D acoustic wave simulation reference, not ray tracing. |
 | `/home/sagan/Code/github.com/sagan-software/template-bevy` | `da85b65ffbad26f78d23c953d379a5b0d624e1ed` | User's Nix-first Bevy starter, imported as the local scaffold. |
 
-The local Sagan Dylints checkout is `/home/sagan/Code/github.com/sagan-software/dylints`. It has pre-existing uncommitted user work and was not changed. The reproducible Dylints pin and integration instructions are documented in [Dylints integration](../DYLINTS.md).
+The template clone is clean and follows `main` at `da85b65ffbad26f78d23c953d379a5b0d624e1ed`; no newer upstream commit was available on 2026-10-05. Both upstream repositories use `main`, not `master`. The Sagan Dylints clone is clean and the project follows its [Quick Start integration](../DYLINTS.md).
 
-No upstream repository has been copied into this project. The current project repository contains Markdown planning and research files only.
+No upstream repository has been copied into this project. The repository contains the new Rust workspace, Bevy examples, Nix workflows, research notes, and the Markdown book.

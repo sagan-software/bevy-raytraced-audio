@@ -1,0 +1,45 @@
+name: Compatibility
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-and-bevy-matrix:
+    name: Rust ${{ matrix.rust }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [1.96.1, 1.97.0, 1.98.1, 1.99.0]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install native audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libasound2-dev libudev-dev pkg-config
+
+      - name: Install Rust ${{ matrix.rust }}
+        run: rustup toolchain install "${{ matrix.rust }}" --profile minimal
+
+      - name: Test core and all Bevy compatibility adapters
+        run: >-
+          cargo +${{ matrix.rust }} test --workspace
+          --exclude bevy-raytraced-audio-examples --locked
+
+      - name: Check selected Bevy adapter feature
+        run: |
+          for feature in bevy_0_17 bevy_0_18 bevy_0_19 bevy_0_20; do
+            cargo +${{ matrix.rust }} check --locked \
+              --package bevy-raytraced-audio-2d \
+              --package bevy-raytraced-audio-3d \
+              --no-default-features --features "$feature"
+          done

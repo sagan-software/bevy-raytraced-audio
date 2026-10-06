@@ -1,24 +1,54 @@
-# Nix plan
+# Nix workflows
 
-The imported [`template-bevy` flake](research/template.md) is the starting point. It currently builds and runs the template's networked 2D demo; it does not yet build an audio simulation crate or audio demo. Update its package and checks as the reviewed workspace is implemented.
+The flake pins the Rust toolchain, native Bevy libraries, formatters, test and
+coverage tools, benchmark dependencies, and mdBook.
 
-## Commands and expected behavior
+## Common commands
 
-- `nix build` currently builds the inherited Bevy 0.19.1 demo. It does not yet build the audio core or prove GPU-free audio operation.
-- `nix run` currently starts the template's networked 2D demonstration. After replacing that baseline, it should start a small ray-traced audio demonstration with generated sound.
-- Planned after the demo examples exist: `nix run .#demo-2d` starts the 2D tutorial.
-- Planned after the demo examples exist: `nix run .#demo-3d` starts the 3D tutorial.
-- The imported `nix flake check` checks template formatting, workspace builds, unit/integration tests, template examples, and its current coverage floor. Raise the production-code coverage requirement to at least 90% when the audio workspace is implemented. Keep GPU device tests as a separate optional check.
-- `nix develop` supplies the template's pinned Rust toolchain, Cargo tools, native linkers, Bevy lint, formatter, test, coverage, and benchmark commands.
+```sh
+nix develop
+nix build
+nix run
+nix flake check
+```
 
-## Dependencies
+`nix build` builds the CPU propagation library. `nix run` opens the 2D tutorial.
+`nix flake check` includes formatting, Clippy, Bevy feature checks, tests,
+documentation, benchmarks, coverage, and the WebAssembly example compilation.
 
-Preserve the template's Nix inputs and build system unless the audit finds a concrete incompatibility with a workspace library. Keep Rust package dependencies in Cargo files and system tools in the flake. Add only demonstrated system libraries for rodio/CPAL and GPU shader validation. Avoid making a native audio device or GPU device a build-time requirement.
+Run the named native scenes with:
 
-## GPU
+```sh
+nix run .#demo-2d
+nix run .#demo-3d
+nix run .#stress-2d
+nix run .#stress-3d
+```
 
-The final default derivation must compile without GPU hardware. Keep GPU crates/features optional. A machine without a render plugin, compatible adapter, driver, or compute capability must run the CPU path. A separate GPU check may run on a known software or hardware adapter and must record adapter identity.
+Build the browser gallery and serve it locally with:
 
-## Flake acceptance checks
+```sh
+nix run .#web-build
+nix run .#web-serve
+```
 
-Run `nix flake check`, `nix build`, and a bounded `nix run` smoke test against the imported baseline now. After the audio examples exist, test the named 2D/3D demo apps from a clean checkout. Confirm `flake.lock` is committed and no command depends on the research host's untracked paths.
+The build writes a unique generated site directory under `target/` and copies
+the book, each example's WebAssembly output, and its audio asset. The server
+listens on `http://127.0.0.1:8000`.
+
+## Build dependencies
+
+The Linux development shell supplies ALSA, udev, X11, Wayland, Vulkan loader,
+Clang, LLD, CMake, and `pkg-config`. Cargo handles Rust libraries. The browser
+build installs the lockfile-matched `wasm-bindgen-cli` 0.2.129 under ignored
+`target/web-tools` output.
+
+No command requires a GPU or an audio output device to build or test the core.
+Native examples use Bevy's renderer and the audio device available at runtime.
+
+## Release checks
+
+Before publishing, run `nix build`, `nix run .#check`, and `nix flake check`.
+Run the Pages workflow after the repository's GitHub Pages source is set to
+GitHub Actions. The workflow builds one static artifact, then deploys it through
+GitHub Pages.

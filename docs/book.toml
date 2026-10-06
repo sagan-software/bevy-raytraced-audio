@@ -1,0 +1,12 @@
+[book]
+title = "Bevy Raytraced Audio"
+authors = ["Sagan Software"]
+language = "en"
+src = "."
+
+[output.html]
+git-repository-url = "https://github.com/sagan-software/bevy-raytraced-audio"
+edit-url-template = "https://github.com/sagan-software/bevy-raytraced-audio/edit/main/docs/{path}"
+
+[build]
+build-dir = "book"

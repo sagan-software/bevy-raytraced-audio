@@ -1,93 +1,76 @@
-# Proposed architecture and API
+# Architecture and API
 
-Status: proposed for owner review. Names and signatures are sketches, not implemented API.
-
-The current implementation recommendation is to create an independent solver and public API. `omg-audio` is close Rust prior art with an Apache-2.0 core, but this repository does not copy its code. The owner may request a separate reuse audit before implementation.
-
-## Domain model
-
-Acoustic simulation estimates how geometry changes sound energy and arrival paths. An audio renderer then applies those estimates to samples. Keep geometry, propagation, audio decoding, DSP, and device output as separate boundaries.
-
-The simulation output should contain the direct path, a bounded set of early reflections, and a compact late-reverb description. It should not contain the source waveform. CPU is the deterministic reference backend. GPU compute is an optional implementation of the same simulation contract.
-
-## Candidate crate layout
+## Crates
 
 | Crate | Responsibility | Bevy dependency |
 | --- | --- | --- |
-| `bevy_raytraced_audio_core` | Materials, geometry, propagation, simulation results, CPU backend | None |
-| `bevy_raytraced_audio_2d` | Planar ECS adapter, 2D geometry and examples | Optional, selected Bevy compatibility adapter |
-| `bevy_raytraced_audio_3d` | 3D ECS adapter, mesh conversion and examples | Optional, selected Bevy compatibility adapter |
-| `bevy_raytraced_audio_gpu` | Compute backend shared by the 2D and 3D adapters | Optional Bevy render/wgpu integration |
-| `bevy_raytraced_audio_seedling` | Optional Firewheel graph integration, if the compatibility spike confirms value | Optional Seedling/Firewheel |
+| `bevy-raytraced-audio` | Validated acoustic materials, geometry, 2D/3D scenes, CPU path queries, and response values. | None |
+| `bevy-raytraced-audio-2d` | 2D listener, emitter, explicit segment surfaces, plugin, and response components. | Select one `bevy_0_17` through `bevy_0_20` feature. |
+| `bevy-raytraced-audio-3d` | 3D listener, emitter, explicit triangle surfaces, plugin, and response components. | Select one `bevy_0_17` through `bevy_0_20` feature. |
+| `bevy-raytraced-audio-compat-0-17` through `-0-20` | Version-specific Bevy audio sink access. | One exact Bevy minor per crate. |
 
-The public 2D and 3D packages remain separate. Keep backend choice as a runtime configuration when practical; avoid requiring both Bevy renderer and GPU crates for CPU-only applications. The Bevy-minor selection and crate dependency layout need a compile spike before they become a Cargo design.
+The 2D and 3D crates are separate workspace members. One project uses one Bevy
+minor feature on each adapter. The core has no Bevy, renderer, or audio-device
+dependency.
 
-## API sketch
+## Drop-in setup
 
-```rust,ignore
-app.add_plugins(
-    RaytracedAudio3dPlugin::default()
-        .with_backend(BackendPolicy::Auto)
-        .with_quality(QualityPreset::Balanced),
-);
-```
-
-An application opts entities into the simulation with components equivalent to:
+Keep Bevy's existing `AudioPlugin`, `AudioPlayer`, asset handle, and
+`PlaybackSettings`. Add the dimension-specific plugin, then mark the listener,
+selected `AudioPlayer` entity, and acoustic surfaces. Unmarked audio is not
+changed. Surface geometry is explicit; the adapter does not guess which render
+meshes are acoustic barriers.
 
 ```rust,ignore
+app.add_plugins(RaytracedAudio2dPlugin::default());
+
 commands.spawn((
-    RaytracedAudioEmitter::default(),
+    RaytracedAudioEmitter2d,
     AudioPlayer::new(sound),
-    PlaybackSettings::LOOP,
-    Transform::from_xyz(2.0, 0.0, -3.0),
-));
-
-commands.spawn((
-    Mesh3d(wall_mesh),
-    RaytracedAudioSurface::new(AcousticMaterial::Concrete),
+    PlaybackSettings::LOOP.with_spatial(true),
+    Transform::from_xyz(2.0, 0.0, 0.0),
 ));
 ```
 
-The final API must not imply that `AudioPlayer<AudioSource>` receives filtering and reverb merely because it has an emitter component. The compatibility spike decides whether the full-effects path uses a custom `Decodable` asset, a Seedling/Firewheel node, or both.
+`RaytracedAudio2dPlugin::with_occluded_gain` and its 3D equivalent select the
+linear sink volume used when a direct path is occluded. The default is zero.
+Invalid gains return `GeometryError` before plugin construction.
 
-## Compatibility levels
+## Propagation model
 
-| Path | Existing Bevy audio plugin | Existing `AudioPlayer<AudioSource>` | Effects available |
-| --- | --- | --- | --- |
-| Built-in sink integration | Kept | Kept | Direct-path gain and any other controls Bevy exposes through its sink; no general filter/reverb insert |
-| Custom `Decodable` source | Kept | Processed sources use a package source type | Depends on the decoder and per-playback parameter mechanism; preserves Bevy's playback host |
-| Seedling/Firewheel graph | Replaces Bevy's `bevy_audio` route | Existing players migrate to `SamplePlayer`/samples | Graph-based filters, reflections, and reverb |
+The core estimates direct visibility and first-order image-source reflections.
+It accepts 2D line segments and 3D triangles with validated coordinates and
+acoustic materials. The 2D adapter projects positions onto XY; z is render
+ordering only. The 3D adapter uses transformed world positions. Surface
+materials are explicit and do not inherit Bevy rendering materials.
 
-Prefer the built-in sink path for a minimal brownfield install when its controls are enough. Use the custom source or graph path for full effects. Do not force all project audio onto a second backend as a side effect of adding the acoustic plugin.
+The response is data, not rendered sound. The Bevy adapter uses direct-path
+occlusion to scale the existing `AudioSink` or `SpatialAudioSink` volume.
+Reflection results are available to the caller but do not change samples.
+Filtering, reflection playback, late reverb, and source decoding changes are
+outside this version.
 
-## Closed configuration and runtime states
+## Update flow
 
-- Requested acceleration: `Auto`, `Cpu`, or `GpuPreferred`.
-- Selected acceleration: `Cpu` or `Gpu`.
-- `Auto` and `GpuPreferred` select CPU after adapter discovery, device creation, dispatch, or shader failure. Record the reason in diagnostics.
-- CPU remains available when `bevy_render` is absent.
-- A strict GPU-required mode is not proposed until there is a concrete user need.
+Each adapter reads marked emitters, listeners, and surfaces after transform
+propagation. It builds the corresponding core scene, queries direct paths and
+first-order reflections, stores a response component, and updates the built-in
+sink volume for direct occlusion. The current scene construction does not use an
+incremental BVH or scene refit.
 
-The public material API should validate finite, bounded absorption, scattering, and transmission coefficients. A coefficient range is not a complete physical material model; model choice and frequency bands remain open until research and tests support them.
+## Backend boundary
 
-## Scene and coordinate rules
+The core uses CPU ray queries. It does not require a render plugin or GPU
+device. GPU compute and automatic GPU-to-CPU fallback are follow-up work, not
+implemented API options. The Nix and browser builds compile the CPU backend.
 
-- 2D mode traces in XY. Transform z is render ordering and does not change propagation in the first design.
-- 3D mode uses Bevy world-space positions after `GlobalTransform` application.
-- Only entities with an acoustic-surface component participate in the first release. This prevents the plugin from guessing which render meshes are acoustically relevant.
-- The 3D adapter converts supported mesh positions and indices into core geometry. It reports unsupported or malformed mesh attributes and does not silently invent faces.
-- Changed transforms or mesh handles mark geometry dirty. Rebuild cost and incremental refit behavior require benchmark evidence.
-- Surface material comes from the explicit acoustic component. A Bevy render material has no acoustic meaning by default.
-- Existing `SpatialListener` can provide listener position/orientation in the built-in audio path. The simulation's listener cardinality and multi-listener support must be explicit before implementation.
+## Runtime constraints
 
-## Threading and data flow
+Audio output and asset loading remain Bevy responsibilities. The adapter does
+not own an audio callback and does not add a second sound engine. It changes
+volume on existing sink components and leaves playback lifecycle controls with
+Bevy.
 
-Bevy systems snapshot positions, geometry changes, and configuration on the ECS thread. A bounded worker queue transfers simulation requests to CPU or GPU work. A latest-complete immutable result snapshot returns to ECS and the audio processor. Audio processing reads a stable snapshot without waiting for simulation completion.
-
-The real-time audio callback must perform no blocking wait, lock acquisition, unbounded queue growth, or allocation. It may consume bounded immutable state and process a fixed audio block. Simulation output may be stale by one or more frames; expose its age in diagnostics.
-
-## Complexity expectations
-
-For `N` geometry primitives and `R` traced samples per simulation update, an acceleration structure should aim for `O(N log N)` construction and `O(N)` storage. A BVH query is expected to approach `O(log N)` traversal on ordinary scenes, while the worst case remains `O(N)` per ray. Total query work is therefore average-case near `O(R log N)` and worst-case `O(RN)`. Record geometry count, ray count, and update time in benchmarks.
-
-For steady geometry, reuse the acceleration structure. For dynamic geometry, measure rebuilds against refits before selecting an update policy. Do not add scene complexity, buffering, or allocations without workload evidence.
+The current plugin rebuilds a small scene from explicit ECS surfaces per update.
+The benchmark suite measures core path queries and adapter update schedules;
+the 90 FPS target is not guaranteed across renderers, devices, or browsers.

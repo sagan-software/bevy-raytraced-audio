@@ -1,0 +1,18 @@
+[package]
+name = "bevy-raytraced-audio-compat-0-19"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Bevy 0.19 compatibility implementation for ray-traced audio adapters"
+
+[dependencies]
+bevy = { version = "0.19.1", default-features = false, features = ["bevy_audio"] }
+bevy_ecs = "0.19.1"
+bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
+
+[dev-dependencies]
+rodio = { version = "0.22", default-features = false }
+
+[lints]
+workspace = true
