@@ -10,7 +10,7 @@ The integration repositories are useful for product concepts and engine-facing c
 
 ## Complete repository inventory
 
-All entries were shallow-cloned under `/home/sagan/Code/github.com/vercidium-audio/`. The commit column records the checked-out HEAD at clone time.
+All entries were shallow-cloned under `$HOME/Code/github.com/vercidium-audio/`. The commit column records the checked-out HEAD at clone time.
 
 | Repository | Purpose and relevance | HEAD |
 | --- | --- | --- |

@@ -11,13 +11,30 @@ use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_raytraced_audio::{AcousticScene3d, BandGain, Emitter3d, Listener3d, Point3, Triangle3d};
 
-/// Rebuilds a reusable scene, updates responses, and applies direct-path transmission to sinks.
+/// Caches unchanged geometry, updates responses, and applies direct-path transmission to sinks.
 pub(super) fn update_raytraced_audio(
     mut commands: Commands<'_, '_>,
     settings: Res<'_, RaytracedAudioSettings>,
     listeners: Query<'_, '_, &GlobalTransform, With<RaytracedAudioListener3d>>,
     surfaces: Query<'_, '_, (&RaytracedAudioSurface3d, &GlobalTransform)>,
+    changed_surfaces: Query<
+        '_,
+        '_,
+        (),
+        (
+            With<RaytracedAudioSurface3d>,
+            Or<(Changed<RaytracedAudioSurface3d>, Changed<GlobalTransform>)>,
+        ),
+    >,
+    surfaces_without_transform: Query<
+        '_,
+        '_,
+        (),
+        (With<RaytracedAudioSurface3d>, Without<GlobalTransform>),
+    >,
+    mut removed_surfaces: RemovedComponents<'_, '_, RaytracedAudioSurface3d>,
     mut scene: Local<'_, AcousticScene3d>,
+    mut scene_is_cached: Local<'_, bool>,
     mut emitters: Query<
         '_,
         '_,
@@ -45,14 +62,27 @@ pub(super) fn update_raytraced_audio(
             .map(Listener3d::new)
     });
 
-    // Clearing retains the local scene's allocated capacity between frames.
-    scene.clear();
-    if listener.is_some() {
+    // Removal events need their own cursor because a deleted surface is absent from the changed query.
+    let surface_was_removed = removed_surfaces.read().count() != 0;
+    // A surface without a world transform is omitted from `surfaces` until its transform returns.
+    let surface_changed = !changed_surfaces.is_empty()
+        || !surfaces_without_transform.is_empty()
+        || surface_was_removed;
+
+    // Invalid listeners clear the scene; valid listeners rebuild after surface changes or missing transforms.
+    if listener.is_none() {
+        if *scene_is_cached {
+            scene.clear();
+        }
+        *scene_is_cached = false;
+    } else if !*scene_is_cached || surface_changed {
+        scene.clear();
         for (surface, transform) in &surfaces {
             if let Some(triangle) = transformed_triangle(surface.triangle, transform) {
                 scene.add_triangle(triangle);
             }
         }
+        *scene_is_cached = true;
     }
 
     // Each source uses the shared scene and owns its own response and sink volume state.

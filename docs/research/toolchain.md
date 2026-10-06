@@ -16,4 +16,4 @@ Rust 1.99.0 became stable on 2026-10-01. Rust 1.96, 1.97, 1.98, and 1.99 are the
 
 The imported [`template-bevy`](https://github.com/sagan-software/template-bevy) clone is at `da85b65ffbad26f78d23c953d379a5b0d624e1ed`. It uses Bevy 0.19.1, edition 2024, resolver 3, and Rust 1.96.1. Its Nix flake uses nixpkgs, rust-overlay, crane, and treefmt-nix. See [template research](template.md) for the retained files and import record.
 
-The Sagan Dylints clone is at `9bc21efeccdd1236e3e64cf7bb607823c60d4600`. Its README Quick Start configures `main`, selects `correctness`, `perf`, and `suspicious`, and documents Dylint 6.0.3 with `nightly-2026-07-15`. The project passes those selected groups through `nix run .#dylint`; see [Dylints integration](../DYLINTS.md).
+The Sagan Dylints clone is at `0ed03375bd1190a44720a68f189fd9ca5fdf6710`. Its README Quick Start configures `main`, selects `correctness`, `perf`, and `suspicious`, and documents Dylint 6.0.3 with `nightly-2026-07-15`. The project passes those selected groups through `nix run .#dylint`; see [Dylints integration](../DYLINTS.md).

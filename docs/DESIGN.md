@@ -108,6 +108,6 @@ Bevy.
 
 The current plugin rebuilds a scene from explicit ECS surfaces per update. The
 benchmark suite measures core path queries and adapter update schedules. The
-128-emitter, 256-surface schedule measured 0.842 ms in 2D and 1.269 ms in 3D on
+128-emitter, 256-surface schedule measured 0.814 ms in 2D and 1.157 ms in 3D on
 the local CPU. Those results exclude rendering, audio output, and browser
 presentation, so they do not establish rendered 90 FPS.

@@ -1,7 +1,7 @@
 //! Exercises both adapters through their consumer-facing Bevy APIs.
 
 use bevy::audio::{AudioSinkPlayback, SpatialAudioSink, Volume};
-use bevy::prelude::{App, Transform, TransformPlugin, Vec2, Vec3};
+use bevy::prelude::{App, GlobalTransform, Transform, TransformPlugin, Vec2, Vec3};
 use bevy_raytraced_audio::{AcousticMaterial, GeometryError, Point2, Point3};
 use bevy_raytraced_audio_2d::{
     RaytracedAudio2dPlugin, RaytracedAudioEmitter2d, RaytracedAudioListener2d,
@@ -46,6 +46,119 @@ fn public_2d_plugin_publishes_an_occluded_response() -> Result<(), GeometryError
         app.world()
             .get::<RaytracedAudioReflectionPaths2d>(emitter)
             .is_none()
+    );
+    Ok(())
+}
+
+/// 2D surfaces rebuild after movement, replacement, missing transforms, and listener recovery.
+#[test]
+fn public_2d_plugin_rebuilds_after_surface_or_listener_changes() -> Result<(), GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(RaytracedAudio2dPlugin::default());
+    let listener = app
+        .world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::from_xyz(1.0, 0.0, 0.0)))
+        .id();
+    let emitter = app
+        .world_mut()
+        .spawn((RaytracedAudioEmitter2d, Transform::from_xyz(-1.0, 0.0, 0.0)))
+        .id();
+    let wall = app
+        .world_mut()
+        .spawn((
+            RaytracedAudioSurface2d::new(
+                Vec2::new(0.0, -1.0),
+                Vec2::new(0.0, 1.0),
+                AcousticMaterial::default(),
+            )?,
+            Transform::default(),
+        ))
+        .id();
+
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse2d>(emitter)
+            .expect("the first update publishes a response")
+            .response()
+            .direct
+            .is_occluded()
+    );
+
+    app.world_mut()
+        .get_mut::<Transform>(wall)
+        .expect("the wall retains its transform")
+        .translation
+        .x = 3.0;
+    app.update();
+    assert!(
+        !app.world()
+            .get::<RaytracedAudioResponse2d>(emitter)
+            .expect("the moved wall still publishes a response")
+            .response()
+            .direct
+            .is_occluded()
+    );
+
+    *app.world_mut()
+        .get_mut::<RaytracedAudioSurface2d>(wall)
+        .expect("the wall retains its acoustic surface") = RaytracedAudioSurface2d::new(
+        Vec2::new(-3.0, -1.0),
+        Vec2::new(-3.0, 1.0),
+        AcousticMaterial::default(),
+    )?;
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse2d>(emitter)
+            .expect("a changed surface component is traced")
+            .response()
+            .direct
+            .is_occluded()
+    );
+
+    app.world_mut().entity_mut(wall).remove::<Transform>();
+    app.world_mut().entity_mut(wall).remove::<GlobalTransform>();
+    app.update();
+    assert!(
+        !app.world()
+            .get::<RaytracedAudioResponse2d>(emitter)
+            .expect("a wall without its world transform is omitted")
+            .response()
+            .direct
+            .is_occluded()
+    );
+    app.world_mut()
+        .entity_mut(wall)
+        .insert(Transform::from_xyz(3.0, 0.0, 0.0));
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse2d>(emitter)
+            .expect("tracing resumes when the wall transform returns")
+            .response()
+            .direct
+            .is_occluded()
+    );
+
+    assert!(app.world_mut().despawn(listener));
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse2d>(emitter)
+            .is_none()
+    );
+    app.world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse2d>(emitter)
+            .expect("tracing resumes when a unique listener returns")
+            .response()
+            .direct
+            .is_occluded()
     );
     Ok(())
 }
@@ -255,6 +368,125 @@ fn public_3d_plugin_publishes_an_occluded_response() -> Result<(), GeometryError
         app.world()
             .get::<RaytracedAudioReflectionPaths3d>(emitter)
             .is_none()
+    );
+    Ok(())
+}
+
+/// 3D surfaces rebuild after movement, replacement, missing transforms, and listener recovery.
+#[test]
+fn public_3d_plugin_rebuilds_after_surface_or_listener_changes() -> Result<(), GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(RaytracedAudio3dPlugin::default());
+    let listener = app
+        .world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)))
+        .id();
+    let emitter = app
+        .world_mut()
+        .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(-1.0, 0.0, 0.0)))
+        .id();
+    let wall = app
+        .world_mut()
+        .spawn((
+            RaytracedAudioSurface3d::new(
+                [
+                    Vec3::new(0.0, -1.0, -1.0),
+                    Vec3::new(0.0, 1.0, -1.0),
+                    Vec3::new(0.0, 0.0, 1.0),
+                ],
+                AcousticMaterial::default(),
+            )?,
+            Transform::default(),
+        ))
+        .id();
+
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse3d>(emitter)
+            .expect("the first update publishes a response")
+            .response()
+            .direct
+            .is_occluded()
+    );
+
+    app.world_mut()
+        .get_mut::<Transform>(wall)
+        .expect("the wall retains its transform")
+        .translation
+        .x = 3.0;
+    app.update();
+    assert!(
+        !app.world()
+            .get::<RaytracedAudioResponse3d>(emitter)
+            .expect("the moved wall still publishes a response")
+            .response()
+            .direct
+            .is_occluded()
+    );
+
+    *app.world_mut()
+        .get_mut::<RaytracedAudioSurface3d>(wall)
+        .expect("the wall retains its acoustic surface") = RaytracedAudioSurface3d::new(
+        [
+            Vec3::new(-3.0, -1.0, -1.0),
+            Vec3::new(-3.0, 1.0, -1.0),
+            Vec3::new(-3.0, 0.0, 1.0),
+        ],
+        AcousticMaterial::default(),
+    )?;
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse3d>(emitter)
+            .expect("a changed surface component is traced")
+            .response()
+            .direct
+            .is_occluded()
+    );
+
+    app.world_mut().entity_mut(wall).remove::<Transform>();
+    app.world_mut().entity_mut(wall).remove::<GlobalTransform>();
+    app.update();
+    assert!(
+        !app.world()
+            .get::<RaytracedAudioResponse3d>(emitter)
+            .expect("a wall without its world transform is omitted")
+            .response()
+            .direct
+            .is_occluded()
+    );
+    app.world_mut()
+        .entity_mut(wall)
+        .insert(Transform::from_xyz(3.0, 0.0, 0.0));
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse3d>(emitter)
+            .expect("tracing resumes when the wall transform returns")
+            .response()
+            .direct
+            .is_occluded()
+    );
+
+    assert!(app.world_mut().despawn(listener));
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse3d>(emitter)
+            .is_none()
+    );
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    app.update();
+    assert!(
+        app.world()
+            .get::<RaytracedAudioResponse3d>(emitter)
+            .expect("tracing resumes when a unique listener returns")
+            .response()
+            .direct
+            .is_occluded()
     );
     Ok(())
 }

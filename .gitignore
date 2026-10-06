@@ -1,6 +1,7 @@
 .direnv/
 /result*
 target/
+/.rustup-dylint/
 /docs/book/
 
 /.envrc.local
@@ -17,3 +18,6 @@ target/
 /.vscode/
 
 .DS_Store
+
+__pycache__/
+*.py[cod]

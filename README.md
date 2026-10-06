@@ -96,9 +96,10 @@ first-order reflection paths in cyan and direct paths in green or red.
 
 ![3D tutorial and stress examples](assets/gifs/examples-3d.gif)
 
-These recordings predate the current wall-crossing emitter placement. The
-routes need a new visible browser review before replacement GIFs can be
-recorded.
+Each GIF alternates between the tutorial route and its stress route. The
+browser review loaded all four routes, enabled each Web Audio context after a
+click, and confirmed that the gallery and stress pages fit a 390-pixel viewport
+without horizontal overflow.
 
 Open the [live browser gallery](https://sagan-software.github.io/bevy-raytraced-audio/)
 to run each example in its own WebAssembly page and enable browser audio with a
@@ -154,8 +155,8 @@ nix run .#test
 nix run .#bench -- --quick --noplot
 ```
 
-The latest local run passed 99 workspace tests and reports 98.86% line
-coverage, 98.15% region coverage, and 99.52% function coverage. Criterion
+The latest local run passed 101 workspace tests and reports 98.10% line
+coverage, 98.89% region coverage, and 99.52% function coverage. Criterion
 completed all 26 named workloads. These figures describe code and workload
 execution coverage; they do not certify real-time audio quality or rendered
 frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
@@ -163,16 +164,17 @@ frame rate. See [testing and benchmark results](docs/TESTING-AND-BENCHMARKS.md).
 ## Performance status
 
 On the local Intel Core i7-8565U laptop CPU, the 128-emitter and 256-surface
-adapter schedule measured 0.842 ms in 2D and 1.269 ms in 3D. The 256-emitter,
-1,024-surface schedule measured 9.939 ms in 2D and 13.444 ms in 3D. These
+adapter schedule measured 0.814 ms in 2D and 1.157 ms in 3D. The 256-emitter,
+1,024-surface schedule measured 9.512 ms in 2D and 12.950 ms in 3D. These
 benchmarks measure Bevy scheduling without rendering or audio output.
 
 The 128-emitter and 256-surface schedule and the 2D 256-emitter and
 1,024-surface schedule fit the 11.11 ms propagation budget for 90 FPS. The
-largest 3D schedule takes 13.444 ms. These are update-schedule results, not
-rendered frame measurements. The earlier software-rendered browser check used
-SwiftShader through Xvfb and reported roughly 1–5 FPS. Native display and
-current browser playback validation are unavailable here. See the
+largest 3D schedule takes 12.950 ms. These are update-schedule results, not
+rendered frame measurements. In a headless SwiftShader run, the sampled browser
+readouts were 334 FPS for 2D stress, 4 FPS for 3D stress, 4 FPS for minimal 2D,
+and 98 FPS for minimal 3D. Those samples do not establish steady performance
+on physical graphics hardware. See the
 [measured limits and remaining coverage gaps](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Documentation

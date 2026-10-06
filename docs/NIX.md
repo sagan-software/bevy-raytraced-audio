@@ -43,6 +43,25 @@ Clang, LLD, CMake, and `pkg-config`. Cargo handles Rust libraries. The browser
 build installs the lockfile-matched `wasm-bindgen-cli` 0.2.129 under ignored
 `target/web-tools` output.
 
+## Worktree build cache
+
+The development shell and Rust command apps enable the template's tested
+worktree cache helper and `sccache`. Ordinary commands use isolated intermediate
+directories. `nix flake check` keeps dependency artifacts in Nix derivations.
+
+For focused builds that reuse unchanged dependency artifacts across worktrees,
+run the helper explicitly:
+
+```sh
+python scripts/cargo-fast.py --lane agent-a build --locked --package bevy-raytraced-audio
+python scripts/cargo-fast.py --lane agent-a test --locked --package bevy-raytraced-audio-2d --features bevy_0_19
+```
+
+Use one lane per worker in a worktree. The helper rejects unsupported Cargo
+commands and isolates Clippy or nested compiler tooling. Do not point multiple
+workers at one shared target directory. Set `BEVY_BUILD_CACHE_DISABLE=1` before
+entering `nix develop` to disable its automatic wrappers.
+
 No command requires a GPU or an audio output device to build or test the core.
 Native examples use Bevy's renderer and the audio device available at runtime.
 

@@ -4,13 +4,13 @@
 
 The workspace contains a CPU acoustic propagation core, separate Bevy 2D and 3D adapters, four compatibility crates, native and browser examples, a Markdown book, and Nix workflows. The adapters preserve Bevy's audio plugin and player model. They use explicit acoustic surfaces, multiply per-band direct amplitude transmission, and apply the arithmetic mean to existing sink volume. Callers can attach an optional per-emitter component to read first-order reflection paths. The minimal examples draw those paths; the adapter does not apply them to audio samples.
 
-The latest local check passes 99 tests and reports 98.86% line coverage, 98.15% region coverage, and 99.52% function coverage. Criterion completed all 26 named workloads. The 128-emitter/256-surface schedule measured 0.842 ms in 2D and 1.269 ms in 3D. At 256 emitters and 1,024 surfaces, 2D measured 9.939 ms and 3D measured 13.444 ms; the 3D schedule exceeds the 11.11 ms budget. Updated browser capture, native rendering, audible output, and rendered 90 FPS remain unverified on this host.
+The latest local check passes 101 tests and reports 98.10% line coverage, 98.89% region coverage, and 99.52% function coverage. Criterion completed all 26 named workloads. The 128-emitter/256-surface schedule measured 0.814 ms in 2D and 1.157 ms in 3D. At 256 emitters and 1,024 surfaces, 2D measured 9.512 ms and 3D measured 12.950 ms; the 3D schedule exceeds the 11.11 ms budget. The four browser routes load, audio contexts resume after a click, and README route-comparison GIFs are current. Physical-device audio and steady rendered 90 FPS remain unverified.
 
 ## Publication gates
 
-- Keep the gallery and book deployment on GitHub Pages current with `main`.
+- Publish the gallery and book on GitHub Pages from `main`, then verify the deployment after each release.
 - Keep each WebAssembly example reachable by a stable route and confirm its audio context starts after a user click.
-- Refresh the 2D and 3D animated browser captures after a visible browser session is available; current GIFs predate the emitter position correction.
+- Record continuous 2D and 3D motion captures when a browser capture path can retain animation frames; the current GIFs compare tutorial and stress routes.
 
 ## Audio and performance gates
 

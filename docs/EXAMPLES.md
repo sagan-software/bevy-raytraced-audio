@@ -6,8 +6,8 @@ The Bevy native and browser examples use Bevy 0.19.1. Each browser route has its
 | --- | --- | --- |
 | `minimal_2d` | One listener; looping sound starts across a partially transmitting wall; arrow keys move the listener | 2D plugin; explicit surface; 20%, 40%, and 60% amplitude by band; mean sink gain |
 | `minimal_3d` | One listener; moving sound starts across a two-triangle opaque wall; rendered floor | 3D plugin; response and reflection-path components; clear, wall-crossing, and reflected paths |
-| `stress_2d` | 128 moving emitters; 256 wall segments; one looping sound | Scheduled update measurement; frame-rate readout |
-| `stress_3d` | 128 moving emitters; 256 wall triangles; one looping sound | 3D update measurement with the same source and surface counts |
+| `stress_2d` | 16 moving emitters; 32 wall segments; one looping sound | Scheduled update measurement; frame-rate readout |
+| `stress_3d` | 16 moving emitters; 32 wall triangles; one looping sound | 3D update measurement with the same source and surface counts |
 
 The minimal examples attach `RaytracedAudioReflectionPaths2d` or
 `RaytracedAudioReflectionPaths3d` to the emitter. The adapter fills each
@@ -49,8 +49,8 @@ The local server listens on `http://127.0.0.1:8000`. The [GitHub Pages gallery](
 
 ## Observed behavior and limits
 
-An earlier local Chromium run loaded all routes and reported Web Audio contexts changing from `suspended` to `running` after a click. This verifies browser activation, not audible output on a physical device. The minimal emitter positions changed after that recording; the current routes need a visible review and updated GIF capture.
+The local Chromium review loaded all routes and changed each Web Audio context from `suspended` to `running` after a click. This verifies browser activation, not audible output on a physical device. The README GIFs alternate between tutorial and stress routes; they do not record continuous scene motion.
 
-The earlier software-rendered browser check used SwiftShader in Xvfb and reported about 1–5 FPS. That result does not establish hardware browser performance. The full 90 FPS target remains unverified.
+The headless SwiftShader browser run sampled 334 FPS for 2D stress, 4 FPS for 3D stress, 4 FPS for minimal 2D, and 98 FPS for minimal 3D. Those software-rendered samples do not establish hardware browser performance. The full 90 FPS target remains unverified.
 
-The stress scenes trace 128 marked emitters against 256 surfaces and play one looping sound. Their measured adapter schedules take about 0.842 ms in 2D and 1.269 ms in 3D on the local CPU. The displayed FPS includes Bevy rendering and scheduling. These schedule measurements do not verify steady rendered 90 FPS. The response reports direct transmission and first-order reflections; the adapter applies direct transmission through sink volume only.
+The browser stress scenes trace 16 marked emitters against 32 surfaces and play one looping sound. Criterion also measures 128/256 and 256/1,024 source/surface adapter workloads: 0.814 ms and 1.157 ms at 128/256, respectively. The displayed FPS includes Bevy rendering and scheduling. These schedule measurements do not verify steady rendered 90 FPS. The response reports direct transmission and first-order reflections; the adapter applies direct transmission through sink volume only.

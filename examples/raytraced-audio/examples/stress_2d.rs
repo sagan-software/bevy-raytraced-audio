@@ -1,4 +1,4 @@
-//! Exercises the 2D adapter with 128 moving sources and 256 explicit wall segments.
+//! Exercises the 2D adapter with 16 moving sources and 32 explicit wall segments.
 
 use bevy::{
     audio::{AudioPlugin, SpatialScale},
@@ -16,13 +16,13 @@ use bevy_raytraced_audio_2d::{
 use std::f32::consts::TAU;
 
 /// Number of traced sources in this fixed reproducible workload.
-const EMITTER_COUNT: usize = 128;
+const EMITTER_COUNT: usize = 16;
 /// Exact `f32` representation of the fixed emitter count.
-const EMITTER_COUNT_FLOAT: f32 = 128.0;
+const EMITTER_COUNT_FLOAT: f32 = 16.0;
 /// Number of acoustic surfaces rebuilt and queried each frame.
-const SURFACE_COUNT: usize = 256;
+const SURFACE_COUNT: usize = 32;
 
-/// Starts the stress scene with one spatial audio voice and 128 traced emitters.
+/// Starts the stress scene with one spatial audio voice and 16 traced emitters.
 fn main() {
     App::new()
         .add_plugins(
@@ -106,7 +106,7 @@ fn setup(mut commands: Commands<'_, '_>, asset_server: Res<'_, AssetServer>) {
     }
 
     commands.spawn((
-        Text::new("128 moving emitters | 256 wall segments | one looping spatial sound"),
+        Text::new("16 emitters"),
         Node {
             position_type: PositionType::Absolute,
             top: px(12),
@@ -137,7 +137,7 @@ struct OrbitPhase {
 #[derive(Component)]
 struct FpsReadout;
 
-/// Moves all 128 sources together while preserving their fixed spacing.
+/// Moves all 16 sources together while preserving their fixed spacing.
 fn animate_emitters(
     time: Res<'_, Time>,
     mut emitters: Query<'_, '_, (&mut Transform, &OrbitPhase)>,

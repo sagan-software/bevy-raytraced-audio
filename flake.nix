@@ -127,6 +127,26 @@
         };
 
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+        devCargoArtifacts = craneLib.buildDepsOnly (commonArgs // { CARGO_PROFILE = ""; });
+        clippyCargoArtifacts = craneLib.buildDepsOnly (
+          commonArgs
+          // {
+            CARGO_PROFILE = "";
+            cargoExtraArgs = "--locked --all-targets --all-features";
+            cargoBuildCommand = "true";
+            doCheck = false;
+          }
+        );
+        cacheTools = [
+          pkgs.python3
+          pkgs.sccache
+          pkgs.ccache
+        ];
+        fastEnvironment = ''
+          if [ -f scripts/cargo-fast.py ] && [ "''${BEVY_BUILD_CACHE_DISABLE:-0}" != 1 ]; then
+            eval "$(python scripts/cargo-fast.py --shell-env)"
+          fi
+        '';
 
         coreLibrary = craneLib.mkCargoDerivation (
           commonArgs
@@ -246,7 +266,7 @@
         clippyCheck = craneLib.cargoClippy (
           commonArgs
           // {
-            inherit cargoArtifacts;
+            cargoArtifacts = clippyCargoArtifacts;
             cargoClippyExtraArgs = "--workspace --all-targets -- --deny warnings";
           }
         );
@@ -254,7 +274,7 @@
         testCheck = craneLib.cargoNextest (
           commonArgs
           // {
-            inherit cargoArtifacts;
+            cargoArtifacts = devCargoArtifacts;
             partitions = 1;
             partitionType = "count";
             cargoNextestExtraArgs = "--workspace --no-tests=pass";
@@ -264,7 +284,7 @@
         doctestCheck = craneLib.mkCargoDerivation (
           commonArgs
           // {
-            inherit cargoArtifacts;
+            cargoArtifacts = devCargoArtifacts;
             pname = "${packageName}-doctest";
             version = "0.1.0";
             buildPhaseCargoCommand = "cargo test --workspace --doc --locked";
@@ -276,7 +296,7 @@
         privateDocsCheck = craneLib.mkCargoDerivation (
           commonArgs
           // {
-            inherit cargoArtifacts;
+            cargoArtifacts = devCargoArtifacts;
             pname = "${packageName}-private-docs";
             version = "0.1.0";
             RUSTDOCFLAGS = "-D warnings";
@@ -299,6 +319,22 @@
               test -s "$out/index.html"
             '';
 
+        buildCacheCheck =
+          pkgs.runCommand "${packageName}-build-cache-tests"
+            {
+              nativeBuildInputs = [
+                pkgs.python3
+                pkgs.git
+              ];
+            }
+            ''
+              cp -r ${./scripts} ./scripts
+              chmod -R u+w scripts
+              patchShebangs scripts
+              python -m unittest discover -s scripts -p 'test_*.py'
+              touch "$out"
+            '';
+
         benchmarkCheck = craneLib.mkCargoDerivation (
           commonArgs
           // {
@@ -314,7 +350,7 @@
         featureMatrixCheck = craneLib.mkCargoDerivation (
           commonArgs
           // {
-            inherit cargoArtifacts;
+            cargoArtifacts = devCargoArtifacts;
             pname = "${packageName}-feature-matrix-check";
             version = "0.1.0";
             buildPhaseCargoCommand = supportedFeatureCheckCommands;
@@ -326,7 +362,7 @@
         wasmExamplesCheck = craneLib.mkCargoDerivation (
           commonArgs
           // {
-            inherit cargoArtifacts;
+            cargoArtifacts = devCargoArtifacts;
             pname = "${packageName}-wasm-examples";
             version = "0.1.0";
             buildPhaseCargoCommand = "cargo build --locked --profile wasm-release --target wasm32-unknown-unknown --package bevy-raytraced-audio-examples --examples --features webgl2";
@@ -338,7 +374,7 @@
         coverageReport = craneLib.mkCargoDerivation (
           commonArgs
           // {
-            inherit cargoArtifacts;
+            cargoArtifacts = devCargoArtifacts;
             pname = "${packageName}-coverage";
             version = "0.1.0";
             nativeBuildInputs = commonArgs.nativeBuildInputs ++ [ pkgs.cargo-llvm-cov ];
@@ -388,33 +424,37 @@
             pkgs.cargo-llvm-cov
             rustToolchain
           ]
+          ++ cacheTools
           ++ bevyNativeBuildInputs
           ++ bevyBuildInputs;
-          text = withAgentLink ''
-            export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
-            export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+          text = withAgentLink (
+            fastEnvironment
+            + ''
+              export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
+              export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
 
-            report_dir="target/llvm-cov"
-            mkdir -p "$report_dir"
+              report_dir="target/llvm-cov"
+              mkdir -p "$report_dir"
 
-            cargo llvm-cov clean --workspace
-            cargo llvm-cov --workspace --locked --remap-path-prefix --no-report
-            cargo llvm-cov report --html --output-dir "$report_dir" \
-              --ignore-filename-regex '${coverageIgnoreRegex}'
-            cargo llvm-cov report --lcov --output-path "$report_dir/lcov.info" \
-              --ignore-filename-regex '${coverageIgnoreRegex}'
-            cargo llvm-cov report --json --output-path "$report_dir/coverage.json" \
-              --ignore-filename-regex '${coverageIgnoreRegex}' \
-              --skip-functions
-            cargo llvm-cov report \
-              --fail-under-lines ${toString coverageThreshold} \
-              --ignore-filename-regex '${coverageIgnoreRegex}' \
-              --show-missing-lines
+              cargo llvm-cov clean --workspace
+              cargo llvm-cov --workspace --locked --remap-path-prefix --no-report
+              cargo llvm-cov report --html --output-dir "$report_dir" \
+                --ignore-filename-regex '${coverageIgnoreRegex}'
+              cargo llvm-cov report --lcov --output-path "$report_dir/lcov.info" \
+                --ignore-filename-regex '${coverageIgnoreRegex}'
+              cargo llvm-cov report --json --output-path "$report_dir/coverage.json" \
+                --ignore-filename-regex '${coverageIgnoreRegex}' \
+                --skip-functions
+              cargo llvm-cov report \
+                --fail-under-lines ${toString coverageThreshold} \
+                --ignore-filename-regex '${coverageIgnoreRegex}' \
+                --show-missing-lines
 
-            test -s "$report_dir/html/index.html"
-            test -s "$report_dir/lcov.info"
-            test -s "$report_dir/coverage.json"
-          '';
+              test -s "$report_dir/html/index.html"
+              test -s "$report_dir/lcov.info"
+              test -s "$report_dir/coverage.json"
+            ''
+          );
         };
 
         runChecks = pkgs.writeShellApplication {
@@ -427,21 +467,25 @@
             bevyCli
             runCoverage
           ]
+          ++ cacheTools
           ++ bevyNativeBuildInputs
           ++ bevyBuildInputs;
-          text = withAgentLink ''
-            export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
-            export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
-            treefmt --fail-on-change
-            cargo clippy --workspace --all-targets --locked -- --deny warnings
-            ${supportedFeatureCheckCommands}
-            CARGO_TARGET_DIR=target/bevy-lint bevy_lint --workspace --all-targets --locked
-            cargo nextest run --locked --workspace --no-tests=pass
-            cargo test --workspace --doc --locked
-            RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --document-private-items --locked
-            cargo bench --workspace --locked --no-run
-            run-coverage
-          '';
+          text = withAgentLink (
+            fastEnvironment
+            + ''
+              export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
+              export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+              treefmt --fail-on-change
+              cargo clippy --workspace --all-targets --locked -- --deny warnings
+              ${supportedFeatureCheckCommands}
+              CARGO_TARGET_DIR=target/bevy-lint bevy_lint --workspace --all-targets --locked
+              cargo nextest run --locked --workspace --no-tests=pass
+              cargo test --workspace --doc --locked
+              RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --document-private-items --locked
+              cargo bench --workspace --locked --no-run
+              run-coverage
+            ''
+          );
         };
 
         runDylint = pkgs.writeShellApplication {
@@ -449,8 +493,10 @@
           runtimeInputs = [
             pkgs.git
             pkgs.nix
-          ];
-          text = ''
+            rustToolchain
+          ]
+          ++ cacheTools;
+          text = fastEnvironment + ''
             exec ${pkgs.bash}/bin/bash ${./scripts/run-dylint.sh}
           '';
         };
@@ -461,13 +507,17 @@
             ensureAgentLink
             rustToolchain
           ]
+          ++ cacheTools
           ++ bevyNativeBuildInputs
           ++ bevyBuildInputs;
-          text = withAgentLink ''
-            export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
-            export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
-            cargo clippy --workspace --all-targets --locked -- --deny warnings
-          '';
+          text = withAgentLink (
+            fastEnvironment
+            + ''
+              export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
+              export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+              cargo clippy --workspace --all-targets --locked -- --deny warnings
+            ''
+          );
         };
 
         runFeatureChecks = pkgs.writeShellApplication {
@@ -476,13 +526,17 @@
             ensureAgentLink
             rustToolchain
           ]
+          ++ cacheTools
           ++ bevyNativeBuildInputs
           ++ bevyBuildInputs;
-          text = withAgentLink ''
-            export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
-            export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
-            ${supportedFeatureCheckCommands}
-          '';
+          text = withAgentLink (
+            fastEnvironment
+            + ''
+              export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
+              export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+              ${supportedFeatureCheckCommands}
+            ''
+          );
         };
 
         runTests = pkgs.writeShellApplication {
@@ -492,14 +546,18 @@
             pkgs.cargo-nextest
             rustToolchain
           ]
+          ++ cacheTools
           ++ bevyNativeBuildInputs
           ++ bevyBuildInputs;
-          text = withAgentLink ''
-            export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
-            export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
-            cargo nextest run --locked --workspace --no-tests=pass
-            cargo test --workspace --doc --locked
-          '';
+          text = withAgentLink (
+            fastEnvironment
+            + ''
+              export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
+              export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+              cargo nextest run --locked --workspace --no-tests=pass
+              cargo test --workspace --doc --locked
+            ''
+          );
         };
 
         runBenchmarks = pkgs.writeShellApplication {
@@ -508,14 +566,18 @@
             ensureAgentLink
             rustToolchain
           ]
+          ++ cacheTools
           ++ bevyNativeBuildInputs
           ++ bevyBuildInputs;
-          text = withAgentLink ''
-            export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
-            export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
-            cargo bench --package bevy-raytraced-audio --bench propagation --locked -- "$@"
-            cargo bench --package bevy-raytraced-audio-public-tests --bench adapter_schedule --locked -- "$@"
-          '';
+          text = withAgentLink (
+            fastEnvironment
+            + ''
+              export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
+              export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+              cargo bench --package bevy-raytraced-audio --bench propagation --locked -- "$@"
+              cargo bench --package bevy-raytraced-audio-public-tests --bench adapter_schedule --locked -- "$@"
+            ''
+          );
         };
 
         runExample =
@@ -526,13 +588,17 @@
               ensureAgentLink
               rustToolchain
             ]
+            ++ cacheTools
             ++ bevyNativeBuildInputs
             ++ bevyBuildInputs;
-            text = withAgentLink ''
-              export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
-              export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
-              cargo run --locked --package bevy-raytraced-audio-examples --example '${exampleName}' -- "$@"
-            '';
+            text = withAgentLink (
+              fastEnvironment
+              + ''
+                export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
+                export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+                cargo run --locked --package bevy-raytraced-audio-examples --example '${exampleName}' -- "$@"
+              ''
+            );
           };
 
         runWebBuild = pkgs.writeShellApplication {
@@ -546,13 +612,17 @@
             pkgs.mdbook
             rustToolchain
           ]
+          ++ cacheTools
           ++ bevyNativeBuildInputs
           ++ bevyBuildInputs;
-          text = withAgentLink ''
-            export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
-            export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
-            exec bash scripts/build-web-site.sh
-          '';
+          text = withAgentLink (
+            fastEnvironment
+            + ''
+              export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
+              export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+              exec bash scripts/build-web-site.sh
+            ''
+          );
         };
 
         runWebServe = pkgs.writeShellApplication {
@@ -610,6 +680,7 @@
             };
 
         checks = {
+          build-cache = buildCacheCheck;
           fmt = formatCheck;
           clippy = clippyCheck;
           bevy-lint = bevyLintCheck;
@@ -641,11 +712,13 @@
             treefmtEval.config.build.wrapper
             rustToolchain
           ]
+          ++ cacheTools
           ++ bevyBuildInputs;
           shellHook = ''
             ${aiSupport.shellHook}
             export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
             export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+            ${fastEnvironment}
           '';
         };
       }

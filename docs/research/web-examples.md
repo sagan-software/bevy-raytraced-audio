@@ -1,6 +1,6 @@
 # Browser examples and GitHub Pages
 
-Research date: 2026-10-05.
+Research date: 2026-10-06.
 
 ## Bevy browser support
 
@@ -18,9 +18,9 @@ The examples use Bevy's built-in audio plugin and a generated WAV asset. The pag
 
 Cargo.lock pins `wasm-bindgen` 0.2.129. The web build installs that CLI version in ignored `target/` output, compiles four example targets, binds each module separately, copies the audio asset to each route, and builds the Markdown book.
 
-The local `nix run .#web-build` completed and produced the gallery, book, and four browser routes. The GitHub Pages workflow builds one static artifact and deploys it with GitHub's Pages actions. The repository Pages source must be set to GitHub Actions before its first deployment.
+The local `nix run .#web-build` completed and produced the gallery, book, and four browser routes. The GitHub Pages workflow builds one static artifact and deploys it with GitHub's Pages actions. The published gallery links to each route and the book.
 
-The local Chromium check used SwiftShader through Xvfb, where the examples displayed roughly 1–5 FPS. This software-rendered value does not establish hardware browser performance. The 90 FPS target remains unverified.
+The browser stress routes use 16 emitters and 32 surfaces. Local Chromium loaded all routes, and each audio context changed to `running` after a click. The gallery and stress pages had no horizontal overflow at a 390-pixel viewport. A headless SwiftShader run sampled 334 FPS for 2D stress, 4 FPS for 3D stress, 4 FPS for minimal 2D, and 98 FPS for minimal 3D. These samples do not establish physical-device performance; steady 90 FPS remains unverified.
 
 ## Sources
 

@@ -1,4 +1,4 @@
-//! Exercises the 3D adapter with 128 moving sources and 256 explicit triangles.
+//! Exercises the 3D adapter with 16 moving sources and 32 explicit triangles.
 
 use bevy::{
     audio::{AudioPlugin, SpatialScale},
@@ -15,13 +15,13 @@ use bevy_raytraced_audio_3d::{
 use std::f32::consts::TAU;
 
 /// Number of traced sources in this fixed reproducible workload.
-const EMITTER_COUNT: usize = 128;
+const EMITTER_COUNT: usize = 16;
 /// Exact `f32` representation of the fixed emitter count.
-const EMITTER_COUNT_FLOAT: f32 = 128.0;
+const EMITTER_COUNT_FLOAT: f32 = 16.0;
 /// Number of acoustic surfaces rebuilt and queried each frame.
-const SURFACE_COUNT: usize = 256;
+const SURFACE_COUNT: usize = 32;
 
-/// Starts the stress scene with one spatial audio voice and 128 traced emitters.
+/// Starts the stress scene with one spatial audio voice and 16 traced emitters.
 fn main() {
     App::new()
         .add_plugins(
@@ -52,7 +52,7 @@ fn main() {
         .run();
 }
 
-/// Creates a listener, moving source ring, camera, lights, and triangle field.
+/// Creates a listener, moving source ring, camera, floor, and triangle field.
 fn setup(
     mut commands: Commands<'_, '_>,
     asset_server: Res<'_, AssetServer>,
@@ -61,22 +61,35 @@ fn setup(
 ) {
     commands.spawn((
         Camera3d::default(),
+        // Small low-detail stress markers gain little from multisampling.
+        Msaa::Off,
         Transform::from_xyz(12.0, 10.0, 15.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
-    commands.spawn((PointLight::default(), Transform::from_xyz(5.0, 12.0, 6.0)));
     commands.spawn((
         Mesh3d(meshes.add(Plane3d::default().mesh().size(20.0, 20.0))),
-        MeshMaterial3d(materials.add(Color::srgb(0.18, 0.2, 0.24))),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: Color::srgb(0.18, 0.2, 0.24),
+            unlit: true,
+            ..default()
+        })),
     ));
     commands.spawn((
         RaytracedAudioListener3d,
         Mesh3d(meshes.add(Sphere::new(0.22).mesh().uv(12, 8))),
-        MeshMaterial3d(materials.add(Color::srgb(0.2, 0.95, 0.55))),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: Color::srgb(0.2, 0.95, 0.55),
+            unlit: true,
+            ..default()
+        })),
         Transform::from_xyz(0.0, 0.3, 0.0),
     ));
 
     let emitter_mesh = meshes.add(Sphere::new(0.12).mesh().uv(8, 6));
-    let emitter_material = materials.add(Color::srgb(0.25, 0.6, 1.0));
+    let emitter_material = materials.add(StandardMaterial {
+        base_color: Color::srgb(0.25, 0.6, 1.0),
+        unlit: true,
+        ..default()
+    });
     for emitter_index in 0..EMITTER_COUNT {
         let phase = TAU * (small_index(emitter_index) / EMITTER_COUNT_FLOAT);
         let mut emitter = commands.spawn((
@@ -94,9 +107,13 @@ fn setup(
         }
     }
 
-    // The small triangles are deterministic and share a material and mesh handle.
+    // Each trace triangle has a small visual marker with shared mesh and material assets.
     let wall_mesh = meshes.add(Cuboid::new(0.025, 0.24, 0.24));
-    let wall_material = materials.add(Color::srgb(0.95, 0.48, 0.2));
+    let wall_material = materials.add(StandardMaterial {
+        base_color: Color::srgb(0.95, 0.48, 0.2),
+        unlit: true,
+        ..default()
+    });
     for surface_index in 0..SURFACE_COUNT {
         let column = surface_index % 32;
         let row = surface_index / 32;
@@ -117,7 +134,7 @@ fn setup(
     }
 
     commands.spawn((
-        Text::new("128 moving emitters | 256 triangles | one looping spatial sound"),
+        Text::new("16 emitters"),
         Node {
             position_type: PositionType::Absolute,
             top: px(12),
@@ -148,7 +165,7 @@ struct OrbitPhase {
 #[derive(Component)]
 struct FpsReadout;
 
-/// Moves all 128 sources together while preserving their fixed spacing.
+/// Moves all 16 sources together while preserving their fixed spacing.
 fn animate_emitters(
     time: Res<'_, Time>,
     mut emitters: Query<'_, '_, (&mut Transform, &OrbitPhase)>,

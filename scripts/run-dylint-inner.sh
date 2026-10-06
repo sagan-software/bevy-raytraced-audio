@@ -2,28 +2,28 @@
 set -euo pipefail
 
 cd "$PROJECT_ROOT"
-unset CARGO_BUILD_BUILD_DIR OPENSSL_DIR
+unset CARGO_BUILD_BUILD_DIR RUSTC_WRAPPER RUSTC_WORKSPACE_WRAPPER OPENSSL_DIR
 
-host_target="$(rustc -vV | awk '/^host:/ { print $2 }')"
-nix_toolchain="sagan-lints-dev-2026-07-15-$host_target"
-dylint_toolchain="nightly-2026-07-15-$host_target"
-toolchain_root="$(rustup toolchain list -v | awk -v name="$nix_toolchain" '$1 == name { print $2; exit }')"
-
-if [[ -z "$toolchain_root" ]]; then
-    printf 'Dylints Nix toolchain is not linked in RUSTUP_HOME.\n' >&2
+if [[ -z "${RUSTUP_HOME:-}" || -z "${DYLINT_DRIVER_PATH:-}" ]]; then
+    printf 'Enter the Dylints Nix development shell before running this script.\n' >&2
     exit 1
 fi
 
-if ! rustup toolchain list | grep -Fq "$dylint_toolchain"; then
-    rustup toolchain link "$dylint_toolchain" "$toolchain_root"
+# Use the host-qualified toolchain name registered by the Dylints Nix flake.
+host_target="$(rustc -vV | awk '/^host:/ { print $2 }')"
+dylint_toolchain="nightly-2026-07-15-$host_target"
+toolchain_root="$RUSTUP_HOME/toolchains/$dylint_toolchain"
+if [[ ! -x "$toolchain_root/bin/rustc" || -L "$toolchain_root" ]]; then
+    printf 'Install the Dylint Quick Start toolchain in RUSTUP_HOME before running this gate.\n' >&2
+    printf '%s\n' \
+        "rustup toolchain install nightly-2026-07-15 \\" \
+        "  --component rustc-dev --component llvm-tools-preview \\" \
+        '  --component rust-src' >&2
+    exit 1
 fi
 
-# Match the prebuilt Dylint driver to the upstream library toolchain name.
-driver_dir="$PROJECT_ROOT/target/dylint-driver/$dylint_toolchain"
-mkdir -p "$driver_dir"
-ln -sfn "$DYLINT_DRIVER_PATH/$nix_toolchain/dylint-driver" "$driver_dir/dylint-driver"
+# The current Nix package and rustup install share the same full toolchain name.
 export RUSTUP_TOOLCHAIN="$dylint_toolchain"
-export DYLINT_DRIVER_PATH="$PROJECT_ROOT/target/dylint-driver"
 export RUSTFLAGS="-D warnings"
 
 cargo dylint --all --workspace -- --all-targets

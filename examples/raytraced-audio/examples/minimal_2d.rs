@@ -107,11 +107,12 @@ fn setup(mut commands: Commands<'_, '_>, asset_server: Res<'_, AssetServer>) {
     ));
 
     commands.spawn((
-        Text::new("Arrows move listener. Red: attenuated. Cyan: reflections. Wall amplitude transmission: 20%, 40%, 60%; sink applies the mean."),
+        Text::new("Arrows move listener. Red: attenuation. Cyan: reflections."),
         Node {
             position_type: PositionType::Absolute,
             top: px(12),
             left: px(12),
+            max_width: Val::Percent(72.0),
             ..default()
         },
     ));
