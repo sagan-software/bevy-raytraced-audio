@@ -56,6 +56,14 @@
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
         src = craneLib.cleanCargoSource ./.;
+        # The audio fixture test embeds a WAV file, which Crane's default filter omits.
+        srcWithAudioAssets = pkgs.lib.cleanSourceWith {
+          src = pkgs.lib.cleanSource ./.;
+          filter =
+            path: type:
+            (craneLib.filterCargoSources path type) || (type == "regular" && pkgs.lib.hasSuffix ".wav" path);
+          name = "source-with-audio-assets";
+        };
         packageName = "bevy-raytraced-audio";
         coverageThreshold = 91;
         coverageIgnoreRegex = "(^|/)(tests|benches|examples)/";
@@ -124,6 +132,9 @@
           strictDeps = true;
           nativeBuildInputs = bevyNativeBuildInputs;
           buildInputs = bevyBuildInputs;
+        };
+        cargoTestSourceArgs = commonArgs // {
+          src = srcWithAudioAssets;
         };
 
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
@@ -264,7 +275,7 @@
             '';
 
         clippyCheck = craneLib.cargoClippy (
-          commonArgs
+          cargoTestSourceArgs
           // {
             cargoArtifacts = clippyCargoArtifacts;
             cargoClippyExtraArgs = "--workspace --all-targets -- --deny warnings";
@@ -272,7 +283,7 @@
         );
 
         testCheck = craneLib.cargoNextest (
-          commonArgs
+          cargoTestSourceArgs
           // {
             cargoArtifacts = devCargoArtifacts;
             partitions = 1;
@@ -372,7 +383,7 @@
         );
 
         coverageReport = craneLib.mkCargoDerivation (
-          commonArgs
+          cargoTestSourceArgs
           // {
             cargoArtifacts = devCargoArtifacts;
             pname = "${packageName}-coverage";
@@ -403,7 +414,7 @@
         );
 
         bevyLintCheck = craneLib.mkCargoDerivation (
-          commonArgs
+          cargoTestSourceArgs
           // {
             cargoArtifacts = null;
             pname = "${packageName}-bevy-lint";
