@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Explore four Bevy ray-traced audio examples in the browser."
+      content="Browse interactive Bevy ray-traced audio examples for 2D and 3D games."
     />
-    <title>Bevy Raytraced Audio — Examples</title>
+    <title>Examples · Bevy Raytraced Audio</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
     <link rel="stylesheet" href="./site.css" />
   </head>
   <body>
     <header class="site-header">
-      <a class="wordmark" href="./">Bevy Raytraced Audio</a>
+      <a class="wordmark" href="./" aria-label="Bevy Raytraced Audio examples home">
+        <span class="wordmark-mark" aria-hidden="true">B</span>
+        <span>Bevy Raytraced Audio</span>
+      </a>
       <nav aria-label="Main navigation">
         <a aria-current="page" href="./">Examples</a>
         <a href="./docs/">Documentation</a>
@@ -21,80 +25,109 @@
     </header>
 
     <main class="landing">
-      <section class="hero" aria-labelledby="page-title">
-        <div class="hero-copy">
-          <h1 id="page-title">Browser examples</h1>
-          <p class="hero-description">
-            Four Bevy 0.19.1 WebAssembly scenes demonstrate 2D and 3D acoustic
-            paths, spatial playback, and stress workloads. Open a scene, then
-            enable its spatial audio.
-          </p>
-          <a class="button-link" href="#examples">Browse examples <span aria-hidden="true">↓</span></a>
-        </div>
-        <figure class="hero-art" aria-label="A sound path bending around an acoustic wall">
-          <svg viewBox="0 0 520 330" role="img" aria-labelledby="ray-title">
-            <title id="ray-title">Direct and reflected sound paths around a wall</title>
-            <path class="room" d="M30 30h460v270H30z" />
-            <path class="wall" d="M273 30v94m0 78v98" />
-            <circle class="listener" cx="112" cy="164" r="17" />
-            <circle class="source" cx="416" cy="164" r="15" />
-            <path class="ray ray-direct" d="M130 164h126M290 164h111" />
-            <path class="ray ray-reflected" d="M130 164 252 72 291 72 401 154" />
-            <path class="ray ray-reflected ray-second" d="M130 172 251 258 291 258 401 174" />
-            <path class="sound-mark" d="M78 146q-18 18 0 36m-13-49q-31 31 0 62" />
-          </svg>
-          <figcaption><span class="legend-dot listener-dot"></span> listener <span class="legend-dot source-dot"></span> emitter <span class="legend-line"></span> traced path</figcaption>
-        </figure>
-      </section>
-
-      <section class="examples-section" id="examples" aria-labelledby="examples-title">
-        <div class="section-heading">
-          <div>
-            <h2 id="examples-title">Examples</h2>
-          </div>
-          <p>Open a demo, then enable its spatial audio.</p>
-        </div>
-        <div class="example-grid">
-          <a class="example-card" href="./examples/minimal-2d/">
-            <div class="card-top"><span class="kind">2D · Tutorial</span><span class="card-arrow" aria-hidden="true">↗</span></div>
-            <h3>Minimal 2D</h3>
-            <p>Move the listener around a wall and watch the direct path update.</p>
-            <span class="card-detail">Arrow keys move the listener</span>
-          </a>
-          <a class="example-card" href="./examples/minimal-3d/">
-            <div class="card-top"><span class="kind">3D · Tutorial</span><span class="card-arrow" aria-hidden="true">↗</span></div>
-            <h3>Minimal 3D</h3>
-            <p>Follow a spatial source as it moves around a finite triangle wall.</p>
-            <span class="card-detail">Direct path and response component</span>
-          </a>
-          <a class="example-card" href="./examples/stress-2d/">
-            <div class="card-top"><span class="kind">2D · Stress</span><span class="card-arrow" aria-hidden="true">↗</span></div>
-            <h3>16 sources in 2D</h3>
-            <p>Trace 16 moving emitters against 32 wall segments, with one sound playing.</p>
-            <span class="card-detail">Live frame-rate readout</span>
-          </a>
-          <a class="example-card" href="./examples/stress-3d/">
-            <div class="card-top"><span class="kind">3D · Stress</span><span class="card-arrow" aria-hidden="true">↗</span></div>
-            <h3>16 sources in 3D</h3>
-            <p>Trace 16 moving emitters against 32 wall triangles, with one sound playing.</p>
-            <span class="card-detail">Live frame-rate readout</span>
-          </a>
-        </div>
-      </section>
-
-      <section class="capability-note" aria-labelledby="capability-title">
-        <div class="capability-mark" aria-hidden="true">CPU</div>
+      <section class="catalog-heading" aria-labelledby="page-title">
         <div>
-          <h2 id="capability-title">What these demos implement</h2>
-          <p>CPU ray queries estimate direct occlusion and first-order reflections. The adapters adjust Bevy audio sink volume for direct-path occlusion; they do not insert reflection or reverb DSP.</p>
+          <h1 id="page-title">Examples</h1>
+          <p class="catalog-intro">Run each Bevy 0.19 scene in your browser, then inspect its source and controls.</p>
         </div>
-        <a href="./docs/">Read the book <span aria-hidden="true">→</span></a>
+        <label class="search-field">
+          <span class="sr-only">Search examples</span>
+          <svg class="search-icon" aria-hidden="true" viewBox="0 0 20 20" fill="none">
+            <circle cx="8.75" cy="8.75" r="5.5" stroke="currentColor" stroke-width="1.5" />
+            <path d="m13 13 4 4" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" />
+          </svg>
+          <input id="example-search" type="search" placeholder="Search examples" autocomplete="off" />
+          <kbd>/</kbd>
+        </label>
       </section>
+
+      <div class="catalog-layout">
+        <aside class="catalog-nav" aria-label="Example categories">
+          <p class="nav-label">Audio</p>
+          <nav>
+            <a href="#forest-showcase">Forest demo</a>
+            <a href="#category-2d">2D</a>
+            <a href="#category-3d">3D</a>
+            <a href="#category-stress">Stress tests</a>
+          </nav>
+        </aside>
+
+        <div class="catalog-content">
+          <section class="featured-example" id="forest-showcase" aria-labelledby="featured-title">
+            <a class="featured-art" href="./examples/forest-3d/" aria-label="Open Forest sound paths demo">
+              <img src="./assets/forest-demo.webp" alt="Rendered Bevy scene with a low-poly forest, stone arch, sound source, listener, and acoustic paths" />
+              <span class="play-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+              </span>
+            </a>
+            <div class="featured-copy">
+              <h2 id="featured-title">Forest sound paths</h2>
+              <p>Walk around a stone arch while a spatial chime moves through a low-poly forest. Watch direct and first-order reflection paths respond to the listener.</p>
+              <a class="text-link" href="./examples/forest-3d/">Run the example</a>
+              <p class="featured-meta">WASD move · drag to orbit · wheel to zoom</p>
+            </div>
+          </section>
+
+          <div class="section-heading catalog-count">
+            <h2>Audio examples</h2>
+            <p id="example-count" aria-live="polite">5 examples</p>
+          </div>
+
+          <section class="examples-section" id="category-2d" data-example-section aria-labelledby="heading-2d">
+            <div class="section-heading"><h2 id="heading-2d">2D</h2></div>
+            <div class="example-grid">
+              <a class="example-card" href="./examples/minimal-2d/" data-search="2d minimal tutorial listener wall transmission">
+                <img class="card-image card-2d" src="./assets/cards/minimal-2d.svg" alt="Top-down scene with an orange acoustic wall and green listener" />
+                <div class="card-copy"><h3>Minimal 2D</h3><p>Move the listener around a wall and watch the direct response change.</p></div>
+              </a>
+            </div>
+          </section>
+
+          <section class="examples-section" id="category-3d" data-example-section aria-labelledby="heading-3d">
+            <div class="section-heading"><h2 id="heading-3d">3D</h2></div>
+            <div class="example-grid">
+              <a class="example-card" href="./examples/minimal-3d/" data-search="3d minimal tutorial spatial audio wall reflection">
+                <img class="card-image card-3d" src="./assets/cards/minimal-3d.svg" alt="Simple room scene with a finite acoustic wall and sound paths" />
+                <div class="card-copy"><h3>Minimal 3D</h3><p>Follow a spatial source around a finite triangle wall.</p></div>
+              </a>
+              <a class="example-card" href="./examples/forest-3d/" data-search="3d forest interactive tutorial spatial chime reflection paths materials">
+                <img class="card-image card-forest" src="./assets/forest-demo.webp" alt="Low-poly forest demo with listener, chime, arch, and path lines" />
+                <div class="card-copy"><h3>Forest sound paths</h3><p>Explore acoustic materials, a moving chime, and reflection geometry.</p></div>
+              </a>
+            </div>
+          </section>
+
+          <section class="examples-section" id="category-stress" data-example-section aria-labelledby="heading-stress">
+            <div class="section-heading"><h2 id="heading-stress">Stress tests</h2></div>
+            <div class="example-grid">
+              <a class="example-card" href="./examples/stress-2d/" data-search="2d stress performance 16 emitters 32 walls benchmark">
+                <img class="card-image card-stress-2d" src="./assets/cards/stress-2d.svg" alt="Top-down stress scene with multiple moving sources and wall segments" />
+                <div class="card-copy"><h3>16 sources in 2D</h3><p>Trace moving emitters against 32 wall segments.</p></div>
+              </a>
+              <a class="example-card" href="./examples/stress-3d/" data-search="3d stress performance 16 emitters 32 triangles benchmark">
+                <img class="card-image card-stress-3d" src="./assets/cards/stress-3d.svg" alt="3D stress scene with multiple moving sources and surfaces" />
+                <div class="card-copy"><h3>16 sources in 3D</h3><p>Trace 16 moving emitters against 32 wall triangles.</p></div>
+              </a>
+            </div>
+          </section>
+
+          <p class="empty-search" id="empty-search" hidden>No examples match that search.</p>
+          <section class="capability-note" aria-labelledby="capability-title">
+            <div class="capability-mark" aria-hidden="true">CPU</div>
+            <div>
+              <h2 id="capability-title">About the audio model</h2>
+              <p>The current CPU solver estimates direct transmission and first-order reflection geometry. The Bevy adapter adjusts sink volume for the direct path; reflection paths are visual data and do not add reverb or reflection audio.</p>
+            </div>
+            <a href="./docs/">Read the book</a>
+          </section>
+        </div>
+      </div>
     </main>
 
     <footer class="site-footer">
       <span>Bevy Raytraced Audio</span>
       <a href="https://github.com/sagan-software/bevy-raytraced-audio">Source and issue tracker</a>
     </footer>
+    <script type="module" src="./catalog.mjs"></script>
   </body>
 </html>

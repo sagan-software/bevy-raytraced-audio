@@ -38,7 +38,7 @@ matches the Bevy 0.20 release candidate's declared minimum.
 
 ## Test matrix
 
-The compatibility workflow runs the core and adapter workspace tests with each Rust version, then checks all four Bevy feature selections. This defines 16 Rust and Bevy combinations. The matrix excludes the Bevy 0.19.1 example package. That package and the four browser builds are tested separately on the locked workspace toolchain.
+The compatibility workflow runs the core and adapter workspace tests with each Rust version, then checks all four Bevy feature selections. This defines 16 Rust and Bevy combinations. The matrix excludes the Bevy 0.19.1 example package. That package and the five browser builds are tested separately on the locked workspace toolchain.
 
 Run the same checks locally with:
 

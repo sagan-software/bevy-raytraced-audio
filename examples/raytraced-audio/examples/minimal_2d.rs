@@ -1,6 +1,7 @@
 //! Runs a spatial Bevy sound through a visible, movable 2D acoustic scene.
 
 use bevy::{
+    asset::AssetMetaCheck,
     audio::{AudioPlugin, SpatialScale},
     camera::ScalingMode,
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
@@ -24,6 +25,11 @@ fn main() {
     App::new()
         .add_plugins(
             DefaultPlugins
+                // The bundled WAV uses Bevy's default metadata and needs no sidecar request.
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never,
+                    ..default()
+                })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Bevy ray-traced audio: 2D".to_owned(),

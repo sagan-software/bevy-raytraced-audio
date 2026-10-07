@@ -98,8 +98,9 @@ The core uses CPU ray queries. It does not require a render plugin or GPU
 device. Both dimension plugins expose `with_backend_preference`. The default
 `AudioBackendPreference::Cpu` selects CPU tracing. `Auto` currently logs that
 the GPU backend is unavailable, then uses CPU tracing. GPU dispatch and
-automatic GPU-to-CPU fallback are not implemented. The Nix and browser builds
-compile the CPU backend.
+automatic GPU-to-CPU fallback are not implemented.
+
+The Nix and browser builds compile the CPU backend.
 
 ## Runtime constraints
 
@@ -121,9 +122,9 @@ query API in their ECS source ([0.17.3](https://github.com/bevyengine/bevy/blob/
 [0.20.0-rc.2](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_ecs/src/system/query.rs)).
 
 The 2026-10-06 quick benchmark measured the 16-emitter/32-surface stress
-schedule at 65.379 microseconds in 2D and 64.512 microseconds in 3D on the
-serial path. The task-pool path measured 62.148 microseconds and 62.780
-microseconds. At 128 emitters and 256 surfaces, it measured 0.361 ms in 2D and
-0.427 ms in 3D. At 256 emitters and 1,024 surfaces, it measured 3.657 ms and
-4.719 ms. These results exclude rendering, audio output, and browser
+schedule at 77.20 microseconds in 2D and 81.42 microseconds in 3D on the
+serial path. The task-pool path measured 73.98 microseconds and 78.62
+microseconds. At 128 emitters and 256 surfaces, it measured 0.445 ms in 2D and
+0.621 ms in 3D. At 256 emitters and 1,024 surfaces, it measured 4.684 ms and
+5.632 ms. These results exclude rendering, audio output, and browser
 presentation, so they do not establish rendered 90 FPS.

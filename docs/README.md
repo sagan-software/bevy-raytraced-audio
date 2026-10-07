@@ -10,5 +10,5 @@ emitter's valid paths. The adapter scales the existing Bevy audio sink by the
 mean direct amplitude gain. Reflection data does not add sample filters,
 reflection playback, late reverb, or GPU execution.
 
-The [browser examples](EXAMPLES.md) describe four WebAssembly builds. The static
+The [browser examples](EXAMPLES.md) describe five WebAssembly builds. The static
 gallery and this book share one GitHub Pages site.

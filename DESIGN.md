@@ -2,26 +2,31 @@
 
 ## Structure
 
-The landing page presents four directly linked Bevy scenes: minimal 2D,
-minimal 3D, 2D stress, and 3D stress. Every scene has a separate route with a
-large canvas, an audio start control, and links to the other scenes.
+The landing page follows Bevy's example catalogue: a category index, search,
+category headings, and two-column example cards. A forest scene leads the
+catalogue and links to its own interactive route. The 2D tutorial, 3D tutorial,
+and stress tests keep separate browser routes.
 
 ## Visual system
 
-The site uses a near-black blue-gray background, warm white text, and green and
-amber accents that match listener, emitter, and acoustic surface colors in the
-demos. System fonts avoid external requests. A two-column gallery collapses to
-one column on narrow screens.
+Use Bevy's charcoal surfaces, Fira Sans, blue-violet links, and restrained
+separators. The featured forest uses deep pine and moss, weathered stone, an
+amber sound source, a green listener, and teal path lines. Keep catalogue
+controls in the site layer and keep path colors visible against the scene.
 
 ## Interaction
 
-The browser downloads and compiles each page's WebAssembly module before it
-enables the start button. The click handler resumes Bevy's audio context from
-the user's gesture. The demo page reports loading failures next to the disabled
-control.
+Each browser route loads a separate Bevy WebAssembly build. Check WebGL2 before
+downloading the build, and wait until Bevy resizes its canvas before reporting
+the scene as ready. A blocked renderer shows a recovery instruction in the
+canvas. The audio button resumes or suspends Bevy's Web Audio context from a
+user click. In the forest scene, WASD moves the listener, mouse drag orbits the
+camera, the wheel changes camera distance, B toggles paths, and F1 toggles
+diagnostics.
 
 ## Accessibility
 
-All navigation uses links. Start controls use native buttons, visible focus
-styles, and text status. The canvas has a descriptive accessible name. Text and
-controls remain usable at narrow viewport widths.
+Use links for navigation and native buttons for audio controls. Give every
+scene an accessible name, show loading and error text outside the canvas, and
+announce status changes through a live region. Keep keyboard instructions
+visible and preserve focus styles and responsive layouts.

@@ -27,29 +27,37 @@ nix run .#coverage
 - Ten Bevy schedule workloads: 2D and 3D scenes with 1/0, 1/1, 64/64, 128/256, and 256/1,024 sources/surfaces.
 - Eight serial/task-pool comparisons: both dimensions at 16/32 and 64/64 sources/surfaces.
 
-The 2026-10-06 quick run measured the reusable path-output query at 111.89 ns in 2D and 128.98 ns in 3D. The 64-source/64-surface adapter schedule measured 88.982 microseconds in 2D and 102.50 microseconds in 3D. The 128/256 schedule measured 0.361 ms and 0.427 ms. The 256/1,024 schedule measured 3.657 ms in 2D and 4.719 ms in 3D. A single-query miss over 1,024 surfaces measured 40.546 microseconds in 2D and 44.193 microseconds in 3D. Criterion's reported intervals are short quick-run estimates; they do not establish a cross-machine performance baseline or allocation rate.
+The 2026-10-06 quick run measured the reusable path-output query at 159 ns in 2D and 184 ns in 3D. The 64-source/64-surface adapter schedule measured 121.344 microseconds in 2D and 143.926 microseconds in 3D. The 128/256 schedule measured 0.445 ms and 0.621 ms. The 256/1,024 schedule measured 4.684 ms in 2D and 5.632 ms in 3D. A single-query miss over 1,024 surfaces measured 56.387 microseconds in 2D and 65.055 microseconds in 3D. Criterion's reported intervals are short quick-run estimates; they do not establish a cross-machine performance baseline or allocation rate.
 
-At the 16-emitter/32-surface stress workload, the serial path measured 65.379 microseconds in 2D and 64.512 microseconds in 3D. The task-pool path measured 62.148 microseconds and 62.780 microseconds. At 64/64, serial measured 98.357 microseconds in 2D and 113.82 microseconds in 3D; task-pool measured 93.387 microseconds and 115.05 microseconds. These are quick estimates without a paired statistical comparison. The 16-emitter threshold remains unchanged.
+At the 16-emitter/32-surface stress workload, the serial path measured 77.198 microseconds in 2D and 81.423 microseconds in 3D. The task-pool path measured 73.976 microseconds and 78.618 microseconds. At 64/64, serial measured 121.457 microseconds in 2D and 146.436 microseconds in 3D; task-pool measured 118.734 microseconds and 145.182 microseconds. These are quick estimates without a paired statistical comparison. The 16-emitter threshold remains unchanged.
 
 The adapter uses sequential iteration below 16 emitters and when Bevy's compute task pool is not initialized. Otherwise, it uses `Query::par_iter_mut`. The benchmark harness enables Bevy's `multi_threaded` feature and initializes `TaskPoolPlugin`. A separate 30-sample comparison of the 256/1,024 schedule measured 10.726 ms in 2D and 13.043 ms in 3D on the serial path, then 5.508 ms and 6.006 ms on the parallel path. Criterion reported both reductions at `p < 0.05`.
 
 The 90 FPS target allows 11.11 ms per frame. Every measured adapter update schedule fits within that time on this CPU. These schedules exclude rendering, audio output, and browser presentation, so they do not establish a full-game frame rate.
 
-The measured Bevy update schedules exclude browser rendering and presentation. A separate hardware-backed browser run measured uncapped frame callbacks on the Intel UHD Graphics 620 through ANGLE Vulkan. Chromium ran with `--disable-frame-rate-limit` and `--disable-gpu-vsync` at a 1,134 × 638 canvas size.
+The measured Bevy update schedules exclude browser rendering and presentation. A hardware-backed browser run measured uncapped animation-frame callbacks on the Intel UHD Graphics 620 through ANGLE Vulkan. Chromium ran with `--disable-frame-rate-limit` and `--disable-gpu-vsync` at a 1,215 × 700 canvas size.
 
-The run collected 15 consecutive one-second bins per stress scene. The 3D samples ranged from 131 to 153 callbacks per second, with a 143.47 mean. The 2D samples ranged from 163 to 174, with a 168.67 mean. Each bin exceeded the 90 FPS target.
+The run collected three consecutive one-second bins for each route, for 15 bins total. Every bin exceeded 90 callbacks per second.
 
-These are uncapped browser animation-frame callbacks, not physical display presentations. With normal headless synchronization, the on-canvas diagnostic showed 55–61 FPS. The physical display refresh rate and native window presentation remain unverified.
+| Route | Callback range per second |
+| --- | ---: |
+| Forest 3D | 222–225 |
+| Minimal 2D | 267–272 |
+| Minimal 3D | 196–200 |
+| Stress 2D | 256–277 |
+| Stress 3D | 242–248 |
+
+These are uncapped browser animation-frame callbacks, not physical display presentations. Normal headless synchronization capped the on-canvas diagnostic near 60 FPS. Native window presentation and a 90 Hz display remain unverified.
 
 ## Browser checks
 
-`nix run .#web-build` built the gallery, Markdown book, and four separate WebAssembly examples with the material-transmission example positions. The repository's GitHub Pages workflow deploys the gallery and book at [the published site](https://sagan-software.github.io/bevy-raytraced-audio/).
+`nix run .#web-build` built the gallery, Markdown book, and five separate WebAssembly examples. The repository's GitHub Pages workflow deploys the gallery and book at [the published site](https://sagan-software.github.io/bevy-raytraced-audio/).
 
-The local Chromium review loaded all four routes. After a click, each Bevy Web Audio context changed to `running` at 44.1 kHz. A DevTools Web Audio trace of the 3D stress page showed 59 `AudioBufferSource` nodes connected to a running `AudioDestination`; the reported callback interval mean was 10.66 ms. This verifies the browser output graph, but it does not verify sound from physical speakers.
+The local Chromium review loaded all five routes on Intel UHD Graphics 620 through ANGLE Vulkan. Each route reached the running-scene state with a 1,215 × 700 canvas. A click changed each Bevy Web Audio context from `suspended` to `running`. The shared WAV returned HTTP 200. No `.wav.meta` sidecar request or browser console error appeared. This verifies browser audio activation, not sound from physical speakers.
 
-The example package enables Bevy's `wav` feature for the shared fixture. The `audio_fixture` integration test calls Bevy's decoder and passes. The latest browser build included the WAV decoder, and all four routes loaded without WebAssembly exceptions. Bevy also requested optional `.wav.meta` sidecars; those requests returned 404 while the WAV files loaded with HTTP 200.
+At a 390-pixel viewport, the gallery had a 390-pixel document width and no horizontal overflow. The README contains 12-frame stress captures and a 24-frame forest walkthrough. The forest GIF shows direct gain change as the listener crosses the brush screen.
 
-At a 390-pixel viewport, the gallery and both stress pages had no horizontal overflow. The README GIFs contain 12 sampled frames from each hardware-rendered stress route.
+Firefox 157 headless returned `null` from `canvas.getContext("webgl2")`. The route displayed the Firefox hardware-acceleration recovery message instead of a static scene. This does not verify normal Firefox with hardware acceleration.
 
 ## Scope not verified
 

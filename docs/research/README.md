@@ -8,6 +8,7 @@ Research snapshot: 2026-10-06. Links below point to upstream sources. The local 
 - [Rust and Bevy prior art](prior-art.md)
 - [Local cloned repositories](local-clones.md)
 - [Videos and demos](videos.md)
+- [Web showcase and Firefox investigation](web-showcase-and-firefox.md)
 - [Bevy and Rust version findings](toolchain.md)
 - [Bevy template discovery](template.md)
 - [GPU compute references](gpu-compute.md)

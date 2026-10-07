@@ -242,6 +242,9 @@ copy data. The site host does not participate in runtime audio computation.
 | WebGL2 or device without compute support | CPU responses continue without a failed dispatch. |
 | Render app with a ready compute pipeline | GPU responses identify their source scene and emitter generations. |
 | Pipeline queued, invalid, or unavailable | CPU remains active until GPU processing is ready. |
+
+| Boundary | Required observation |
+| --- | --- |
 | Readback completion after a newer scene update | The older response is discarded. |
 | Emitter despawn before readback completion | The completion does not recreate or mutate the entity. |
 | Device loss followed by render-device startup | GPU resources rebuild and CPU output remains valid through recovery. |
@@ -303,6 +306,9 @@ runtime state vocabulary is also closed:
 | --- | --- | --- |
 | `CpuOnly` | Trace and publish current CPU responses. | Remains CPU-only because the feature is disabled or `Cpu` was selected. |
 | `GpuPending` | Keep publishing CPU responses while device or pipeline setup completes. | Move to `GpuActive` after a validated GPU response arrives; move to `CpuFallback` after setup failure. |
+
+| Runtime state | Work allowed | Transition |
+| --- | --- | --- |
 | `GpuActive` | Submit bounded GPU batches and apply the newest valid completed response. | Return to `CpuFallback` after device loss, invalid output, or readback failure. |
 | `CpuFallback(reason)` | Trace and publish current CPU responses. | Retry from `RenderStartup` after Bevy acquires a replacement device. |
 
@@ -336,7 +342,9 @@ sequence, scene revision, and ordered `Entity` mapping. The shader sees only a
 compact emitter index; Rust retains the generational entity identity. Accept a
 completion only when its scene revision still matches, its sequence is newer
 than the last accepted result, each entity still exists, and its age is at
-most two main-world updates. Otherwise discard it. When both slots are busy,
+most two main-world updates.
+
+Otherwise discard it. When both slots are busy,
 trace the current update on CPU and skip submitting a new GPU batch. This
 keeps retained readback memory bounded and avoids waiting on the render queue.
 
@@ -371,6 +379,9 @@ and WebGPU targets.
 | Render sub-app or compute capability is absent | `CpuFallback` computes each response. |
 | Pipeline is queued | CPU computes each response until the pipeline is ready. |
 | Pipeline validation or device creation fails | Record a diagnostic reason and use CPU. |
+
+| Failure | Observable result |
+| --- | --- |
 | Device is lost | Reject in-flight batches and use CPU until `RenderStartup` rebuilds resources. |
 | Readback fails or returns invalid bounds | Reject the full batch and use CPU. |
 | Two readback slots are occupied | Skip the GPU submission and use CPU for that update. |
@@ -441,7 +452,9 @@ The GPU readback example adds a `Readback` component to a buffer handle and
 handles `ReadbackComplete` asynchronously ([GPU readback example](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/examples/shader/gpu_readback.rs)).
 Each tagged `GpuReadbackPlugin` implementation calls `expect` on
 `map_async` failure and can panic instead of returning the adapter to CPU
-processing. The production path must use a bounded custom readback callback
+processing.
+
+The production path must use a bounded custom readback callback
 that reports mapping errors to the main-world backend state; the Bevy example
 remains a reference for extraction and staging order. Use Bevy's renderer
 re-exports. Do not add another wgpu major dependency to a compatibility crate.
@@ -450,14 +463,17 @@ Queue one compute pipeline per dimensional adapter and retain it through
 Bevy's render-device lifecycle. `PipelineCache` defers compute pipeline
 creation, returns no usable pipeline before success, and exposes the cached
 state for failure handling ([Bevy `PipelineCache`](https://docs.rs/bevy_render/latest/bevy_render/render_resource/struct.PipelineCache.html)).
+
 Use a packed immutable surface/BVH snapshot when the scene changes, upload
 emitter endpoints per submitted batch, and read back one compact result per
 emitter. Keep at most two submitted copies waiting for `map_async`; do not leave
 Bevy's repeating `Readback` component attached to a buffer, because it requests
-another copy each render frame. Each staging slot records its batch identity
-until mapping succeeds or returns an error. The current CPU scene builds a
-balanced BVH lazily. The GPU snapshot must preserve original surface indices
-because material and entity mappings depend on insertion order.
+another copy each render frame.
+
+Each staging slot records its batch identity until mapping succeeds or returns
+an error. The current CPU scene builds a balanced BVH lazily. The GPU snapshot
+must preserve original surface indices because material and entity mappings
+depend on insertion order.
 
 ### Testing and Quality Assurance
 
@@ -486,7 +502,7 @@ separate WebGPU build is needed to test browser GPU dispatch and readback.
 
 ### Deployment and Runtime Practices
 
-Publish the current four CPU-backed WebAssembly examples on GitHub Pages. Add
+Publish the current five CPU-backed WebAssembly examples on GitHub Pages. Add
 a separate WebGPU route only after its GPU build compiles and a browser run
 confirms adapter selection, shader dispatch, completion handling, and audible
 output. The static host serves files only; compute and audio remain in the

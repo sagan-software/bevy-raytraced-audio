@@ -93,11 +93,17 @@ has no stable 0.20 release as of 2026-10-06.
 ## Browser examples
 
 The [live gallery](https://sagan-software.github.io/bevy-raytraced-audio/)
-builds each example as a separate WebAssembly page. Open [minimal 2D](https://sagan-software.github.io/bevy-raytraced-audio/examples/minimal-2d/),
+builds each example as a separate WebAssembly page and follows Bevy's category index and image-led example catalogue. Open the featured [forest sound paths](https://sagan-software.github.io/bevy-raytraced-audio/examples/forest-3d/), [minimal 2D](https://sagan-software.github.io/bevy-raytraced-audio/examples/minimal-2d/),
 [stress 2D](https://sagan-software.github.io/bevy-raytraced-audio/examples/stress-2d/),
 [minimal 3D](https://sagan-software.github.io/bevy-raytraced-audio/examples/minimal-3d/),
 or [stress 3D](https://sagan-software.github.io/bevy-raytraced-audio/examples/stress-3d/).
-Click **Enable spatial audio** after the scene loads.
+Use the audio button after the scene loads. Browser policy may require a click before sound plays. The page checks WebGL2 support and canvas initialization before it reports the scene as ready.
+
+The [forest example](https://sagan-software.github.io/bevy-raytraced-audio/examples/forest-3d/) is the interactive showcase. Walk with WASD or the arrow keys, hold the left mouse button to orbit, use the wheel to zoom, press B to toggle acoustic paths, and press F1 to show frame timing.
+
+The forest walkthrough records the direct-path gain change as the listener moves across the brush screen:
+
+![Forest sound paths changing as the listener walks through the scene](website/assets/gifs/forest-walk.gif)
 
 The 2D stress capture shows 16 moving emitters against 32 wall segments:
 
@@ -117,6 +123,7 @@ nix run .#demo-2d
 nix run .#demo-3d
 nix run .#stress-2d
 nix run .#stress-3d
+nix run .#forest-3d
 ```
 
 ## Supported versions
@@ -170,15 +177,15 @@ real-time audio quality or rendered frame rate. See
 ## Performance status
 
 On the local Intel Core i7-8565U laptop CPU, the 2026-10-06 quick benchmark
-measured the 16-emitter/32-surface stress schedule at 62.15 microseconds in 2D
-and 62.78 microseconds in 3D with the task pool. The serial path measured
-65.38 microseconds and 64.51 microseconds. At 64 emitters and 64 surfaces, the
-task-pool estimates were 93.39 microseconds in 2D and 115.05 microseconds in
-3D; serial estimates were 98.36 microseconds and 113.82 microseconds. These
+measured the 16-emitter/32-surface stress schedule at 73.98 microseconds in 2D
+and 78.62 microseconds in 3D with the task pool. The serial path measured
+77.20 microseconds and 81.42 microseconds. At 64 emitters and 64 surfaces, the
+task-pool estimates were 118.73 microseconds in 2D and 145.18 microseconds in
+3D; serial estimates were 121.46 microseconds and 146.44 microseconds. These
 are short quick-run estimates.
 
-The 128/256 schedule measured 0.361 ms in 2D and 0.427 ms in 3D. The 256/1,024
-schedule measured 3.657 ms and 4.719 ms. Each pair lists 2D, then 3D.
+The 128/256 schedule measured 0.445 ms in 2D and 0.621 ms in 3D. The 256/1,024
+schedule measured 4.684 ms and 5.632 ms. Each pair lists 2D, then 3D.
 
 The adapter processes fewer than 16 emitters sequentially. At 16 or more, it
 uses Bevy's parallel query when the compute task pool is initialized. Without
@@ -192,11 +199,22 @@ to a 90 FPS frame on this CPU. These measurements exclude rendering, audio
 output, and browser presentation.
 
 On an Intel UHD Graphics 620, Chromium's uncapped browser animation-frame
-callbacks measured 131–153 per second in 3D and 163–174 per second in 2D across
-15 consecutive one-second samples. The canvas measured 1,134 × 638 pixels. The
-run used ANGLE Vulkan with frame limiting and GPU VSync disabled. It clears the
-90 FPS target on this GPU; physical display presentation still follows the
-display refresh rate. See the [test method and remaining limits](docs/TESTING-AND-BENCHMARKS.md).
+callbacks cleared 90 FPS in all five example routes. Each route had three
+one-second samples at a 1,215 × 700 canvas size. The run used ANGLE Vulkan with
+frame limiting and GPU VSync disabled.
+
+| Browser route | Callback range per second |
+| --- | ---: |
+| Forest 3D | 222–225 |
+| Minimal 2D | 267–272 |
+| Minimal 3D | 196–200 |
+| Stress 2D | 256–277 |
+| Stress 3D | 242–248 |
+
+These samples measure browser animation-frame callbacks, not physical display
+presentation. Normal headless synchronization caps callbacks near 60 FPS on the
+60 Hz test display. Native window rendering and 90 Hz physical presentation
+remain unverified. See the [test method and remaining limits](docs/TESTING-AND-BENCHMARKS.md).
 
 ## Documentation
 

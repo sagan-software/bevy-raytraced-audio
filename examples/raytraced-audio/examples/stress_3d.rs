@@ -1,6 +1,7 @@
 //! Exercises the 3D adapter with 16 moving sources and 32 explicit triangles.
 
 use bevy::{
+    asset::AssetMetaCheck,
     audio::{AudioPlugin, SpatialScale},
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
@@ -26,6 +27,11 @@ fn main() {
     App::new()
         .add_plugins(
             DefaultPlugins
+                // The bundled WAV uses Bevy's default metadata and needs no sidecar request.
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never,
+                    ..default()
+                })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Bevy ray-traced audio: 3D stress".to_owned(),

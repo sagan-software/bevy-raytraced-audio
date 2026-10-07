@@ -1,6 +1,7 @@
 //! Exercises the 2D adapter with 16 moving sources and 32 explicit wall segments.
 
 use bevy::{
+    asset::AssetMetaCheck,
     audio::{AudioPlugin, SpatialScale},
     camera::ScalingMode,
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
@@ -27,6 +28,11 @@ fn main() {
     App::new()
         .add_plugins(
             DefaultPlugins
+                // The bundled WAV uses Bevy's default metadata and needs no sidecar request.
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never,
+                    ..default()
+                })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Bevy ray-traced audio: 2D stress".to_owned(),

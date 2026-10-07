@@ -17,12 +17,12 @@ guidance.
 
 - The public site uses static HTML, CSS, and JavaScript so GitHub Pages can host
   it without a server runtime.
-- Each of the four native examples has its own browser route and WebAssembly
-  build output.
-- Each browser demo starts from a user click. This starts Bevy and requests
-  audio playback under the browser's interaction policy.
-- The site uses a dark, low-distraction presentation with the examples and
-  links visible on first load.
+- The site follows Bevy's example catalogue pattern, with category navigation
+  and direct example cards. A procedural forest scene leads the catalogue.
+- Each browser example has its own route and WebAssembly build output.
+- Each browser demo asks for a user click before resuming audio playback.
+- The site checks for WebGL2 before loading a Bevy renderer and reports a
+  recovery step when the browser cannot create a WebGL2 context.
 
 ## Product limits
 

@@ -4,12 +4,14 @@ set -euo pipefail
 repository_root="$(git rev-parse --show-toplevel)"
 cd "$repository_root"
 
+node --test website/tests/*.test.mjs
+
 wasm_bindgen_version="0.2.129"
 web_tools="$repository_root/target/web-tools"
 target_dir="$(cargo metadata --no-deps --format-version 1 | jq -r '.target_directory')"
 examples_package="bevy-raytraced-audio-examples"
-example_names=(minimal_2d minimal_3d stress_2d stress_3d)
-example_slugs=(minimal-2d minimal-3d stress-2d stress-3d)
+example_names=(minimal_2d minimal_3d stress_2d stress_3d forest_3d)
+example_slugs=(minimal-2d minimal-3d stress-2d stress-3d forest-3d)
 build_id="${GITHUB_RUN_ID:-local-$(date +%s%N)}"
 site_dir="$repository_root/target/pages-site-$build_id"
 

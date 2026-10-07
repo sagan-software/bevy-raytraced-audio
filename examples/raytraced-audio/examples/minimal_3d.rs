@@ -1,6 +1,7 @@
 //! Runs a spatial Bevy sound through a visible 3D acoustic wall.
 
 use bevy::{
+    asset::AssetMetaCheck,
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
     window::{PresentMode, WindowResolution},
@@ -20,17 +21,25 @@ const WALL_HALF_WIDTH_METERS: f32 = 1.5;
 /// Starts Bevy's normal asset, render, spatial-audio, and window plugins.
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Bevy ray-traced audio: 3D".to_owned(),
-                present_mode: PresentMode::AutoNoVsync,
-                resolution: WindowResolution::new(1280, 720),
-                canvas: Some("#bevy-canvas".to_owned()),
-                fit_canvas_to_parent: true,
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                // The bundled WAV uses Bevy's default metadata and needs no sidecar request.
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never,
+                    ..default()
+                })
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Bevy ray-traced audio: 3D".to_owned(),
+                        present_mode: PresentMode::AutoNoVsync,
+                        resolution: WindowResolution::new(1280, 720),
+                        canvas: Some("#bevy-canvas".to_owned()),
+                        fit_canvas_to_parent: true,
+                        ..default()
+                    }),
+                    ..default()
+                }),
+        )
         .add_plugins((
             FrameTimeDiagnosticsPlugin::default(),
             RaytracedAudio3dPlugin::default(),

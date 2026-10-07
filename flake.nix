@@ -610,6 +610,7 @@
             pkgs.gzip
             pkgs.jq
             pkgs.mdbook
+            pkgs.nodejs
             rustToolchain
           ]
           ++ cacheTools
@@ -645,6 +646,7 @@
         runDev = runExample "minimal_3d";
         runStress2d = runExample "stress_2d";
         runStress3d = runExample "stress_3d";
+        runForest3d = runExample "forest_3d";
 
       in
       {
@@ -672,6 +674,7 @@
               setup-ai = flake-utils.lib.mkApp { drv = ensureAgentLink; };
               stress-2d = flake-utils.lib.mkApp { drv = runStress2d; };
               stress-3d = flake-utils.lib.mkApp { drv = runStress3d; };
+              forest-3d = flake-utils.lib.mkApp { drv = runForest3d; };
               check = flake-utils.lib.mkApp { drv = runChecks; };
               clippy = flake-utils.lib.mkApp { drv = runClippy; };
               test = flake-utils.lib.mkApp { drv = runTests; };

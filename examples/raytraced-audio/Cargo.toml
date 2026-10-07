@@ -29,6 +29,10 @@ path = "examples/stress_2d.rs"
 name = "stress_3d"
 path = "examples/stress_3d.rs"
 
+[[example]]
+name = "forest_3d"
+path = "examples/forest_3d.rs"
+
 [[test]]
 name = "audio_fixture"
 path = "tests/audio_fixture.rs"
