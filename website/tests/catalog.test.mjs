@@ -3,7 +3,7 @@ import test from "node:test";
 
 let importNumber = 0;
 
-function installDocument() {
+function installDocument(reducedMotion = false) {
   const cards = [
     { textContent: "Minimal 2D tutorial", dataset: { search: "wall listener" }, hidden: false },
     { textContent: "Stress test 3D", dataset: { search: "sixteen emitters triangles" }, hidden: false },
@@ -21,11 +21,26 @@ function installDocument() {
   };
   const count = { textContent: "" };
   const emptyState = { hidden: true };
+  const forestPreview = {
+    playCalls: 0,
+    pauseCalls: 0,
+    play() {
+      this.playCalls += 1;
+      return Promise.resolve();
+    },
+    pause() { this.pauseCalls += 1; },
+  };
+  const motionListeners = new Map();
+  const motionPreference = {
+    matches: reducedMotion,
+    addEventListener: (name, listener) => motionListeners.set(name, listener),
+  };
   const document = {
     activeElement: { tagName: "BODY" },
     querySelector(selector) {
       return selector === "#example-search" ? search
         : selector === "#example-count" ? count
+          : selector === "[data-motion-preview]" ? forestPreview
           : emptyState;
     },
     querySelectorAll(selector) {
@@ -35,7 +50,8 @@ function installDocument() {
   };
 
   globalThis.document = document;
-  return { cards, count, emptyState, listeners, search, sections };
+  globalThis.window = { matchMedia: () => motionPreference };
+  return { cards, count, emptyState, forestPreview, listeners, motionListeners, motionPreference, search, sections };
 }
 
 async function loadCatalog() {
@@ -57,6 +73,7 @@ test("filters example labels and search terms without case sensitivity", async (
     assert.equal(harness.emptyState.hidden, true);
   } finally {
     delete globalThis.document;
+    delete globalThis.window;
   }
 });
 
@@ -72,6 +89,7 @@ test("shows an empty message when no card matches", async () => {
     assert.equal(harness.emptyState.hidden, false);
   } finally {
     delete globalThis.document;
+    delete globalThis.window;
   }
 });
 
@@ -102,5 +120,38 @@ test("slash focuses search unless the user is typing in a field", async () => {
     assert.equal(prevented, false);
   } finally {
     delete globalThis.document;
+    delete globalThis.window;
+  }
+});
+
+test("keeps the forest preview paused when reduced motion is enabled", async () => {
+  const harness = installDocument(true);
+  try {
+    await loadCatalog();
+    assert.equal(harness.forestPreview.playCalls, 0);
+    assert.equal(harness.forestPreview.pauseCalls, 1);
+  } finally {
+    delete globalThis.document;
+    delete globalThis.window;
+  }
+});
+
+test("stops and resumes the forest preview when the motion preference changes", async () => {
+  const harness = installDocument();
+  try {
+    await loadCatalog();
+    assert.equal(harness.forestPreview.playCalls, 1);
+    assert.equal(harness.forestPreview.pauseCalls, 0);
+
+    harness.motionPreference.matches = true;
+    harness.motionListeners.get("change")();
+    assert.equal(harness.forestPreview.pauseCalls, 1);
+
+    harness.motionPreference.matches = false;
+    harness.motionListeners.get("change")();
+    assert.equal(harness.forestPreview.playCalls, 2);
+  } finally {
+    delete globalThis.document;
+    delete globalThis.window;
   }
 });

@@ -53,9 +53,9 @@ The local server listens on `http://127.0.0.1:8000`. The [GitHub Pages gallery](
 
 ## Observed behavior and limits
 
-The site checks for WebGL2 before loading Bevy and waits for Bevy to resize the canvas before it reports that the scene is ready. When WebGL2 is unavailable, the page reports a browser-specific recovery message. Browser audio requires a user gesture when the audio button says `Enable sound`.
+The site checks WebGL2 before loading Bevy and waits for canvas sizing and successive WebGL draw calls before it reports that the scene is ready. When WebGL2 is unavailable, the page reports a browser-specific recovery message. The loader also prevents Bevy's canvas focus from scrolling the audio control out of view. Browser audio requires a user gesture when the button says `Enable sound`.
 
-In the local Chromium run, all five routes reached the running-scene state with a 1,215 × 700 canvas. Clicking the audio button changed each Web Audio context from `suspended` to `running`. The WAV file returned HTTP 200 on every route. No `.wav.meta` sidecar requests or browser console errors appeared. Physical speakers were not tested.
+The local Chromium 154 route sweep reached the ready state on all five routes at 1,215 × 700 pixels. Each route created a Bevy audio source and destination connection. Clicking `Enable sound` changed the Web Audio context from `suspended` to `running` and changed the button to `Mute sound`. The browser confirmed output-graph connections; physical speaker output was not tested.
 
 The README includes 12-frame GIFs from each stress scene and a 24-frame forest walk. The forest capture shows the direct path and band gains change as the listener moves behind the brush screen. Captures used the Intel UHD Graphics 620 through ANGLE Vulkan.
 
@@ -63,11 +63,11 @@ For an uncapped hardware measurement, Chromium ran with `--disable-frame-rate-li
 
 | Route | Callback range per second |
 | --- | ---: |
-| Forest 3D | 222–225 |
-| Minimal 2D | 267–272 |
-| Minimal 3D | 196–200 |
-| Stress 2D | 256–277 |
-| Stress 3D | 242–248 |
+| Forest 3D | 120–127 |
+| Minimal 2D | 136–145 |
+| Minimal 3D | 93–100 |
+| Stress 2D | 127–143 |
+| Stress 3D | 119–129 |
 
 The uncapped callback count measures browser frame scheduling. It does not measure physical display presentation or native window output. Normal headless synchronization capped the on-canvas diagnostic near 60 FPS. Firefox 157 headless could not create a WebGL2 context; the page displayed recovery steps. Normal Firefox with hardware acceleration, native window rendering, and physical audio output remain unverified.
 

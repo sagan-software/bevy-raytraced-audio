@@ -34,3 +34,19 @@ document.addEventListener("keydown", (event) => {
 });
 
 updateExamples();
+
+const forestPreview = document.querySelector("[data-motion-preview]");
+if (forestPreview && typeof window !== "undefined" && typeof window.matchMedia === "function") {
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const updatePreviewMotion = () => {
+    if (reducedMotion.matches) {
+      forestPreview.pause();
+      return;
+    }
+
+    void forestPreview.play().catch(() => {});
+  };
+
+  updatePreviewMotion();
+  reducedMotion.addEventListener("change", updatePreviewMotion);
+}

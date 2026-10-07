@@ -67,8 +67,8 @@ h1 { margin: 0; font-size: clamp(38px, 5vw, 54px); line-height: 1; letter-spacin
 .catalog-content { min-width: 0; }
 .featured-example { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, .78fr); overflow: hidden; border: 1px solid #48484f; border-radius: 7px; background: var(--panel); }
 .featured-art { position: relative; display: block; min-height: 335px; overflow: hidden; background: #253b3b; }
-.featured-art img { display: block; width: 100%; height: 100%; min-height: 335px; object-fit: cover; transition: transform .35s ease; }
-.featured-art:hover img { transform: scale(1.025); }
+.featured-art video { display: block; width: 100%; height: 100%; min-height: 335px; object-fit: cover; transition: transform .35s ease; }
+.featured-art:hover video { transform: scale(1.025); }
 .play-mark { position: absolute; top: 17px; right: 18px; display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid #e2e8de; border-radius: 50%; background: #202625d9; color: #fff; }
 .play-mark svg { width: 18px; height: 18px; }
 .featured-copy { display: flex; flex-direction: column; align-items: start; justify-content: center; padding: 30px; }
@@ -124,7 +124,7 @@ h1 { margin: 0; font-size: clamp(38px, 5vw, 54px); line-height: 1; letter-spacin
 
 @media (max-width: 900px) {
   .featured-example { grid-template-columns: 1.2fr .9fr; }
-  .featured-art, .featured-art img { min-height: 285px; }
+  .featured-art, .featured-art video { min-height: 285px; }
   .featured-copy { padding: 22px; }
   .example-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .catalog-layout { grid-template-columns: 128px minmax(0, 1fr); gap: 20px; }
@@ -144,7 +144,7 @@ h1 { margin: 0; font-size: clamp(38px, 5vw, 54px); line-height: 1; letter-spacin
   .catalog-nav a { flex: 0 0 auto; border: 1px solid transparent; border-radius: 4px; margin: 0; padding: 8px 10px; }
   .catalog-nav a:hover, .catalog-nav a:focus-visible { border-color: var(--line); }
   .featured-example { grid-template-columns: 1fr; }
-  .featured-art, .featured-art img { min-height: 230px; max-height: 270px; }
+  .featured-art, .featured-art video { min-height: 230px; max-height: 270px; }
   .featured-copy { min-height: 235px; padding: 20px; }
   .featured-meta { padding-top: 17px; }
   .catalog-count { margin-top: 29px; }

@@ -43,6 +43,29 @@ const LISTENER_Z_LIMIT_METERS: f32 = 5.5;
 const LISTENER_SPEED_METERS_PER_SECOND: f32 = 4.0;
 /// Mouse motion conversion from pixels to orbit radians.
 const ORBIT_RADIANS_PER_PIXEL: f32 = 0.003;
+/// Trunk height for a unit-scaled tree, in meters.
+const TREE_TRUNK_HEIGHT_METERS: f32 = 1.7;
+/// Each canopy layer stores its cone radius, height, and offset above the scaled trunk top in meters.
+const TREE_CANOPY_LAYERS_METERS: [(f32, f32, f32); 3] =
+    [(1.2, 1.9, 0.65), (0.9, 1.6, 1.4), (0.62, 1.3, 2.0)];
+/// Source sway angular speed, in radians per second.
+const EMITTER_SWAY_RADIANS_PER_SECOND: f32 = 0.42;
+/// Source travel across the arch opening, in meters.
+const EMITTER_SWAY_RADIUS_METERS: f32 = 4.2;
+/// Small source orbit radius along the world X axis, in meters.
+const EMITTER_ORBIT_RADIUS_METERS: f32 = 0.55;
+/// Source center position along world X, in meters.
+const EMITTER_CENTER_X_METERS: f32 = 4.2;
+/// Source center elevation above the ground, in meters.
+const EMITTER_CENTER_Y_METERS: f32 = 1.0;
+/// Source vertical motion amplitude, in meters.
+const EMITTER_VERTICAL_AMPLITUDE_METERS: f32 = 0.14;
+/// Vertical pulse rate relative to the sway phase, as a unitless multiplier.
+const EMITTER_VERTICAL_PHASE_MULTIPLIER: f32 = 4.0;
+/// Visible source size pulse relative to the sway phase, as a unitless multiplier.
+const EMITTER_SIZE_PHASE_MULTIPLIER: f32 = 5.7;
+/// Visible source scale variation, as a unitless fraction.
+const EMITTER_SIZE_PULSE_AMPLITUDE: f32 = 0.08;
 
 /// Starts the forest example with Bevy's normal renderer and spatial audio output.
 fn main() {
@@ -125,22 +148,34 @@ fn setup_scene(
     ));
 
     let trunk_mesh = meshes.add(Cylinder::new(0.22, 1.7).mesh().resolution(7));
-    let canopy_mesh = meshes.add(
-        Sphere::new(1.0)
-            .mesh()
-            .ico(1)
-            .expect("the fixed low-poly tree subdivision is valid"),
-    );
-    let trunk_material = materials.add(Color::srgb(0.24, 0.16, 0.105));
+    let canopy_meshes = TREE_CANOPY_LAYERS_METERS
+        .map(|(radius, height, _)| meshes.add(Cone::new(radius, height).mesh().resolution(7)));
+    let trunk_material = materials.add(StandardMaterial {
+        base_color: Color::srgb(0.24, 0.16, 0.105),
+        perceptual_roughness: 1.0,
+        ..default()
+    });
     let canopy_materials = [
-        materials.add(Color::srgb(0.12, 0.28, 0.19)),
-        materials.add(Color::srgb(0.16, 0.35, 0.22)),
-        materials.add(Color::srgb(0.22, 0.39, 0.25)),
+        materials.add(StandardMaterial {
+            base_color: Color::srgb(0.12, 0.28, 0.19),
+            perceptual_roughness: 1.0,
+            ..default()
+        }),
+        materials.add(StandardMaterial {
+            base_color: Color::srgb(0.16, 0.35, 0.22),
+            perceptual_roughness: 1.0,
+            ..default()
+        }),
+        materials.add(StandardMaterial {
+            base_color: Color::srgb(0.22, 0.39, 0.25),
+            perceptual_roughness: 1.0,
+            ..default()
+        }),
     ];
     spawn_forest(
         &mut commands,
         &trunk_mesh,
-        &canopy_mesh,
+        &canopy_meshes,
         &trunk_material,
         &canopy_materials,
     );
@@ -272,7 +307,7 @@ fn spawn_acoustic_environment(
 fn spawn_forest(
     commands: &mut Commands<'_, '_>,
     trunk_mesh: &Handle<Mesh>,
-    canopy_mesh: &Handle<Mesh>,
+    canopy_meshes: &[Handle<Mesh>; 3],
     trunk_material: &Handle<StandardMaterial>,
     canopy_materials: &[Handle<StandardMaterial>; 3],
 ) {
@@ -293,33 +328,31 @@ fn spawn_forest(
     ];
 
     for (tree_index, (x, z, scale)) in trees.into_iter().enumerate() {
-        let trunk_height = 1.7 * scale;
-        let material_index = tree_index % canopy_materials.len();
-        let canopy_color = canopy_materials
-            .get(material_index)
-            .expect("the example always supplies three canopy materials");
+        let trunk_height = TREE_TRUNK_HEIGHT_METERS * scale;
         commands.spawn((
             Mesh3d(trunk_mesh.clone()),
             MeshMaterial3d(trunk_material.clone()),
             Transform::from_xyz(x, trunk_height / 2.0, z)
                 .with_scale(Vec3::new(scale, scale, scale)),
         ));
-        commands.spawn((
-            Mesh3d(canopy_mesh.clone()),
-            MeshMaterial3d(canopy_color.clone()),
-            Transform::from_xyz(x, 0.2_f32.mul_add(scale, trunk_height), z)
-                .with_scale(Vec3::new(1.25, 1.0, 1.15) * scale),
-        ));
-        commands.spawn((
-            Mesh3d(canopy_mesh.clone()),
-            MeshMaterial3d(canopy_color.clone()),
-            Transform::from_xyz(
-                0.48_f32.mul_add(scale, x),
-                0.9_f32.mul_add(scale, trunk_height),
-                z + 0.18,
-            )
-            .with_scale(Vec3::splat(0.76 * scale)),
-        ));
+        // Reuse three rough cone meshes to create a distinct, layered pine silhouette.
+        for (layer, ((_, _, center_offset), canopy_mesh)) in TREE_CANOPY_LAYERS_METERS
+            .into_iter()
+            .zip(canopy_meshes.iter())
+            .enumerate()
+        {
+            let material_index = (tree_index + layer) % canopy_materials.len();
+            let canopy_material = canopy_materials
+                .get(material_index)
+                .expect("the example always supplies three canopy materials");
+            let center_y = center_offset.mul_add(scale, trunk_height);
+            let x_offset = if layer == 1 { 0.12 * scale } else { 0.0 };
+            commands.spawn((
+                Mesh3d(canopy_mesh.clone()),
+                MeshMaterial3d(canopy_material.clone()),
+                Transform::from_xyz(x + x_offset, center_y, z).with_scale(Vec3::splat(scale)),
+            ));
+        }
     }
 }
 
@@ -582,16 +615,27 @@ fn control_scene(
     camera.0.look_at(focus, Vec3::Y);
 }
 
-/// Marks the single audio source that moves slowly behind the stone arch.
+/// Marks the single audio source that moves across the forest stone arch.
 #[derive(Component)]
 struct MovingEmitter;
 
-/// Moves the source laterally so the listener hears and sees the path change.
+/// Moves the source through the arch posts and pulses its visible size.
 fn animate_emitter(
     time: Res<'_, Time>,
     mut emitter: Single<'_, '_, &mut Transform, With<MovingEmitter>>,
 ) {
-    emitter.translation.z = (time.elapsed_secs() * 0.34).sin() * 1.25;
+    let phase = time.elapsed_secs() * EMITTER_SWAY_RADIANS_PER_SECOND;
+    emitter.translation.x = phase
+        .cos()
+        .mul_add(EMITTER_ORBIT_RADIUS_METERS, EMITTER_CENTER_X_METERS);
+    emitter.translation.y = (phase * EMITTER_VERTICAL_PHASE_MULTIPLIER)
+        .sin()
+        .mul_add(EMITTER_VERTICAL_AMPLITUDE_METERS, EMITTER_CENTER_Y_METERS);
+    emitter.translation.z = phase.sin() * EMITTER_SWAY_RADIUS_METERS;
+    let pulse = (phase * EMITTER_SIZE_PHASE_MULTIPLIER)
+        .sin()
+        .mul_add(EMITTER_SIZE_PULSE_AMPLITUDE, 1.0);
+    emitter.scale = Vec3::splat(pulse);
 }
 
 /// Stores the camera's orbit pose and the listener's current view distance.
@@ -730,8 +774,8 @@ mod tests {
     use super::{
         ARCH_LINTEL_HEIGHT_METERS, ARCH_LINTEL_SPAN_METERS, ARCH_POST_HEIGHT_METERS,
         ARCH_POST_WIDTH_METERS, FOREST_FLOOR_DEPTH_METERS, FOREST_FLOOR_WIDTH_METERS, ForestCamera,
-        SceneDisplay, brush_acoustic_material, control_scene, floor_triangles,
-        forest_floor_acoustic_material, panel_triangles,
+        MovingEmitter, SceneDisplay, animate_emitter, brush_acoustic_material, control_scene,
+        floor_triangles, forest_floor_acoustic_material, panel_triangles,
     };
     use bevy::{
         input::mouse::{AccumulatedMouseMotion, MouseWheel},
@@ -776,6 +820,29 @@ mod tests {
         assert_eq!(second[2].z, -FOREST_FLOOR_DEPTH_METERS / 2.0);
         let normal = (first[1] - first[0]).cross(first[2] - first[0]);
         assert!(normal.y > 0.0);
+    }
+
+    /// Keeps the moving sound source visibly crossing both sides of the stone arch.
+    #[test]
+    fn emitter_crosses_the_acoustic_arch_during_its_loop() {
+        let mut app = App::new();
+        app.insert_resource(Time::<()>::default())
+            .add_systems(Update, animate_emitter);
+        let emitter = app
+            .world_mut()
+            .spawn((Transform::from_xyz(4.2, 1.0, 0.0), MovingEmitter))
+            .id();
+        app.world_mut()
+            .resource_mut::<Time<()>>()
+            .advance_by(Duration::from_secs(4));
+
+        app.update();
+
+        let transform = app
+            .world()
+            .get::<Transform>(emitter)
+            .expect("the moving emitter keeps its transform");
+        assert!(transform.translation.z.abs() >= 3.0);
     }
 
     /// Verifies brush material energy remains within the validated absorption budget.

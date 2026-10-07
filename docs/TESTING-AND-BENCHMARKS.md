@@ -37,15 +37,15 @@ The 90 FPS target allows 11.11 ms per frame. Every measured adapter update sched
 
 The measured Bevy update schedules exclude browser rendering and presentation. A hardware-backed browser run measured uncapped animation-frame callbacks on the Intel UHD Graphics 620 through ANGLE Vulkan. Chromium ran with `--disable-frame-rate-limit` and `--disable-gpu-vsync` at a 1,215 × 700 canvas size.
 
-The run collected three consecutive one-second bins for each route, for 15 bins total. Every bin exceeded 90 callbacks per second.
+The 2026-10-07 run collected three consecutive one-second bins for each route at 1,215 × 700 pixels, for 15 bins total. Every bin exceeded 90 callbacks per second.
 
 | Route | Callback range per second |
 | --- | ---: |
-| Forest 3D | 222–225 |
-| Minimal 2D | 267–272 |
-| Minimal 3D | 196–200 |
-| Stress 2D | 256–277 |
-| Stress 3D | 242–248 |
+| Forest 3D | 120–127 |
+| Minimal 2D | 136–145 |
+| Minimal 3D | 93–100 |
+| Stress 2D | 127–143 |
+| Stress 3D | 119–129 |
 
 These are uncapped browser animation-frame callbacks, not physical display presentations. Normal headless synchronization capped the on-canvas diagnostic near 60 FPS. Native window presentation and a 90 Hz display remain unverified.
 
@@ -53,7 +53,7 @@ These are uncapped browser animation-frame callbacks, not physical display prese
 
 `nix run .#web-build` built the gallery, Markdown book, and five separate WebAssembly examples. The repository's GitHub Pages workflow deploys the gallery and book at [the published site](https://sagan-software.github.io/bevy-raytraced-audio/).
 
-The local Chromium review loaded all five routes on Intel UHD Graphics 620 through ANGLE Vulkan. Each route reached the running-scene state with a 1,215 × 700 canvas. A click changed each Bevy Web Audio context from `suspended` to `running`. The shared WAV returned HTTP 200. No `.wav.meta` sidecar request or browser console error appeared. This verifies browser audio activation, not sound from physical speakers.
+The local Chromium 154 review loaded all five routes at 1,215 × 700 pixels. Each route reached the ready state after successive WebGL draw calls and left the audio button in view. A trusted browser click changed each Bevy Web Audio context from `suspended` to `running`; each button then showed `Mute sound`. This verifies a connected browser audio graph, not sound from physical speakers.
 
 At a 390-pixel viewport, the gallery had a 390-pixel document width and no horizontal overflow. The README contains 12-frame stress captures and a 24-frame forest walkthrough. The forest GIF shows direct gain change as the listener crosses the brush screen.
 

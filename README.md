@@ -97,7 +97,9 @@ builds each example as a separate WebAssembly page and follows Bevy's category i
 [stress 2D](https://sagan-software.github.io/bevy-raytraced-audio/examples/stress-2d/),
 [minimal 3D](https://sagan-software.github.io/bevy-raytraced-audio/examples/minimal-3d/),
 or [stress 3D](https://sagan-software.github.io/bevy-raytraced-audio/examples/stress-3d/).
-Use the audio button after the scene loads. Browser policy may require a click before sound plays. The page checks WebGL2 support and canvas initialization before it reports the scene as ready.
+Each page checks WebGL2, canvas sizing, and successive WebGL draw activity before it reports the scene as ready. Bevy focuses its canvas during startup; the page prevents that focus from scrolling the sound control out of view. Click `Enable sound` once when the browser requires a user gesture. The button changes to `Mute sound` after a Bevy source connects to a running Web Audio output.
+
+When Firefox cannot create a WebGL2 context, the example shows Firefox-specific hardware-acceleration recovery steps. Local headless Firefox could not create WebGL2, so regular Firefox with hardware acceleration remains unverified here.
 
 The [forest example](https://sagan-software.github.io/bevy-raytraced-audio/examples/forest-3d/) is the interactive showcase. Walk with WASD or the arrow keys, hold the left mouse button to orbit, use the wheel to zoom, press B to toggle acoustic paths, and press F1 to show frame timing.
 

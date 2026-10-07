@@ -54,8 +54,10 @@
 
         <div class="catalog-content">
           <section class="featured-example" id="forest-showcase" aria-labelledby="featured-title">
-            <a class="featured-art" href="./examples/forest-3d/" aria-label="Open Forest sound paths demo">
-              <img src="./assets/forest-demo.webp" alt="Rendered Bevy scene with a low-poly forest, stone arch, sound source, listener, and acoustic paths" />
+            <a class="featured-art" href="./examples/forest-3d/" aria-label="Open the interactive Forest sound paths demo">
+              <video class="featured-preview" data-motion-preview muted loop playsinline preload="none" poster="./assets/forest-demo.webp" aria-hidden="true">
+                <source src="./assets/forest-walk.mp4" type="video/mp4" />
+              </video>
               <span class="play-mark" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
               </span>
@@ -63,8 +65,8 @@
             <div class="featured-copy">
               <h2 id="featured-title">Forest sound paths</h2>
               <p>Walk around a stone arch while a spatial chime moves through a low-poly forest. Watch direct and first-order reflection paths respond to the listener.</p>
-              <a class="text-link" href="./examples/forest-3d/">Run the example</a>
-              <p class="featured-meta">WASD move · drag to orbit · wheel to zoom</p>
+              <a class="text-link" href="./examples/forest-3d/">Open the interactive scene</a>
+              <p class="featured-meta">Move with WASD · orbit with mouse · enable sound in the scene</p>
             </div>
           </section>
 

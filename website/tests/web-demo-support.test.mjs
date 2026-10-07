@@ -4,9 +4,118 @@ import test from "node:test";
 import {
   audioControlState,
   canvasHasBeenResized,
+  installWebGLDrawMonitor,
   probeWebGL2,
   restoreScrollPosition,
+  suppressCanvasFocusScroll,
+  waitForCanvasDrawActivity,
+  waitForRendererReady,
 } from "../web-demo-support.mjs";
+
+test("accepts a rendered canvas while Bevy keeps its WASM startup promise pending", async () => {
+  const wasmInitialization = new Promise(() => {});
+
+  await assert.doesNotReject(waitForRendererReady(wasmInitialization, Promise.resolve()));
+});
+
+test("reports WASM initialization errors before the canvas renders", async () => {
+  const wasmInitialization = Promise.reject(new Error("WebAssembly initialization failed"));
+
+  await assert.rejects(
+    waitForRendererReady(wasmInitialization, new Promise(() => {})),
+    /WebAssembly initialization failed/u,
+  );
+});
+
+test("keeps waiting for the rendered canvas when WASM initialization resolves first", async () => {
+  let canvasReady = false;
+  let resolveCanvas;
+  const rendererReady = new Promise((resolve) => {
+    resolveCanvas = () => {
+      canvasReady = true;
+      resolve();
+    };
+  });
+
+  const waiting = waitForRendererReady(Promise.resolve(), rendererReady);
+  await Promise.resolve();
+  assert.equal(canvasReady, false);
+
+  resolveCanvas();
+  await waiting;
+  assert.equal(canvasReady, true);
+});
+
+test("waits for successive WebGL draw calls after the first frame", async () => {
+  let drawCallCount = 1;
+  let now = 0;
+  const scheduledChecks = [];
+  const monitor = {
+    get available() { return true; },
+    get drawCallCount() { return drawCallCount; },
+  };
+  const ready = waitForCanvasDrawActivity(monitor, 1_000, {
+    now: () => now,
+    schedule: (callback) => scheduledChecks.push(callback),
+  });
+
+  assert.equal(scheduledChecks.length, 1);
+  drawCallCount = 2;
+  now = 400;
+  scheduledChecks.shift()();
+
+  await assert.doesNotReject(ready);
+});
+
+test("prevents Bevy canvas focus from scrolling its audio controls out of view", () => {
+  let focusOptions;
+  const canvas = {
+    focus(options) {
+      focusOptions = options;
+    },
+  };
+
+  const restore = suppressCanvasFocusScroll(canvas);
+  canvas.focus();
+
+  assert.deepEqual(focusOptions, { preventScroll: true });
+  restore();
+  assert.equal(Object.hasOwn(canvas, "focus"), true);
+});
+
+test("keeps caller focus options while preventing canvas scrolling", () => {
+  let focusOptions;
+  const canvas = {
+    focus(options) {
+      focusOptions = options;
+    },
+  };
+
+  const restore = suppressCanvasFocusScroll(canvas);
+  canvas.focus({ focusVisible: true, preventScroll: false });
+
+  assert.deepEqual(focusOptions, { focusVisible: true, preventScroll: true });
+  restore();
+});
+
+test("preserves a later focus override when the canvas wrapper is removed", () => {
+  const canvas = { focus() {} };
+  const replacement = () => "replacement";
+  const restore = suppressCanvasFocusScroll(canvas);
+
+  canvas.focus = replacement;
+  restore();
+
+  assert.equal(canvas.focus, replacement);
+});
+
+test("leaves canvas focus unchanged when the browser protects its method", () => {
+  const canvas = Object.freeze({ focus: () => "native" });
+  const restore = suppressCanvasFocusScroll(canvas);
+
+  assert.equal(canvas.focus(), "native");
+  assert.doesNotThrow(restore);
+});
 
 test("reports when the browser cannot create a WebGL2 context", () => {
   const document = {
@@ -79,6 +188,60 @@ test("accepts small mobile canvases and high-density displays", () => {
   );
 });
 
+test("tracks Bevy WebGL draw calls and restores the original methods", () => {
+  const calls = [];
+  const contextPrototype = {
+    drawElements(mode, count, type, offset) {
+      calls.push([this, mode, count, type, offset]);
+      return "drawn";
+    },
+  };
+  const originalDrawElements = contextPrototype.drawElements;
+  const context = {};
+  const monitor = installWebGLDrawMonitor(contextPrototype);
+
+  assert.equal(contextPrototype.drawElements.call(context, 4, 3, 5123, 0), "drawn");
+  assert.equal(monitor.drawCallCount, 1);
+  assert.deepEqual(calls, [[context, 4, 3, 5123, 0]]);
+
+  monitor.restore();
+  assert.equal(contextPrototype.drawElements, originalDrawElements);
+});
+
+test("leaves WebGL prototypes without draw methods unchanged", () => {
+  const contextPrototype = { clear() {} };
+  const originalClear = contextPrototype.clear;
+  const monitor = installWebGLDrawMonitor(contextPrototype);
+
+  assert.equal(monitor.drawCallCount, 0);
+  monitor.restore();
+  assert.equal(contextPrototype.clear, originalClear);
+});
+
+test("continues when browser draw methods are protected or unavailable", () => {
+  const protectedPrototype = Object.freeze({ drawArrays() {} });
+  const protectedMonitor = installWebGLDrawMonitor(protectedPrototype);
+  const missingMonitor = installWebGLDrawMonitor(null);
+
+  assert.equal(protectedMonitor.available, false);
+  assert.equal(protectedMonitor.drawCallCount, 0);
+  assert.equal(missingMonitor.available, false);
+  assert.equal(missingMonitor.drawCallCount, 0);
+  protectedMonitor.restore();
+  missingMonitor.restore();
+});
+
+test("preserves a draw method another script replaces before monitor cleanup", () => {
+  const contextPrototype = { drawArrays() {} };
+  const replacement = () => "replaced";
+  const monitor = installWebGLDrawMonitor(contextPrototype);
+
+  contextPrototype.drawArrays = replacement;
+  monitor.restore();
+
+  assert.equal(contextPrototype.drawArrays, replacement);
+});
+
 test("rejects a hidden or zero-sized canvas", () => {
   assert.equal(canvasHasBeenResized({ width: 1280, height: 720, clientWidth: 0, clientHeight: 0 }), false);
   assert.equal(canvasHasBeenResized({ width: 0, height: 0, clientWidth: 320, clientHeight: 300 }), false);
@@ -101,8 +264,16 @@ test("labels the audio control when browser audio is unavailable", () => {
   });
 });
 
-test("labels the audio control when all browser outputs are already running", () => {
-  assert.deepEqual(audioControlState(["running", "running"]), {
+test("does not claim sound is audible while no Bevy source reaches the output", () => {
+  assert.deepEqual(audioControlState(["running"], { startedSources: 0, outputConnections: 0 }), {
+    disabled: true,
+    buttonText: "Audio output unavailable",
+    statusText: "The browser audio context is running, but no Bevy sound reached its output. Reload the example to retry.",
+  });
+});
+
+test("offers mute after a Bevy source connects to a running browser output", () => {
+  assert.deepEqual(audioControlState(["running", "running"], { startedSources: 1, outputConnections: 1 }), {
     disabled: false,
     buttonText: "Mute sound",
     statusText: "Spatial sound is on. Use WASD to move through the scene.",

@@ -75,6 +75,34 @@ this does not verify sound from physical speakers. Node tests cover context
 rejection, probe cleanup, scroll restoration, audio-button state, and the
 default canvas-size false-positive.
 
+## Follow-up: 2026-10-07
+
+The rendered forest showed its loading overlay because the draw watcher did not
+schedule another check after its first WebGL draw. The watcher now polls every
+100 ms and resolves after draw activity advances across frames at least 400 ms
+apart. The loader races renderer readiness against WASM initialization failure,
+so an event loop that keeps its startup promise pending cannot block the ready
+state.
+
+Bevy's canvas focus also moved the page to `scrollY = 262`, hiding the sound
+button. The route now wraps that canvas instance's `focus()` with
+`preventScroll: true` and restores the original method on page unload. Chromium
+154 kept the page at `scrollY = 0` with the sound button at viewport position
+`y = 215` after startup.
+
+The Chromium 154 sweep loaded all five WebAssembly routes at 1,215 × 700 pixels.
+Each reached the ready state after WebGL draw activity, exposed an `Enable
+sound` button, and reported two starting audio sources and destination
+connections. A trusted click moved each audio context from `suspended` to
+`running` and changed the button to `Mute sound`. This checks browser graph
+connections and activation; physical speakers were not tested.
+
+The new forest capture contains 24 frames at 10 frames per second from a
+1440 × 1100 Chromium viewport. Moving the listener through the brush changed
+the direct response from clear at 100% per band to attenuated at 42% low, 30%
+mid, and 18% high. The project GIF, MP4 preview, and WebP poster use only its
+procedural Bevy scene. They do not reuse Vercidium video or Patreon images.
+
 ## References
 
 - [Bevy examples in WebGL2](https://bevy.org/examples/)

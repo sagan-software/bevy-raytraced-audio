@@ -1,8 +1,12 @@
 import {
   canvasHasBeenResized,
   audioControlState,
+  installWebGLDrawMonitor,
   probeWebGL2,
   restoreScrollPosition,
+  suppressCanvasFocusScroll,
+  waitForCanvasDrawActivity,
+  waitForRendererReady,
 } from "./web-demo-support.mjs";
 
 const startButton = document.querySelector("#start-demo");
@@ -10,8 +14,54 @@ const statusLine = document.querySelector("#demo-status");
 const canvas = document.querySelector("#bevy-canvas");
 const canvasState = document.querySelector("#canvas-state");
 const bevyAudioContexts = new Set();
+const bevyAudioGraph = { startedSources: 0, outputConnections: 0 };
 
 window.__bevyAudioContexts = bevyAudioContexts;
+window.__bevyAudioGraph = bevyAudioGraph;
+
+function monitorAudioGraph() {
+  const sourcePrototype = window.AudioBufferSourceNode?.prototype;
+  const originalStart = sourcePrototype?.start;
+  if (typeof originalStart === "function") {
+    try {
+      Object.defineProperty(sourcePrototype, "start", {
+        configurable: true,
+        writable: true,
+        value: function start(...arguments_) {
+          const result = Reflect.apply(originalStart, this, arguments_);
+          bevyAudioGraph.startedSources += 1;
+          updateAudioControls();
+          return result;
+        },
+      });
+    } catch {
+      // Playback remains available when a browser protects this prototype.
+    }
+  }
+
+  const nodePrototype = window.AudioNode?.prototype;
+  const originalConnect = nodePrototype?.connect;
+  if (typeof originalConnect === "function") {
+    try {
+      Object.defineProperty(nodePrototype, "connect", {
+        configurable: true,
+        writable: true,
+        value: function connect(destination, ...arguments_) {
+          const result = Reflect.apply(originalConnect, this, [destination, ...arguments_]);
+          if (destination === this.context?.destination) {
+            bevyAudioGraph.outputConnections += 1;
+            updateAudioControls();
+          }
+          return result;
+        },
+      });
+    } catch {
+      // Playback remains available when a browser protects this prototype.
+    }
+  }
+}
+
+monitorAudioGraph();
 
 const NativeAudioContext = window.AudioContext ?? window.webkitAudioContext;
 if (NativeAudioContext) {
@@ -26,6 +76,7 @@ if (NativeAudioContext) {
     construct(target, arguments_, newTarget) {
       const context = Reflect.construct(target, arguments_, newTarget);
       bevyAudioContexts.add(context);
+      context.addEventListener("statechange", updateAudioControls);
       return context;
     },
   });
@@ -47,7 +98,10 @@ function browserRecoveryInstructions() {
 }
 
 function updateAudioControls() {
-  const state = audioControlState([...bevyAudioContexts].map((context) => context.state));
+  const state = audioControlState(
+    [...bevyAudioContexts].map((context) => context.state),
+    bevyAudioGraph,
+  );
   startButton.disabled = state.disabled;
   startButton.textContent = state.buttonText;
   statusLine.textContent = state.statusText;
@@ -73,10 +127,15 @@ function waitForCanvasResize(timeoutMilliseconds) {
 
 async function loadBevyScene() {
   const initialScrollPosition = { x: window.scrollX, y: window.scrollY };
+  let drawMonitor;
   try {
     if (!probeWebGL2(document)) {
       throw new Error("This browser could not create a WebGL2 canvas.");
     }
+
+    const restoreCanvasFocus = suppressCanvasFocusScroll(canvas);
+    window.addEventListener("pagehide", restoreCanvasFocus, { once: true });
+    drawMonitor = installWebGLDrawMonitor(window.WebGL2RenderingContext?.prototype);
 
     const [wasmBindings, bytes] = await Promise.all([
       import(new URL("./pkg/app.js", window.location.href)),
@@ -93,9 +152,12 @@ async function loadBevyScene() {
       }),
     ]);
 
-    await wasmBindings.default({ module_or_path: bytes });
-    await waitForCanvasResize(15_000);
+    const wasmInitialization = wasmBindings.default({ module_or_path: bytes });
+    const rendererReady = waitForCanvasResize(15_000)
+      .then(() => waitForCanvasDrawActivity(drawMonitor, 15_000));
+    await waitForRendererReady(wasmInitialization, rendererReady);
   } finally {
+    drawMonitor?.restore();
     restoreScrollPosition(window, initialScrollPosition);
   }
 }
@@ -105,7 +167,7 @@ loadBevyScene().then(() => {
   updateAudioControls();
 }).catch((error) => {
   const reason = error instanceof Error ? error.message : String(error);
-  const isGraphicsFailure = /WebGL2|renderer did not size/u.test(reason);
+  const isGraphicsFailure = /WebGL2|renderer resized|renderer did not size/u.test(reason);
   const message = isGraphicsFailure
     ? `${reason} ${browserRecoveryInstructions()}`
     : `The Bevy scene failed to start: ${reason}`;
