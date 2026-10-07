@@ -55,13 +55,37 @@
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
-        src = craneLib.cleanCargoSource ./.;
+        # Cargo's default filter omits shared Rust modules outside package directories.
+        filterCargoAndSharedSources =
+          path: type:
+          let
+            pathString = toString path;
+            isSharedRustModule =
+              (type == "directory" && pkgs.lib.hasSuffix "/crates/shared" pathString)
+              || (
+                type == "regular"
+                && pkgs.lib.hasInfix "/crates/shared/" pathString
+                && pkgs.lib.hasSuffix ".rs" pathString
+              );
+          in
+          pkgs.lib.cleanSourceFilter path type
+          && (craneLib.filterCargoSources path type || isSharedRustModule);
+        src = pkgs.lib.cleanSourceWith {
+          src = ./.;
+          filter = filterCargoAndSharedSources;
+          name = "source-with-shared-modules";
+        };
         # The audio fixture test embeds a WAV file, which Crane's default filter omits.
         srcWithAudioAssets = pkgs.lib.cleanSourceWith {
-          src = pkgs.lib.cleanSource ./.;
+          src = ./.;
           filter =
             path: type:
-            (craneLib.filterCargoSources path type) || (type == "regular" && pkgs.lib.hasSuffix ".wav" path);
+            filterCargoAndSharedSources path type
+            || (
+              pkgs.lib.cleanSourceFilter path type
+              && type == "regular"
+              && pkgs.lib.hasSuffix ".wav" (toString path)
+            );
           name = "source-with-audio-assets";
         };
         packageName = "bevy-raytraced-audio";
