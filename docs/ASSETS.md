@@ -13,12 +13,16 @@ third-party scene or audio asset is bundled.
 - `assets/gifs/examples-3d.gif`: Twelve sampled frames of the 16-emitter,
   32-triangle 3D stress scene. It was recorded from this project's WebAssembly
   example on Intel UHD Graphics 620 through ANGLE Vulkan.
-- `website/assets/forest-demo.webp`: A 1215 × 700 capture of the forest route
-  on Intel UHD Graphics 620 through ANGLE Vulkan. It is used for the featured
-  example and forest card.
-- `website/assets/gifs/forest-walk.gif`: Twenty-four frames at 8 FPS from the
-  forest route on Intel UHD Graphics 620 through ANGLE Vulkan. The sequence
-  moves across the brush screen and back; direct response and band gains change.
+- `website/assets/forest-demo.webp`: A 960 × 466 capture of the 1280 × 621 Bevy
+  canvas from Chromium 154 with SwiftShader WebGL2. It shows the brush-attenuated
+  direct path and one floor-reflection path.
+- `website/assets/gifs/forest-walk.gif`: Thirty-six captured frames from
+  Chromium 154 with SwiftShader WebGL2. The GIF duration is 4.51 seconds. The
+  listener moves across the brush screen, changing the direct response from
+  75%, 65%, and 52% to 100% in all bands while one floor-reflection path remains
+  visible.
+- `website/assets/forest-walk.mp4`: The same canvas sequence in H.264 format
+  without an audio track. The gallery labels it as a muted preview.
 
 The browser builder copies the same WAV file beside each example route. It does
 not fetch audio or geometry at runtime.

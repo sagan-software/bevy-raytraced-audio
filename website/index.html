@@ -54,19 +54,27 @@
 
         <div class="catalog-content">
           <section class="featured-example" id="forest-showcase" aria-labelledby="featured-title">
-            <a class="featured-art" href="./examples/forest-3d/" aria-label="Open the interactive Forest sound paths demo">
+            <div class="featured-art" id="featured-art">
               <video class="featured-preview" data-motion-preview muted loop playsinline preload="none" poster="./assets/forest-demo.webp" aria-hidden="true">
                 <source src="./assets/forest-walk.mp4" type="video/mp4" />
               </video>
-              <span class="play-mark" aria-hidden="true">
+              <span class="preview-status">Muted scene preview</span>
+              <button
+                class="launch-demo"
+                id="launch-forest-demo"
+                type="button"
+                data-demo-src="./examples/forest-3d/embed.html"
+                data-demo-title="Interactive forest acoustic audio demo"
+              >
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-              </span>
-            </a>
+                <span>Run the 3D demo</span>
+              </button>
+            </div>
             <div class="featured-copy">
               <h2 id="featured-title">Forest sound paths</h2>
-              <p>Walk around a stone arch while a spatial chime moves through a low-poly forest. Watch direct and first-order reflection paths respond to the listener.</p>
-              <a class="text-link" href="./examples/forest-3d/">Open the interactive scene</a>
-              <p class="featured-meta">Move with WASD · orbit with mouse · enable sound in the scene</p>
+              <p id="featured-description">The preview is muted. Run the Bevy scene here to move the listener around the stone arch, see direct and reflected paths update, and hear the chime change when the direct path clears.</p>
+              <a class="text-link" href="./examples/forest-3d/">Open the standalone example</a>
+              <p class="featured-meta" id="featured-meta">Click Enable sound or the scene · move with WASD · orbit with mouse</p>
             </div>
           </section>
 

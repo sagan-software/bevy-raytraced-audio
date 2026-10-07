@@ -59,4 +59,6 @@ for example_slug in "${example_slugs[@]}"; do
     test -s "$site_dir/examples/$example_slug/assets/audio/bevy-raytraced-audio-chime.wav"
 done
 
+test -s "$site_dir/examples/forest-3d/embed.html"
+
 printf 'Built the gallery and %s browser examples in %s\n' "${#example_names[@]}" "$site_dir"

@@ -15,6 +15,46 @@ export function probeWebGL2(document) {
   }
 }
 
+/** Replaces an animated poster with the matching Bevy example after a visitor asks to run it. */
+export function createInteractiveDemoFrame(document, container, source, title) {
+  container.querySelector?.("video")?.pause();
+  const frame = document.createElement("iframe");
+  frame.title = title;
+  frame.src = source;
+  frame.loading = "eager";
+  frame.allow = "autoplay; fullscreen; gamepad";
+  container.replaceChildren(frame);
+  container.classList.add("demo-loaded");
+  return frame;
+}
+
+/** Resumes browser-suspended Bevy audio when the visitor interacts with its canvas. */
+export function installAudioGestureResume(canvas, getContexts, updateControls) {
+  const resumeSuspendedContexts = () => {
+    const resumeOperations = [...getContexts()]
+      .filter((context) => context.state !== "running")
+      .map((context) => {
+        try {
+          return context.resume();
+        } catch (error) {
+          return Promise.reject(error);
+        }
+      });
+
+    if (resumeOperations.length > 0) {
+      void Promise.allSettled(resumeOperations).then(updateControls);
+    }
+  };
+
+  canvas.addEventListener("pointerdown", resumeSuspendedContexts);
+  canvas.addEventListener("keydown", resumeSuspendedContexts);
+
+  return () => {
+    canvas.removeEventListener("pointerdown", resumeSuspendedContexts);
+    canvas.removeEventListener("keydown", resumeSuspendedContexts);
+  };
+}
+
 export function canvasHasBeenResized(canvas, devicePixelRatio = 1) {
   if (
     canvas.clientWidth <= 0

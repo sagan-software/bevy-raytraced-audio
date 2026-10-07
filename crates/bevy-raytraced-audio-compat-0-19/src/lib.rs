@@ -7,4 +7,8 @@ pub mod audio_2d;
 pub mod audio_3d;
 
 #[cfg(test)]
+#[path = "../../shared/gpu_runtime.rs"]
+pub(crate) mod gpu_runtime;
+
+#[cfg(test)]
 mod test_support;

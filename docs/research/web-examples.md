@@ -22,9 +22,9 @@ The local `nix run .#web-build` completed and produced the gallery, book, and fi
 
 The browser stress routes use 16 emitters and 32 surfaces. Local Chromium loaded all five routes, and each audio context changed to `running` after a click. A DevTools Web Audio trace of the 3D stress route showed 59 `AudioBufferSource` nodes connected to a running `AudioDestination` at 44.1 kHz. This verifies the browser output graph, but not physical speaker output.
 
-The gallery and stress pages had no horizontal overflow at a 390-pixel viewport. The README contains 12 sampled frames from each stress route and a 24-frame forest walk, recorded on Intel UHD Graphics 620 through ANGLE Vulkan.
+The gallery and expanded forest demo had no horizontal overflow at a 390 × 844-pixel viewport. The README contains 12 sampled frames from each stress route, recorded on Intel UHD Graphics 620 through ANGLE Vulkan, and a 36-frame forest walk, captured with Chromium 154 and SwiftShader WebGL2. The forest GIF lasts 4.51 seconds; its paired MP4 lasts 4.5 seconds at 8 frames per second.
 
-For the uncapped browser frame measurement, Chromium disabled frame limiting and GPU VSync. At a 1,215 × 700 canvas size, 15 one-second bins ranged from 196 to 277 browser animation-frame callbacks per second across the five routes. Every bin exceeded 90 callbacks per second; physical display presentation remains unverified. The route-specific ranges are recorded in [testing and benchmark results](../TESTING-AND-BENCHMARKS.md).
+For the uncapped browser frame measurement, Chromium disabled frame limiting and GPU VSync. The 2026-10-07 run measured 15 one-second bins at a 1,215 × 700 canvas size; every route exceeded 90 browser animation-frame callbacks per second. The route-specific ranges are recorded in [testing and benchmark results](../TESTING-AND-BENCHMARKS.md). Physical display presentation remains unverified.
 
 ## Sources
 

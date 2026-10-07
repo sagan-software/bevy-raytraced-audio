@@ -1,6 +1,7 @@
 import {
   canvasHasBeenResized,
   audioControlState,
+  installAudioGestureResume,
   installWebGLDrawMonitor,
   probeWebGL2,
   restoreScrollPosition,
@@ -106,6 +107,13 @@ function updateAudioControls() {
   startButton.textContent = state.buttonText;
   statusLine.textContent = state.statusText;
 }
+
+const removeAudioGestureResume = installAudioGestureResume(
+  canvas,
+  () => bevyAudioContexts,
+  updateAudioControls,
+);
+window.addEventListener("pagehide", removeAudioGestureResume, { once: true });
 
 function waitForCanvasResize(timeoutMilliseconds) {
   const deadline = Date.now() + timeoutMilliseconds;

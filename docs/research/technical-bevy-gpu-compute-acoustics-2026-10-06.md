@@ -402,9 +402,10 @@ GPU work.
   `CpuFallback(reason)`.
 - The renderer, device, queue, bind groups, pipeline, and output buffers remain
   private to the selected Bevy compatibility crate.
-- Core geometry enters GPU packing only after existing finite-coordinate and
-  material validation; f64-to-f32 conversion adds a separate finite and
-  tolerance check.
+- Public core points and Bevy transforms store finite `f32` coordinates; CPU
+  tracing promotes those values to `f64` for geometry operations. WGSL receives
+  the same `f32` inputs, so parity risk comes from intermediate arithmetic and
+  intersection boundaries rather than a separate input downcast.
 - Every GPU result is untrusted until output length, emitter index, entity
   generation, scene revision, batch sequence, age, gain range, and finiteness
   pass validation.
@@ -482,8 +483,8 @@ result against the matching CPU direct response for endpoint-on-surface,
 parallel, near-parallel, intersecting, missed, zero-transmission, and
 multi-surface cases in both dimensions. Compare distance, three band gains,
 and occlusion independently. Set the accepted numeric tolerance from measured
-f32 error against the CPU's f64 geometry; do not accept GPU results outside
-that tolerance.
+WGSL `f32` arithmetic error against the CPU's `f64` geometry operations; do not
+accept GPU results outside that tolerance.
 
 Test state transitions without a GPU by injecting pipeline, device, custom
 readback mapping,
@@ -525,14 +526,15 @@ small or frequently changing scenes, transfer cost can exceed the work saved
 by compute. For sparse larger scenes, BVH traversal can reduce candidate
 intersections; its worst-case query work remains linear in surface count.
 
-The portability risk is numerical: the CPU accepts finite f64 geometry while
-portable WGSL uses f32 arithmetic. The GPU backend must detect values that
-cannot be represented as finite f32 and fall back to CPU. Near-degenerate
-geometry can also disagree after f32 rounding, so shader parity tests need
-boundary fixtures and a conservative tolerance. No coordinate normalization
-or near-degenerate rejection profile has been implemented; this decision
-remains open until measured. GPU acceleration remains experimental until this
-profile is implemented and measured.
+The portability risk is numerical: public scene coordinates are finite `f32`
+values, CPU geometry operations promote them to `f64`, and portable WGSL uses
+`f32` arithmetic. The GPU backend must reject non-finite intermediate values
+and near-degenerate cases whose intersection classification differs from the
+CPU reference. Shader parity tests need boundary fixtures and a conservative
+tolerance measured against the CPU operations. No coordinate normalization or
+near-degenerate rejection profile has been implemented; this decision remains
+open until measured. GPU acceleration remains experimental until this profile
+is implemented and measured.
 
 ## Technical Research Recommendations
 
@@ -602,8 +604,8 @@ share state or timing with the audio callback.
 This research does not establish that GPU compute will outperform the current
 parallel CPU path. Every selected Bevy minor uses a different wgpu major, and
 WebGL2/GLES 3.0 lack compute shaders. CPU/GPU parity is also constrained by
-f64 CPU geometry and f32 portable shader arithmetic. The implementation must
-reject unsafe GPU input or output and retain CPU responses during pipeline
+f64 CPU geometry operations and f32 portable shader arithmetic. The
+implementation must reject unsafe GPU input or output and retain CPU responses during pipeline
 startup, pending readback, unsupported devices, and all failures.
 
 ### Contents

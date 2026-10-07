@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createInteractiveDemoFrame } from "../web-demo-support.mjs";
 
 let importNumber = 0;
 
@@ -21,6 +22,8 @@ function installDocument(reducedMotion = false) {
   };
   const count = { textContent: "" };
   const emptyState = { hidden: true };
+  const featuredDescription = { textContent: "The preview is muted." };
+  const featuredMeta = { textContent: "Click Enable sound or the scene." };
   const forestPreview = {
     playCalls: 0,
     pauseCalls: 0,
@@ -31,6 +34,22 @@ function installDocument(reducedMotion = false) {
     pause() { this.pauseCalls += 1; },
   };
   const motionListeners = new Map();
+  const launchListeners = new Map();
+  const createdFrames = [];
+  const featuredArt = {
+    children: [],
+    classes: [],
+    querySelector: () => forestPreview,
+    replaceChildren(...children) { this.children = children; },
+    classList: { add: (name) => featuredArt.classes.push(name) },
+  };
+  const launchButton = {
+    dataset: {
+      demoSrc: "./examples/forest-3d/embed.html",
+      demoTitle: "Interactive forest audio demo",
+    },
+    addEventListener: (name, listener) => launchListeners.set(name, listener),
+  };
   const motionPreference = {
     matches: reducedMotion,
     addEventListener: (name, listener) => motionListeners.set(name, listener),
@@ -41,17 +60,42 @@ function installDocument(reducedMotion = false) {
       return selector === "#example-search" ? search
         : selector === "#example-count" ? count
           : selector === "[data-motion-preview]" ? forestPreview
+            : selector === "#launch-forest-demo" ? launchButton
+              : selector === "#featured-art" ? featuredArt
+                : selector === "#featured-description" ? featuredDescription
+                  : selector === "#featured-meta" ? featuredMeta
           : emptyState;
     },
     querySelectorAll(selector) {
       return selector === "[data-example-section]" ? sections : cards;
+    },
+    createElement(tagName) {
+      const frame = { tagName };
+      createdFrames.push(frame);
+      return frame;
     },
     addEventListener: (name, listener) => listeners.set(`document:${name}`, listener),
   };
 
   globalThis.document = document;
   globalThis.window = { matchMedia: () => motionPreference };
-  return { cards, count, emptyState, forestPreview, listeners, motionListeners, motionPreference, search, sections };
+  return {
+    cards,
+    count,
+    createdFrames,
+    emptyState,
+    featuredArt,
+    featuredDescription,
+    featuredMeta,
+    forestPreview,
+    launchButton,
+    launchListeners,
+    listeners,
+    motionListeners,
+    motionPreference,
+    search,
+    sections,
+  };
 }
 
 async function loadCatalog() {
@@ -87,6 +131,30 @@ test("shows an empty message when no card matches", async () => {
     assert.equal(harness.cards.every((card) => card.hidden), true);
     assert.deepEqual(harness.sections.map((section) => section.hidden), [true, true]);
     assert.equal(harness.emptyState.hidden, false);
+  } finally {
+    delete globalThis.document;
+    delete globalThis.window;
+  }
+});
+
+test("replaces the muted preview with the interactive forest demo on request", async () => {
+  const harness = installDocument();
+  try {
+    await loadCatalog();
+    harness.launchListeners.get("click")();
+
+    assert.equal(harness.forestPreview.pauseCalls, 1);
+    assert.equal(harness.createdFrames.length, 1);
+    assert.deepEqual(harness.featuredArt.children, [harness.createdFrames[0]]);
+    assert.equal(harness.createdFrames[0].src, "./examples/forest-3d/embed.html");
+    assert.equal(harness.createdFrames[0].title, "Interactive forest audio demo");
+    assert.equal(harness.createdFrames[0].loading, "eager");
+    assert.equal(harness.createdFrames[0].allow, "autoplay; fullscreen; gamepad");
+    assert.deepEqual(harness.featuredArt.classes, ["demo-loaded"]);
+    assert.doesNotMatch(harness.featuredDescription.textContent, /preview/u);
+    assert.match(harness.featuredDescription.textContent, /direct path clears/u);
+    assert.doesNotMatch(harness.featuredMeta.textContent, /Enable sound/u);
+    assert.match(harness.featuredMeta.textContent, /arrow keys/u);
   } finally {
     delete globalThis.document;
     delete globalThis.window;

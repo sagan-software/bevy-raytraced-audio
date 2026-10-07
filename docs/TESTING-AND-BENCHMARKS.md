@@ -53,9 +53,9 @@ These are uncapped browser animation-frame callbacks, not physical display prese
 
 `nix run .#web-build` built the gallery, Markdown book, and five separate WebAssembly examples. The repository's GitHub Pages workflow deploys the gallery and book at [the published site](https://sagan-software.github.io/bevy-raytraced-audio/).
 
-The local Chromium 154 review loaded all five routes at 1,215 × 700 pixels. Each route reached the ready state after successive WebGL draw calls and left the audio button in view. A trusted browser click changed each Bevy Web Audio context from `suspended` to `running`; each button then showed `Mute sound`. This verifies a connected browser audio graph, not sound from physical speakers.
+The local Chromium 154 review loaded all five routes after successive WebGL draw calls. A trusted click changed each route's Bevy Web Audio context from `suspended` to `running`; each button then showed `Mute sound`. In the standalone and inline forest checks, Bevy source-start calls reached the Web Audio destination. These checks verify browser audio graphs, not physical speaker output.
 
-At a 390-pixel viewport, the gallery had a 390-pixel document width and no horizontal overflow. The README contains 12-frame stress captures and a 24-frame forest walkthrough. The forest GIF shows direct gain change as the listener crosses the brush screen.
+At a 390 × 844-pixel viewport, the gallery and expanded forest demo had no horizontal overflow. The forest canvas resized to 390 × 746 pixels in the standalone route and 356 × 402 pixels inside the gallery card. The camera fits the acoustic scene to the viewport aspect ratio, keeping the listener, chime, direct path, and reflection paths visible. The README contains 12-frame stress captures and a 36-frame forest walkthrough. The forest GIF shows direct gain change as the listener crosses the brush screen.
 
 Firefox 157 headless returned `null` from `canvas.getContext("webgl2")`. The route displayed the Firefox hardware-acceleration recovery message instead of a static scene. This does not verify normal Firefox with hardware acceleration.
 

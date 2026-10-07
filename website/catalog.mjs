@@ -1,3 +1,5 @@
+import { createInteractiveDemoFrame } from "./web-demo-support.mjs";
+
 const search = document.querySelector("#example-search");
 const cards = [...document.querySelectorAll(".example-card")];
 const sections = [...document.querySelectorAll("[data-example-section]")];
@@ -34,6 +36,27 @@ document.addEventListener("keydown", (event) => {
 });
 
 updateExamples();
+
+const launchForestDemo = document.querySelector("#launch-forest-demo");
+const featuredArt = document.querySelector("#featured-art");
+const featuredDescription = document.querySelector("#featured-description");
+const featuredMeta = document.querySelector("#featured-meta");
+if (launchForestDemo && featuredArt) {
+  launchForestDemo.addEventListener("click", () => {
+    createInteractiveDemoFrame(
+      document,
+      featuredArt,
+      launchForestDemo.dataset.demoSrc,
+      launchForestDemo.dataset.demoTitle,
+    );
+    if (featuredDescription) {
+      featuredDescription.textContent = "Move the listener around the stone arch. Watch direct and reflected paths update; hear the chime change when the direct path clears.";
+    }
+    if (featuredMeta) {
+      featuredMeta.textContent = "WASD or arrow keys move the listener · hold mouse to orbit · wheel to zoom";
+    }
+  });
+}
 
 const forestPreview = document.querySelector("[data-motion-preview]");
 if (forestPreview && typeof window !== "undefined" && typeof window.matchMedia === "function") {

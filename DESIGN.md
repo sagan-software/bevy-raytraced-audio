@@ -4,8 +4,9 @@
 
 The landing page follows Bevy's example catalogue: a category index, search,
 category headings, and two-column example cards. A forest scene leads the
-catalogue and links to its own interactive route. The 2D tutorial, 3D tutorial,
-and stress tests keep separate browser routes.
+catalogue with an animated, muted preview. Selecting its launch control
+replaces the preview with the Bevy scene; a standalone route remains available.
+The 2D tutorial, 3D tutorial, and stress tests keep separate browser routes.
 
 ## Visual system
 
@@ -20,9 +21,9 @@ Each browser route loads a separate Bevy WebAssembly build. Check WebGL2 before
 downloading the build, and wait until Bevy resizes its canvas before reporting
 the scene as ready. A blocked renderer shows a recovery instruction in the
 canvas. The audio button resumes or suspends Bevy's Web Audio context from a
-user click. In the forest scene, WASD moves the listener, mouse drag orbits the
-camera, the wheel changes camera distance, B toggles paths, and F1 toggles
-diagnostics.
+user click. Canvas pointer and keyboard gestures also resume suspended audio.
+In the forest scene, WASD moves the listener, mouse drag orbits the camera, the
+wheel changes camera distance, B toggles paths, and F1 toggles diagnostics.
 
 ## Accessibility
 

@@ -848,3 +848,37 @@ fn clearing_scenes_removes_geometry_and_zero_length_paths_are_valid() -> Result<
     assert_eq!(response3d.reflected_energy, BandEnergy::ZERO);
     Ok(())
 }
+
+/// A validated GPU direct gain replaces only direct transmission in the CPU response.
+#[test]
+fn gpu_direct_gain_preserves_cpu_distance_and_reflections() -> Result<(), GeometryError> {
+    let reflector = Triangle3d::try_new(
+        [
+            Point3::try_new(1.0, -1.0, 0.0)?,
+            Point3::try_new(1.0, 1.0, 0.0)?,
+            Point3::try_new(1.0, 0.0, 2.0)?,
+        ],
+        AcousticMaterial::default(),
+    )?;
+    let mut scene = AcousticScene3d::default();
+    scene.add_triangle(reflector);
+    let position = Point3::try_new(-1.0, 0.0, 0.0)?;
+    let receiver = Point3::try_new(-1.0, 0.0, 2.0)?;
+    let cpu_response = scene.trace(Emitter3d::new(position), Listener3d::new(receiver));
+    let gpu_gain = BandGain::try_new(0.25, 0.5, 0.75)?;
+
+    let response = cpu_response.with_direct_gain(gpu_gain);
+
+    assert_eq!(
+        response.direct.distance_m(),
+        cpu_response.direct.distance_m()
+    );
+    assert_eq!(response.reflected_energy, cpu_response.reflected_energy);
+    assert_eq!(response.direct.gain(), gpu_gain);
+    assert!(response.direct.is_occluded());
+
+    let unobstructed = response.with_direct_gain(BandGain::UNITY);
+    assert_eq!(unobstructed.direct.gain(), BandGain::UNITY);
+    assert!(!unobstructed.direct.is_occluded());
+    Ok(())
+}

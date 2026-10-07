@@ -24,9 +24,9 @@ const ARCH_POST_WIDTH_METERS: f32 = 0.42;
 /// Height of each stone arch post, in meters.
 const ARCH_POST_HEIGHT_METERS: f32 = 2.9;
 /// Center distance of each post from the arch opening, in meters.
-const ARCH_POST_CENTER_Z_METERS: f32 = 2.15;
+const ARCH_POST_CENTER_Z_METERS: f32 = 2.8;
 /// Stone lintel span along the world Z axis, in meters.
-const ARCH_LINTEL_SPAN_METERS: f32 = 4.7;
+const ARCH_LINTEL_SPAN_METERS: f32 = 5.9;
 /// Stone lintel height, in meters.
 const ARCH_LINTEL_HEIGHT_METERS: f32 = 0.42;
 /// Stone lintel base elevation, in meters.
@@ -35,6 +35,16 @@ const ARCH_LINTEL_BASE_Y_METERS: f32 = 2.74;
 const FOREST_FLOOR_WIDTH_METERS: f32 = 28.0;
 /// Forest acoustic floor depth along world Z, in meters.
 const FOREST_FLOOR_DEPTH_METERS: f32 = 18.0;
+/// Brush screen center along world X, in meters.
+const BRUSH_SCREEN_CENTER_X_METERS: f32 = -0.4;
+/// Brush screen center along world Z, in meters.
+const BRUSH_SCREEN_CENTER_Z_METERS: f32 = 1.75;
+/// Brush screen lower edge above the ground, in meters.
+const BRUSH_SCREEN_BASE_Y_METERS: f32 = 0.35;
+/// Brush screen visible width along world Z, in meters.
+const BRUSH_SCREEN_WIDTH_METERS: f32 = 3.4;
+/// Brush screen acoustic height above the ground, in meters.
+const BRUSH_SCREEN_HEIGHT_METERS: f32 = 1.15;
 /// Maximum listener movement along the X axis in meters.
 const LISTENER_X_LIMIT_METERS: f32 = 7.0;
 /// Maximum listener movement along the Z axis in meters.
@@ -50,6 +60,8 @@ const TREE_CANOPY_LAYERS_METERS: [(f32, f32, f32); 3] =
     [(1.2, 1.9, 0.65), (0.9, 1.6, 1.4), (0.62, 1.3, 2.0)];
 /// Source sway angular speed, in radians per second.
 const EMITTER_SWAY_RADIANS_PER_SECOND: f32 = 0.42;
+/// Initial source phase places the chime behind the brush screen, in radians.
+const EMITTER_START_PHASE_RADIANS: f32 = std::f32::consts::FRAC_PI_2;
 /// Source travel across the arch opening, in meters.
 const EMITTER_SWAY_RADIUS_METERS: f32 = 4.2;
 /// Small source orbit radius along the world X axis, in meters.
@@ -66,6 +78,22 @@ const EMITTER_VERTICAL_PHASE_MULTIPLIER: f32 = 4.0;
 const EMITTER_SIZE_PHASE_MULTIPLIER: f32 = 5.7;
 /// Visible source scale variation, as a unitless fraction.
 const EMITTER_SIZE_PULSE_AMPLITUDE: f32 = 0.08;
+/// Initial camera distance from its focus point, in meters.
+const INITIAL_CAMERA_DISTANCE_METERS: f32 = 15.5;
+/// Horizontal frame width that contains the listener, chime, and arch, in meters.
+const CAMERA_ACOUSTIC_FRAME_WIDTH_METERS: f32 = 22.0;
+/// Vertical camera field of view in radians.
+const CAMERA_VERTICAL_FOV_RADIANS: f32 = std::f32::consts::FRAC_PI_4;
+/// Minimum user zoom multiplier, relative to the aspect-fitted camera distance.
+const CAMERA_MIN_ZOOM_FACTOR: f32 = 0.5;
+/// Maximum user zoom multiplier, relative to the aspect-fitted camera distance.
+const CAMERA_MAX_ZOOM_FACTOR: f32 = 2.0;
+/// Camera zoom change per mouse-wheel unit, as a unitless factor.
+const CAMERA_ZOOM_PER_WHEEL_UNIT: f32 = 0.08;
+/// Initial horizontal camera orbit angle, in radians.
+const INITIAL_CAMERA_YAW_RADIANS: f32 = -0.35;
+/// Initial camera elevation above the horizontal plane, in radians.
+const INITIAL_CAMERA_PITCH_RADIANS: f32 = 0.58;
 
 /// Starts the forest example with Bevy's normal renderer and spatial audio output.
 fn main() {
@@ -100,7 +128,12 @@ fn main() {
         ))
         .insert_resource(WinitSettings::continuous())
         .init_resource::<SceneDisplay>()
-        .insert_resource(ClearColor(Color::srgb(0.025, 0.07, 0.075)))
+        .insert_resource(ClearColor(Color::srgb(0.075, 0.16, 0.17)))
+        .insert_resource(GlobalAmbientLight {
+            color: Color::srgb(0.65, 0.8, 0.74),
+            brightness: 145.0,
+            ..default()
+        })
         .add_systems(Startup, setup_scene)
         .add_systems(
             Update,
@@ -122,7 +155,7 @@ fn setup_scene(
     mut materials: ResMut<'_, Assets<StandardMaterial>>,
 ) {
     let floor_material = materials.add(StandardMaterial {
-        base_color: Color::srgb(0.18, 0.28, 0.19),
+        base_color: Color::srgb(0.24, 0.34, 0.2),
         perceptual_roughness: 1.0,
         ..default()
     });
@@ -140,7 +173,8 @@ fn setup_scene(
     // A single shadow-free directional light keeps the procedural scene inexpensive.
     commands.spawn((
         DirectionalLight {
-            illuminance: 14_000.0,
+            color: Color::srgb(1.0, 0.88, 0.68),
+            illuminance: 11_000.0,
             shadow_maps_enabled: false,
             ..default()
         },
@@ -157,17 +191,17 @@ fn setup_scene(
     });
     let canopy_materials = [
         materials.add(StandardMaterial {
-            base_color: Color::srgb(0.12, 0.28, 0.19),
+            base_color: Color::srgb(0.14, 0.31, 0.2),
             perceptual_roughness: 1.0,
             ..default()
         }),
         materials.add(StandardMaterial {
-            base_color: Color::srgb(0.16, 0.35, 0.22),
+            base_color: Color::srgb(0.19, 0.39, 0.24),
             perceptual_roughness: 1.0,
             ..default()
         }),
         materials.add(StandardMaterial {
-            base_color: Color::srgb(0.22, 0.39, 0.25),
+            base_color: Color::srgb(0.26, 0.44, 0.27),
             perceptual_roughness: 1.0,
             ..default()
         }),
@@ -202,7 +236,7 @@ fn setup_scene(
         Transform::from_xyz(-4.8, 0.9, 0.0),
     ));
 
-    let emitter_mesh = meshes.add(Sphere::new(0.2).mesh().ico(2).expect("valid emitter mesh"));
+    let emitter_mesh = meshes.add(Sphere::new(0.28).mesh().ico(2).expect("valid emitter mesh"));
     let emitter_material = materials.add(StandardMaterial {
         base_color: Color::srgb(1.0, 0.58, 0.24),
         emissive: LinearRgba::new(1.0, 0.31, 0.055, 1.0),
@@ -216,18 +250,22 @@ fn setup_scene(
         PlaybackSettings::LOOP.with_spatial(true),
         Mesh3d(emitter_mesh),
         MeshMaterial3d(emitter_material),
-        Transform::from_xyz(4.2, 1.0, 0.0),
+        emitter_start_transform(),
         MovingEmitter,
     ));
 
     commands.spawn((
         Camera3d::default(),
+        Projection::Perspective(PerspectiveProjection {
+            fov: CAMERA_VERTICAL_FOV_RADIANS,
+            ..default()
+        }),
         Msaa::Off,
         Transform::from_xyz(-8.0, 7.5, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
         ForestCamera {
-            yaw_radians: -0.68,
-            pitch_radians: 0.42,
-            distance_meters: 11.0,
+            yaw_radians: INITIAL_CAMERA_YAW_RADIANS,
+            pitch_radians: INITIAL_CAMERA_PITCH_RADIANS,
+            zoom_factor: 1.0,
         },
     ));
 
@@ -285,18 +323,36 @@ fn spawn_acoustic_environment(
     );
 
     // The brush screen uses a different material profile from the stone frame.
-    let brush_material = materials.add(Color::srgb(0.15, 0.3, 0.17));
-    spawn_visual_box(
-        commands,
-        meshes,
-        brush_material,
-        Vec3::new(-1.55, 0.6, 3.5),
-        Vec3::new(0.16, 1.2, 1.8),
-    );
+    // The visible shrub clusters make the first source-to-listener obstruction readable.
+    let shrub_mesh = meshes.add(Sphere::new(0.78).mesh().ico(2).expect("valid shrub mesh"));
+    let shrub_materials = [
+        materials.add(Color::srgb(0.12, 0.28, 0.16)),
+        materials.add(Color::srgb(0.17, 0.34, 0.18)),
+        materials.add(Color::srgb(0.22, 0.39, 0.21)),
+    ];
+    for (cluster_index, z_offset) in [-0.9, 0.0, 0.9].into_iter().enumerate() {
+        let material = shrub_materials
+            .get(cluster_index)
+            .expect("the brush screen has three shrub materials");
+        commands.spawn((
+            Mesh3d(shrub_mesh.clone()),
+            MeshMaterial3d(material.clone()),
+            Transform::from_xyz(
+                BRUSH_SCREEN_CENTER_X_METERS,
+                0.92,
+                BRUSH_SCREEN_CENTER_Z_METERS + z_offset,
+            )
+            .with_scale(Vec3::new(0.6, 0.72, 1.0)),
+        ));
+    }
     spawn_acoustic_panel(
         commands,
-        panel_triangles(1.8, 1.2),
-        Transform::from_xyz(-1.55, 0.0, 3.5),
+        panel_triangles(BRUSH_SCREEN_WIDTH_METERS, BRUSH_SCREEN_HEIGHT_METERS),
+        Transform::from_xyz(
+            BRUSH_SCREEN_CENTER_X_METERS,
+            BRUSH_SCREEN_BASE_Y_METERS,
+            BRUSH_SCREEN_CENTER_Z_METERS,
+        ),
         brush_acoustic_material(),
     );
 
@@ -318,9 +374,9 @@ fn spawn_forest(
         (-4.3, -6.8, 0.8),
         (-3.5, 5.8, 1.1),
         (-1.6, -6.0, 0.85),
-        (0.8, 6.4, 1.05),
+        (-8.8, 7.0, 1.05),
         (2.1, -6.4, 0.95),
-        (4.2, 5.8, 0.9),
+        (6.7, 6.6, 0.9),
         (6.3, -5.6, 1.1),
         (8.0, 4.8, 0.9),
         (-9.3, 1.6, 1.0),
@@ -432,7 +488,7 @@ fn stone_acoustic_material() -> AcousticMaterial {
 fn brush_acoustic_material() -> AcousticMaterial {
     let absorption = BandAbsorption::try_new(0.35, 0.52, 0.68)
         .expect("the example's fixed brush coefficients are valid");
-    let transmission = BandGain::try_new(0.42, 0.3, 0.18)
+    let transmission = BandGain::try_new(0.75, 0.65, 0.52)
         .expect("the example's fixed brush transmission is valid");
     AcousticMaterial::new(absorption)
         .try_with_transmission(transmission)
@@ -476,7 +532,7 @@ fn spawn_path_stones(
 /// Places compact keyboard help and current path measurements over the Bevy canvas.
 fn spawn_help_overlay(commands: &mut Commands<'_, '_>) {
     commands.spawn((
-        Text::new("WASD move | hold left mouse to orbit | wheel zoom\nB paths | F1 diagnostics | Esc release cursor"),
+        Text::new("WASD / arrows move | hold mouse to orbit\nWheel zoom | B paths | F1 diagnostics | Esc cursor"),
         TextFont {
             font_size: FontSize::Px(15.0),
             ..default()
@@ -502,6 +558,7 @@ fn spawn_help_overlay(commands: &mut Commands<'_, '_>) {
             position_type: PositionType::Absolute,
             right: px(14),
             bottom: px(14),
+            max_width: Val::Percent(82.0),
             padding: UiRect::all(px(10)),
             ..default()
         },
@@ -530,6 +587,7 @@ fn spawn_help_overlay(commands: &mut Commands<'_, '_>) {
 /// Moves the listener, changes the camera orbit, and toggles the visual overlays.
 fn control_scene(
     time: Res<'_, Time>,
+    window: Single<'_, '_, &Window>,
     keys: Res<'_, ButtonInput<KeyCode>>,
     mouse_buttons: Res<'_, ButtonInput<MouseButton>>,
     mouse_motion: Res<'_, AccumulatedMouseMotion>,
@@ -568,9 +626,9 @@ fn control_scene(
             .clamp(0.12, 1.05);
     }
     for wheel in wheel_events.read() {
-        camera.1.distance_meters = (-0.7_f32)
-            .mul_add(wheel.y, camera.1.distance_meters)
-            .clamp(6.0, 18.0);
+        camera.1.zoom_factor = (-CAMERA_ZOOM_PER_WHEEL_UNIT)
+            .mul_add(wheel.y, camera.1.zoom_factor)
+            .clamp(CAMERA_MIN_ZOOM_FACTOR, CAMERA_MAX_ZOOM_FACTOR);
     }
 
     // Movement uses world XZ axes so the listener can walk around either end of the wall.
@@ -603,7 +661,9 @@ fn control_scene(
 
     // The orbit camera follows the listener while preserving its chosen distance.
     let focus = listener.translation + Vec3::Y * 0.3;
-    let distance = camera.1.distance_meters;
+    // Window dimensions share a unit, so their ratio matches the projection's unitless aspect.
+    let aspect_ratio = window.width() / window.height().max(1.0);
+    let distance = camera_distance_meters(aspect_ratio, camera.1.zoom_factor);
     let pitch = camera.1.pitch_radians;
     let yaw = camera.1.yaw_radians;
     let camera_offset = Vec3::new(
@@ -613,6 +673,18 @@ fn control_scene(
     );
     camera.0.translation = focus + camera_offset;
     camera.0.look_at(focus, Vec3::Y);
+}
+
+/// Fits the acoustic interaction into the current window aspect ratio and zoom level.
+fn camera_distance_meters(aspect_ratio: f32, zoom_factor: f32) -> f32 {
+    // Keep the dimensionless aspect positive before using it in the perspective fit.
+    let safe_aspect_ratio = aspect_ratio.max(0.1);
+    // The tangent and aspect are dimensionless, so the division returns a distance in meters.
+    let half_vertical_fov_tangent = (CAMERA_VERTICAL_FOV_RADIANS / 2.0).tan();
+    let fit_distance =
+        CAMERA_ACOUSTIC_FRAME_WIDTH_METERS / (2.0 * half_vertical_fov_tangent * safe_aspect_ratio);
+    let base_distance = INITIAL_CAMERA_DISTANCE_METERS.max(fit_distance);
+    base_distance * zoom_factor.clamp(CAMERA_MIN_ZOOM_FACTOR, CAMERA_MAX_ZOOM_FACTOR)
 }
 
 /// Marks the single audio source that moves across the forest stone arch.
@@ -625,17 +697,27 @@ fn animate_emitter(
     mut emitter: Single<'_, '_, &mut Transform, With<MovingEmitter>>,
 ) {
     let phase = time.elapsed_secs() * EMITTER_SWAY_RADIANS_PER_SECOND;
-    emitter.translation.x = phase
+    **emitter = emitter_transform_at_phase(EMITTER_START_PHASE_RADIANS + phase);
+}
+
+/// Returns the source transform at the start of the example's acoustic loop.
+fn emitter_start_transform() -> Transform {
+    emitter_transform_at_phase(EMITTER_START_PHASE_RADIANS)
+}
+
+/// Computes the moving source pose and visible pulse for one angular phase.
+fn emitter_transform_at_phase(phase: f32) -> Transform {
+    let x = phase
         .cos()
         .mul_add(EMITTER_ORBIT_RADIUS_METERS, EMITTER_CENTER_X_METERS);
-    emitter.translation.y = (phase * EMITTER_VERTICAL_PHASE_MULTIPLIER)
+    let y = (phase * EMITTER_VERTICAL_PHASE_MULTIPLIER)
         .sin()
         .mul_add(EMITTER_VERTICAL_AMPLITUDE_METERS, EMITTER_CENTER_Y_METERS);
-    emitter.translation.z = phase.sin() * EMITTER_SWAY_RADIUS_METERS;
+    let z = phase.sin() * EMITTER_SWAY_RADIUS_METERS;
     let pulse = (phase * EMITTER_SIZE_PHASE_MULTIPLIER)
         .sin()
         .mul_add(EMITTER_SIZE_PULSE_AMPLITUDE, 1.0);
-    emitter.scale = Vec3::splat(pulse);
+    Transform::from_xyz(x, y, z).with_scale(Vec3::splat(pulse))
 }
 
 /// Stores the camera's orbit pose and the listener's current view distance.
@@ -645,8 +727,8 @@ struct ForestCamera {
     yaw_radians: f32,
     /// Vertical orbit angle in radians.
     pitch_radians: f32,
-    /// Distance from the listener focus point in meters.
-    distance_meters: f32,
+    /// Unitless zoom multiplier applied after fitting the camera to the window.
+    zoom_factor: f32,
 }
 
 /// Stores toggles for the acoustic-path and frame-diagnostic overlays.
@@ -773,17 +855,138 @@ fn update_scene_readouts(
 mod tests {
     use super::{
         ARCH_LINTEL_HEIGHT_METERS, ARCH_LINTEL_SPAN_METERS, ARCH_POST_HEIGHT_METERS,
-        ARCH_POST_WIDTH_METERS, FOREST_FLOOR_DEPTH_METERS, FOREST_FLOOR_WIDTH_METERS, ForestCamera,
-        MovingEmitter, SceneDisplay, animate_emitter, brush_acoustic_material, control_scene,
+        ARCH_POST_WIDTH_METERS, BRUSH_SCREEN_BASE_Y_METERS, BRUSH_SCREEN_CENTER_X_METERS,
+        BRUSH_SCREEN_CENTER_Z_METERS, BRUSH_SCREEN_HEIGHT_METERS, BRUSH_SCREEN_WIDTH_METERS,
+        CAMERA_ACOUSTIC_FRAME_WIDTH_METERS, CAMERA_VERTICAL_FOV_RADIANS,
+        EMITTER_START_PHASE_RADIANS, EMITTER_SWAY_RADIANS_PER_SECOND, EMITTER_SWAY_RADIUS_METERS,
+        FOREST_FLOOR_DEPTH_METERS, FOREST_FLOOR_WIDTH_METERS, ForestCamera,
+        INITIAL_CAMERA_DISTANCE_METERS, MovingEmitter, SceneDisplay, animate_emitter,
+        brush_acoustic_material, camera_distance_meters, control_scene, emitter_start_transform,
         floor_triangles, forest_floor_acoustic_material, panel_triangles,
     };
     use bevy::{
-        input::mouse::{AccumulatedMouseMotion, MouseWheel},
-        prelude::{App, ButtonInput, KeyCode, MouseButton, Time, Transform, Update, Vec3},
-        window::CursorOptions,
+        input::{
+            mouse::{AccumulatedMouseMotion, MouseScrollUnit, MouseWheel},
+            touch::TouchPhase,
+        },
+        prelude::{App, ButtonInput, KeyCode, MouseButton, Time, Transform, Update, Vec3, Window},
     };
+    use bevy_raytraced_audio::{AcousticScene3d, Emitter3d, Listener3d, Point3, Triangle3d};
     use bevy_raytraced_audio_3d::RaytracedAudioListener3d;
     use std::time::Duration;
+
+    /// Fits the moving source and listener into both landscape and portrait canvases.
+    #[test]
+    fn camera_distance_fits_the_scene_at_portrait_aspect_ratios() {
+        let landscape_distance = camera_distance_meters(16.0 / 9.0, 1.0);
+        let portrait_aspect_ratio = 390.0 / 746.0;
+        let portrait_distance = camera_distance_meters(portrait_aspect_ratio, 1.0);
+        let zoomed_distance = camera_distance_meters(portrait_aspect_ratio, 0.75);
+        let portrait_frame_width = 2.0
+            * portrait_distance
+            * (CAMERA_VERTICAL_FOV_RADIANS / 2.0).tan()
+            * portrait_aspect_ratio;
+        let clamped_minimum_distance = camera_distance_meters(portrait_aspect_ratio, 0.0);
+        let minimum_zoom_distance =
+            camera_distance_meters(portrait_aspect_ratio, super::CAMERA_MIN_ZOOM_FACTOR);
+        let clamped_maximum_distance = camera_distance_meters(portrait_aspect_ratio, 3.0);
+        let maximum_zoom_distance =
+            camera_distance_meters(portrait_aspect_ratio, super::CAMERA_MAX_ZOOM_FACTOR);
+
+        assert_eq!(landscape_distance, INITIAL_CAMERA_DISTANCE_METERS);
+        assert!(portrait_distance > landscape_distance * 2.0);
+        assert!(portrait_frame_width >= CAMERA_ACOUSTIC_FRAME_WIDTH_METERS);
+        assert!((zoomed_distance - portrait_distance * 0.75).abs() < 1.0e-5);
+        assert_eq!(clamped_minimum_distance, minimum_zoom_distance);
+        assert_eq!(clamped_maximum_distance, maximum_zoom_distance);
+        assert_eq!(
+            camera_distance_meters(0.0, 1.0),
+            camera_distance_meters(0.1, 1.0)
+        );
+    }
+
+    /// Keeps wheel zoom bounded around the current aspect-fitted camera distance.
+    #[test]
+    fn mouse_wheel_zoom_scales_with_the_viewport_and_clamps_at_both_ends() {
+        let mut app = App::new();
+        app.insert_resource(ButtonInput::<KeyCode>::default())
+            .insert_resource(ButtonInput::<MouseButton>::default())
+            .insert_resource(AccumulatedMouseMotion::default())
+            .insert_resource(SceneDisplay::default())
+            .insert_resource(Time::<()>::default())
+            .add_message::<MouseWheel>()
+            .add_systems(Update, control_scene);
+        let window = app.world_mut().spawn(Window::default()).id();
+        let listener = app
+            .world_mut()
+            .spawn((Transform::default(), RaytracedAudioListener3d))
+            .id();
+        let camera = app
+            .world_mut()
+            .spawn((
+                Transform::default(),
+                ForestCamera {
+                    yaw_radians: 0.0,
+                    pitch_radians: 0.5,
+                    zoom_factor: 1.0,
+                },
+            ))
+            .id();
+        let window_component = app
+            .world()
+            .get::<Window>(window)
+            .expect("the test window retains its resolution");
+        let aspect_ratio = window_component.width() / window_component.height();
+
+        app.world_mut().write_message(MouseWheel {
+            unit: MouseScrollUnit::Line,
+            x: 0.0,
+            y: -100.0,
+            window,
+            phase: TouchPhase::Moved,
+        });
+        app.update();
+
+        let max_zoom = app
+            .world()
+            .get::<ForestCamera>(camera)
+            .expect("the camera keeps its zoom setting")
+            .zoom_factor;
+        let listener_transform = app
+            .world()
+            .get::<Transform>(listener)
+            .expect("the listener keeps its transform");
+        let camera_transform = app
+            .world()
+            .get::<Transform>(camera)
+            .expect("the camera keeps its transform");
+        let max_zoom_distance = camera_transform
+            .translation
+            .distance(listener_transform.translation + Vec3::Y * 0.3);
+        assert_eq!(max_zoom, super::CAMERA_MAX_ZOOM_FACTOR);
+        assert!(
+            (max_zoom_distance
+                - camera_distance_meters(aspect_ratio, super::CAMERA_MAX_ZOOM_FACTOR))
+            .abs()
+                < 1.0e-4
+        );
+
+        app.world_mut().write_message(MouseWheel {
+            unit: MouseScrollUnit::Line,
+            x: 0.0,
+            y: 100.0,
+            window,
+            phase: TouchPhase::Moved,
+        });
+        app.update();
+
+        let min_zoom = app
+            .world()
+            .get::<ForestCamera>(camera)
+            .expect("the camera keeps its zoom setting")
+            .zoom_factor;
+        assert_eq!(min_zoom, super::CAMERA_MIN_ZOOM_FACTOR);
+    }
 
     /// Keeps each fixed panel's two triangles joined at the same diagonal.
     #[test]
@@ -830,11 +1033,13 @@ mod tests {
             .add_systems(Update, animate_emitter);
         let emitter = app
             .world_mut()
-            .spawn((Transform::from_xyz(4.2, 1.0, 0.0), MovingEmitter))
+            .spawn((emitter_start_transform(), MovingEmitter))
             .id();
         app.world_mut()
             .resource_mut::<Time<()>>()
-            .advance_by(Duration::from_secs(4));
+            .advance_by(Duration::from_secs_f32(
+                std::f32::consts::PI / EMITTER_SWAY_RADIANS_PER_SECOND,
+            ));
 
         app.update();
 
@@ -843,6 +1048,79 @@ mod tests {
             .get::<Transform>(emitter)
             .expect("the moving emitter keeps its transform");
         assert!(transform.translation.z.abs() >= 3.0);
+    }
+
+    /// Starts the moving chime with its direct path attenuated by the visible brush screen.
+    #[test]
+    fn forest_showcase_starts_with_a_brush_attenuated_direct_path() {
+        let mut app = App::new();
+        app.insert_resource(Time::<()>::default())
+            .add_systems(Update, animate_emitter);
+        let emitter = app
+            .world_mut()
+            .spawn((emitter_start_transform(), MovingEmitter))
+            .id();
+        app.update();
+        let emitter_transform = app
+            .world()
+            .get::<Transform>(emitter)
+            .expect("the moving emitter keeps its transform");
+
+        let mut acoustic_scene = AcousticScene3d::default();
+        for triangle in panel_triangles(BRUSH_SCREEN_WIDTH_METERS, BRUSH_SCREEN_HEIGHT_METERS) {
+            let vertices = triangle.map(|point| {
+                Point3::try_new(
+                    point.x + BRUSH_SCREEN_CENTER_X_METERS,
+                    point.y + BRUSH_SCREEN_BASE_Y_METERS,
+                    point.z + BRUSH_SCREEN_CENTER_Z_METERS,
+                )
+                .expect("the forest brush screen uses finite coordinates")
+            });
+            acoustic_scene.add_triangle(
+                Triangle3d::try_new(vertices, brush_acoustic_material())
+                    .expect("the forest brush screen has nonzero triangle area"),
+            );
+        }
+        for triangle in floor_triangles(FOREST_FLOOR_WIDTH_METERS, FOREST_FLOOR_DEPTH_METERS) {
+            let vertices = triangle.map(|point| {
+                Point3::try_new(point.x, point.y, point.z)
+                    .expect("the forest floor uses finite coordinates")
+            });
+            acoustic_scene.add_triangle(
+                Triangle3d::try_new(vertices, forest_floor_acoustic_material())
+                    .expect("the forest floor has nonzero triangle area"),
+            );
+        }
+        let emitter_position = emitter_transform.translation;
+        let mut reflection_paths = Vec::new();
+        let response = acoustic_scene.trace_with_reflection_paths(
+            Emitter3d::new(
+                Point3::try_new(emitter_position.x, emitter_position.y, emitter_position.z)
+                    .expect("the animated emitter stays finite"),
+            ),
+            Listener3d::new(Point3::try_new(-4.8, 0.9, 0.0).expect("the listener stays finite")),
+            &mut reflection_paths,
+        );
+
+        assert!(response.direct.is_occluded());
+        assert!(response.direct.gain().low() < 1.0);
+        assert!(response.direct.gain().high() < response.direct.gain().low());
+        assert!(!reflection_paths.is_empty());
+        assert!(response.reflected_energy.low() > 0.0);
+    }
+
+    /// Keeps the initial source pose aligned with the declared loop phase.
+    #[test]
+    fn emitter_start_transform_uses_the_initial_sway_phase() {
+        let transform = emitter_start_transform();
+
+        assert!(
+            (transform.translation.z
+                - EMITTER_START_PHASE_RADIANS.sin() * EMITTER_SWAY_RADIUS_METERS)
+                .abs()
+                < 1.0e-5
+        );
+        assert!(transform.translation.z > 4.0);
     }
 
     /// Verifies brush material energy remains within the validated absorption budget.
@@ -888,7 +1166,7 @@ mod tests {
             .insert_resource(Time::<()>::default())
             .add_message::<MouseWheel>()
             .add_systems(Update, control_scene);
-        app.world_mut().spawn(CursorOptions::default());
+        app.world_mut().spawn(Window::default());
         app.world_mut()
             .spawn((Transform::default(), RaytracedAudioListener3d));
         app.world_mut().spawn((
@@ -896,7 +1174,7 @@ mod tests {
             ForestCamera {
                 yaw_radians: 0.0,
                 pitch_radians: 0.5,
-                distance_meters: 10.0,
+                zoom_factor: 1.0,
             },
         ));
 
@@ -914,6 +1192,7 @@ mod tests {
             .insert_resource(Time::<()>::default())
             .add_message::<MouseWheel>()
             .add_systems(Update, control_scene);
+        app.world_mut().spawn(Window::default());
         app.world_mut()
             .resource_mut::<Time<()>>()
             .advance_by(Duration::from_secs(1));
@@ -931,11 +1210,10 @@ mod tests {
                 ForestCamera {
                     yaw_radians: 0.0,
                     pitch_radians: 0.5,
-                    distance_meters: 10.0,
+                    zoom_factor: 1.0,
                 },
             ))
             .id();
-        app.world_mut().spawn(CursorOptions::default());
         app.world_mut()
             .resource_mut::<ButtonInput<KeyCode>>()
             .press(KeyCode::KeyW);

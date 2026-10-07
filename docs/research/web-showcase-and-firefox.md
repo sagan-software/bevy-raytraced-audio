@@ -30,6 +30,14 @@ and screenshots stayed in `/tmp/vercidium-audio-reference`; source images are
 not included in the repository. The new forest scene uses procedural Bevy
 geometry and its own UI.
 
+The 4×4 sheet for the first video shows a voxel forest, indoor rooms, animated
+propagation paths, and debug views. The Godot video shows its editor, per-surface
+material fields, and acoustic debug views. Patreon screenshots show forest
+controls, performance timings, and audio-visualization and ray-count settings.
+These references inform movement, material labels, and diagnostics; this
+project does not add unsupported ray-count, bounce-count, or reflection-audio
+controls.
+
 The README forest GIF and catalogue image were recorded from the project's
 WebAssembly scene. The GIF shows the direct response changing as the listener
 moves across the brush screen. The project does not reuse the video or Patreon
@@ -97,11 +105,24 @@ connections. A trusted click moved each audio context from `suspended` to
 `running` and changed the button to `Mute sound`. This checks browser graph
 connections and activation; physical speakers were not tested.
 
-The new forest capture contains 24 frames at 10 frames per second from a
-1440 × 1100 Chromium viewport. Moving the listener through the brush changed
-the direct response from clear at 100% per band to attenuated at 42% low, 30%
-mid, and 18% high. The project GIF, MP4 preview, and WebP poster use only its
-procedural Bevy scene. They do not reuse Vercidium video or Patreon images.
+The current forest capture contains 36 frames from a 1280 × 720 Chromium 154
+viewport using SwiftShader WebGL2. The GIF lasts 4.51 seconds, and the paired
+MP4 lasts 4.5 seconds at 8 frames per second. It begins with the direct path
+attenuated to 75% low, 65% mid, and 52% high, then shows the listener walk past
+the brush screen until all bands reach 100%. One floor-reflection path stays
+visible. A trusted click moved the browser audio context from `suspended` to
+`running`; speaker output was not tested. The project GIF, MP4 preview, and
+WebP poster use only the procedural Bevy scene. They do not reuse Vercidium
+video or Patreon images.
+
+The published forest route was also opened in Firefox 157 headless with
+`webgl.force-enabled` and `webgl.enable-webgl2`. Firefox returned no WebGL2
+context, the canvas stayed at 300 × 150 pixels, and no Bevy audio context was
+created. The route showed its Firefox recovery message and kept audio disabled.
+The homepage's muted MP4 preview advanced in that same browser. The gallery now
+labels the preview as muted and loads the Bevy scene inline after `Run the 3D
+demo`; visitors can still open the standalone route. Canvas pointer and
+keyboard gestures resume suspended audio after WebGL2 starts.
 
 ## References
 

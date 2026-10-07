@@ -43,6 +43,16 @@ pub struct AcousticResponse {
 }
 
 impl AcousticResponse {
+    /// Replaces direct transmission while preserving CPU-computed distance and reflections.
+    ///
+    /// GPU backends can use this method after validating a direct-path gain. Occlusion derives
+    /// from whether any band differs from unity because each material transmission is in `[0, 1]`.
+    #[must_use]
+    pub fn with_direct_gain(mut self, gain: BandGain) -> Self {
+        self.direct = self.direct.with_gain(gain);
+        self
+    }
+
     /// Builds a response from the solver's computed path values.
     pub(crate) const fn new(direct: PathResponse, reflected_energy: BandEnergy) -> Self {
         Self {
@@ -53,6 +63,15 @@ impl AcousticResponse {
 }
 
 impl PathResponse {
+    /// Keeps the traced distance and derives occlusion from validated band transmission.
+    fn with_gain(self, gain: BandGain) -> Self {
+        Self {
+            distance_m: self.distance_m,
+            gain,
+            occluded: gain != BandGain::UNITY,
+        }
+    }
+
     /// Builds a path result from validated internal geometry values.
     pub(crate) const fn new(distance_m: f64, gain: BandGain, occluded: bool) -> Self {
         Self {

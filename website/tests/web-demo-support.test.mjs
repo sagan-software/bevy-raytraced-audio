@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   audioControlState,
   canvasHasBeenResized,
+  installAudioGestureResume,
   installWebGLDrawMonitor,
   probeWebGL2,
   restoreScrollPosition,
@@ -262,6 +263,69 @@ test("labels the audio control when browser audio is unavailable", () => {
     buttonText: "Audio unavailable",
     statusText: "The scene is running, but this browser did not create a Web Audio output.",
   });
+});
+
+test("resumes suspended audio from a canvas pointer gesture", async () => {
+  const listeners = new Map();
+  const canvas = {
+    addEventListener: (name, listener) => listeners.set(name, listener),
+    removeEventListener: (name) => listeners.delete(name),
+  };
+  let resumeCalls = 0;
+  let stateUpdates = 0;
+  const context = {
+    state: "suspended",
+    resume() {
+      resumeCalls += 1;
+      this.state = "running";
+      return Promise.resolve();
+    },
+  };
+  const uninstall = installAudioGestureResume(canvas, () => [context], () => { stateUpdates += 1; });
+
+  listeners.get("pointerdown")();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(resumeCalls, 1);
+  assert.equal(stateUpdates, 1);
+  uninstall();
+  assert.equal(listeners.size, 0);
+});
+
+test("resumes suspended audio from a canvas keyboard gesture", async () => {
+  const listeners = new Map();
+  const canvas = {
+    addEventListener: (name, listener) => listeners.set(name, listener),
+    removeEventListener: (name) => listeners.delete(name),
+  };
+  let resumeCalls = 0;
+  const context = { state: "suspended", resume: () => { resumeCalls += 1; return Promise.resolve(); } };
+  const uninstall = installAudioGestureResume(canvas, () => [context], () => {});
+
+  listeners.get("keydown")();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(resumeCalls, 1);
+  uninstall();
+});
+
+test("does not resume already-running audio contexts", async () => {
+  const listeners = new Map();
+  const canvas = {
+    addEventListener: (name, listener) => listeners.set(name, listener),
+    removeEventListener: (name) => listeners.delete(name),
+  };
+  let resumeCalls = 0;
+  let stateUpdates = 0;
+  const context = { state: "running", resume: () => { resumeCalls += 1; return Promise.resolve(); } };
+  const uninstall = installAudioGestureResume(canvas, () => [context], () => { stateUpdates += 1; });
+
+  listeners.get("pointerdown")();
+  await Promise.resolve();
+
+  assert.equal(resumeCalls, 0);
+  assert.equal(stateUpdates, 0);
+  uninstall();
 });
 
 test("does not claim sound is audible while no Bevy source reaches the output", () => {
