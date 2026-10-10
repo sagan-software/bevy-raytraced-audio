@@ -1,0 +1,311 @@
+{
+  "sequence_alignment": "criterion-adaptive-sequences",
+  "limitation": "Adaptive batches can sample different phases of motion; use aligned interleaved results to isolate cache overhead.",
+  "interpretation": "Positive overhead means caching is slower; negative means faster. No static-weighted aggregate.",
+  "cases": [
+    {
+      "name": "2d_active",
+      "on_ms": 1.6704158169390413,
+      "on_interval_ms": [
+        1.664458123324775,
+        1.6763063568621452
+      ],
+      "off_ms": 2.0706488728850734,
+      "off_interval_ms": [
+        1.89631358931106,
+        2.2681802942289337
+      ],
+      "cache_overhead_range_percent": [
+        -26.61702742238987,
+        -11.601838097297213
+      ],
+      "cache_cost_ratio": 0.8067112868883559,
+      "cache_overhead_percent": -19.32887131116441
+    },
+    {
+      "name": "2d_geometry",
+      "on_ms": 1.7778995744098036,
+      "on_interval_ms": [
+        1.7686909015625096,
+        1.7882760706008831
+      ],
+      "off_ms": 1.6507180955752345,
+      "off_interval_ms": [
+        1.6409793946351623,
+        1.6635792601198849
+      ],
+      "cache_overhead_range_percent": [
+        6.318402973781367,
+        8.97614415191783
+      ],
+      "cache_cost_ratio": 1.0770461529291284,
+      "cache_overhead_percent": 7.704615292912842
+    },
+    {
+      "name": "2d_joint",
+      "on_ms": 1.6275851974284081,
+      "on_interval_ms": [
+        1.617907076700035,
+        1.6372777624974761
+      ],
+      "off_ms": 1.6307854097549521,
+      "off_interval_ms": [
+        1.6212145509588787,
+        1.640334448755063
+      ],
+      "cache_overhead_range_percent": [
+        -1.367243861277767,
+        0.9908134323798556
+      ],
+      "cache_cost_ratio": 0.998037625117688,
+      "cache_overhead_percent": -0.19623748823119902
+    },
+    {
+      "name": "2d_last_source",
+      "on_ms": 18.37402646111111,
+      "on_interval_ms": [
+        18.056958549999997,
+        18.698385799999997
+      ],
+      "off_ms": 17.576394861111112,
+      "off_interval_ms": [
+        17.523681098472224,
+        17.652129849861108
+      ],
+      "cache_overhead_range_percent": [
+        2.293370282125329,
+        6.703527043927937
+      ],
+      "cache_cost_ratio": 1.045380842106865,
+      "cache_overhead_percent": 4.5380842106865105
+    },
+    {
+      "name": "2d_listener",
+      "on_ms": 1.7441997700952179,
+      "on_interval_ms": [
+        1.7273241730142461,
+        1.7640571443186301
+      ],
+      "off_ms": 1.630642504063795,
+      "off_interval_ms": [
+        1.6214882383047475,
+        1.6399832957649265
+      ],
+      "cache_overhead_range_percent": [
+        5.325717492054194,
+        8.79247241182195
+      ],
+      "cache_cost_ratio": 1.0696395842426663,
+      "cache_overhead_percent": 6.963958424266625
+    },
+    {
+      "name": "2d_mixed_idle",
+      "on_ms": 0.17093789955400984,
+      "on_interval_ms": [
+        0.16771770405497186,
+        0.17436928883240901
+      ],
+      "off_ms": 1.674006208235848,
+      "off_interval_ms": [
+        1.6503933628727305,
+        1.6995090829228061
+      ],
+      "cache_overhead_range_percent": [
+        -90.13140290097586,
+        -89.43468310313027
+      ],
+      "cache_cost_ratio": 0.10211306189488556,
+      "cache_overhead_percent": -89.78869381051145
+    },
+    {
+      "name": "2d_spawn",
+      "on_ms": 1.7425249834903558,
+      "on_interval_ms": [
+        1.713772288963053,
+        1.770098203385937
+      ],
+      "off_ms": 1.7332356266904292,
+      "off_interval_ms": [
+        1.70338313734769,
+        1.7621810929616437
+      ],
+      "cache_overhead_range_percent": [
+        -2.747095868406557,
+        3.916621256573416
+      ],
+      "cache_cost_ratio": 1.0053595464210856,
+      "cache_overhead_percent": 0.5359546421085604
+    },
+    {
+      "name": "2d_static",
+      "on_ms": 0.00011862785856238815,
+      "on_interval_ms": [
+        0.00011851831950702538,
+        0.00011874737955935731
+      ],
+      "off_ms": 1.6241959046612973,
+      "off_interval_ms": [
+        1.6085400910371888,
+        1.6495627201061147
+      ],
+      "cache_overhead_range_percent": [
+        -99.99281516743423,
+        -99.99261769226511
+      ],
+      "cache_cost_ratio": 7.303790030619877e-05,
+      "cache_overhead_percent": -99.99269620996938
+    },
+    {
+      "name": "3d_active",
+      "on_ms": 3.1100935710427167,
+      "on_interval_ms": [
+        3.0909875649212784,
+        3.1292679291809735
+      ],
+      "off_ms": 3.2743446196642054,
+      "off_interval_ms": [
+        3.257512771928343,
+        3.2896728038135548
+      ],
+      "cache_overhead_range_percent": [
+        -6.039665667112859,
+        -3.9368945488877705
+      ],
+      "cache_cost_ratio": 0.9498369696228453,
+      "cache_overhead_percent": -5.016303037715475
+    },
+    {
+      "name": "3d_geometry",
+      "on_ms": 3.155525103522051,
+      "on_interval_ms": [
+        3.0989360166610327,
+        3.2154712263623293
+      ],
+      "off_ms": 3.248456159232622,
+      "off_interval_ms": [
+        3.209180466222935,
+        3.288345464270764
+      ],
+      "cache_overhead_range_percent": [
+        -5.7600227733899505,
+        0.19602388228414647
+      ],
+      "cache_cost_ratio": 0.9713922395269375,
+      "cache_overhead_percent": -2.860776047306246
+    },
+    {
+      "name": "3d_joint",
+      "on_ms": 3.0589168542599405,
+      "on_interval_ms": [
+        3.0446408611475415,
+        3.0721025874842383
+      ],
+      "off_ms": 3.130573557090971,
+      "off_interval_ms": [
+        3.086194236722832,
+        3.1835459353334024
+      ],
+      "cache_overhead_range_percent": [
+        -4.363218782056421,
+        -0.4566027980648868
+      ],
+      "cache_cost_ratio": 0.9771106790738958,
+      "cache_overhead_percent": -2.2889320926104184
+    },
+    {
+      "name": "3d_last_source",
+      "on_ms": 34.165755491666665,
+      "on_interval_ms": [
+        33.579432695625,
+        34.74874416854166
+      ],
+      "off_ms": 35.21399281111111,
+      "off_interval_ms": [
+        34.79106598055555,
+        35.61448380666667
+      ],
+      "cache_overhead_range_percent": [
+        -5.7141109277027535,
+        -0.12164563177667898
+      ],
+      "cache_cost_ratio": 0.970232364018837,
+      "cache_overhead_percent": -2.9767635981163054
+    },
+    {
+      "name": "3d_listener",
+      "on_ms": 3.1858382922515425,
+      "on_interval_ms": [
+        3.168991519204752,
+        3.20519264872201
+      ],
+      "off_ms": 3.060561790104053,
+      "off_interval_ms": [
+        3.0458316489115758,
+        3.0746626059072186
+      ],
+      "cache_overhead_range_percent": [
+        3.0679435563532476,
+        5.232101382470766
+      ],
+      "cache_cost_ratio": 1.0409325185175333,
+      "cache_overhead_percent": 4.093251851753332
+    },
+    {
+      "name": "3d_mixed_idle",
+      "on_ms": 0.32196481953755707,
+      "on_interval_ms": [
+        0.3196840090245517,
+        0.32433677285266366
+      ],
+      "off_ms": 3.218912542221717,
+      "off_interval_ms": [
+        3.1613849885922027,
+        3.2774310321962643
+      ],
+      "cache_overhead_range_percent": [
+        -90.24589668297838,
+        -89.7406746086596
+      ],
+      "cache_cost_ratio": 0.10002285408951639,
+      "cache_overhead_percent": -89.99771459104836
+    },
+    {
+      "name": "3d_spawn",
+      "on_ms": 3.0067416279780197,
+      "on_interval_ms": [
+        3.004861485796192,
+        3.008363736315549
+      ],
+      "off_ms": 3.1369729161776587,
+      "off_interval_ms": [
+        3.086599844100664,
+        3.1887577216925913
+      ],
+      "cache_overhead_range_percent": [
+        -5.7670181288902445,
+        -2.5347019936726056
+      ],
+      "cache_cost_ratio": 0.9584850453990137,
+      "cache_overhead_percent": -4.151495460098631
+    },
+    {
+      "name": "3d_static",
+      "on_ms": 0.00014975592938278707,
+      "on_interval_ms": [
+        0.00014945647546968005,
+        0.0001501126763999961
+      ],
+      "off_ms": 2.9753959417669535,
+      "off_interval_ms": [
+        2.96365625190362,
+        2.99276825341807
+      ],
+      "cache_overhead_range_percent": [
+        -99.99500607922785,
+        -99.99493488233314
+      ],
+      "cache_cost_ratio": 5.033142893038087e-05,
+      "cache_overhead_percent": -99.99496685710696
+    }
+  ]
+}

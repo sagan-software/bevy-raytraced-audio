@@ -18,11 +18,13 @@ def read_runs(directory):
             continue
         if row['application'] not in APPLICATIONS:
             raise ValueError(f'Unexpected application: {path}')
-        if row.get('hidden', False) or row['profiled'] or row.get('audio_errors'):
+        if row.get('hidden', False) or row['profiled'] or row.get('audio_errors') or not row.get('audio_continuous', True):
             raise ValueError(f'Hidden or profiled timing: {path}')
         samples = row['frame_ms']
         if not samples or not all(math.isfinite(x) and x > 0 for x in samples):
             raise ValueError(f'Invalid frame samples: {path}')
+        if max(samples) > 1000 or sum(samples) < 950*row['configuration']['duration_s']:
+            raise ValueError(f'Paused or incomplete measurement: {path}')
         stats = dict(zip(row['statistics_fields'], row['statistics'], strict=True))
         if (stats['hits'] or stats['unchanged'] or stats['forced'] != stats['computations']
                 or stats['forced'] < len(samples)-2):
@@ -38,6 +40,19 @@ def read_runs(directory):
     if set(result) != APPLICATIONS or any(len(runs) < 3 for runs in result.values()):
         raise ValueError('Require all three applications and at least three repetitions each')
     return result
+
+
+def compare_environments(before, after):
+    """Native driver metadata prevents an audio, CPU, or window-backend change becoming a gain."""
+    paths = [Path(directory)/'environment.json' for directory in (before, after)]
+    if not any(path.exists() for path in paths):
+        return  # Browser reports contain their own platform, GPU and user-agent metadata.
+    if not all(path.exists() for path in paths):
+        raise ValueError('Native environment metadata missing')
+    old, new = [json.loads(path.read_text()) for path in paths]
+    for field in ('platform', 'machine', 'cpu_count', 'cpu_identity', 'rustc', 'environment'):
+        if field not in old or old[field] != new.get(field):
+            raise ValueError(f'Changed native environment: {field}')
 
 
 def compare(before, after):
@@ -74,6 +89,7 @@ def main():
     parser.add_argument('after', type=Path)
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
+    compare_environments(args.before, args.after)
     report = compare(read_runs(args.before), read_runs(args.after))
     rendered = json.dumps(report, indent=2)+'\n'
     if args.output:

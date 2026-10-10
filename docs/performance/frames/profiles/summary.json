@@ -1,0 +1,623 @@
+{
+  "showcase": {
+    "samples": 6759,
+    "profiled": true,
+    "note": "CPU samples collected separately from FPS acceptance, while unrelated wasm builds were running.",
+    "leaf_samples": [
+      {
+        "symbol": "convolve<true>",
+        "samples": 2508,
+        "percent": 37.10608078118065
+      },
+      {
+        "symbol": "atomic_load<u8>",
+        "samples": 412,
+        "percent": 6.095576268678799
+      },
+      {
+        "symbol": "sample_rate<bevy_raytraced_audio_compat_0_19::rodio_source::ProcessedDecoder>",
+        "samples": 116,
+        "percent": 1.7162302115697587
+      },
+      {
+        "symbol": "atomic_compare_exchange_weak<usize>",
+        "samples": 100,
+        "percent": 1.4795088030773784
+      },
+      {
+        "symbol": "ray_entry",
+        "samples": 84,
+        "percent": 1.2427873945849979
+      },
+      {
+        "symbol": "next_binaural_sample<rodio::decoder::Decoder<core::io::cursor::Cursor<bevy_audio::audio_source::AudioSource>>>",
+        "samples": 78,
+        "percent": 1.1540168664003552
+      },
+      {
+        "symbol": "sqrt",
+        "samples": 65,
+        "percent": 0.9616807220002959
+      },
+      {
+        "symbol": "next<rodio::conversions::sample_rate::SampleRateConverter<rodio::source::uniform::Take<rodio::queue::SourcesQueueOutput>>>",
+        "samples": 57,
+        "percent": 0.8433200177541056
+      },
+      {
+        "symbol": "atomic_load<usize>",
+        "samples": 53,
+        "percent": 0.7841396656310105
+      },
+      {
+        "symbol": "insert_rec",
+        "samples": 52,
+        "percent": 0.7693445776002367
+      },
+      {
+        "symbol": "midpoint",
+        "samples": 52,
+        "percent": 0.7693445776002367
+      },
+      {
+        "symbol": "{closure#0}",
+        "samples": 51,
+        "percent": 0.7545494895694629
+      },
+      {
+        "symbol": "lookup_peeked_data",
+        "samples": 48,
+        "percent": 0.7101642254771416
+      },
+      {
+        "symbol": "run_unsafe",
+        "samples": 41,
+        "percent": 0.6065986092617252
+      },
+      {
+        "symbol": "atomic_add<usize, usize>",
+        "samples": 40,
+        "percent": 0.5918035212309514
+      },
+      {
+        "symbol": "imdct_step3_inner_s_loop",
+        "samples": 38,
+        "percent": 0.5622133451694038
+      },
+      {
+        "symbol": "first_reflection",
+        "samples": 37,
+        "percent": 0.54741825713863
+      },
+      {
+        "symbol": "atomic_compare_exchange<u32>",
+        "samples": 35,
+        "percent": 0.5178280810770824
+      },
+      {
+        "symbol": "atomic_sub<usize, usize>",
+        "samples": 35,
+        "percent": 0.5178280810770824
+      },
+      {
+        "symbol": "residue_packet_decode_inner",
+        "samples": 35,
+        "percent": 0.5178280810770824
+      },
+      {
+        "symbol": "new",
+        "samples": 33,
+        "percent": 0.4882379050155348
+      },
+      {
+        "symbol": "eq",
+        "samples": 33,
+        "percent": 0.4882379050155348
+      },
+      {
+        "symbol": "copy_nonoverlapping<u8>",
+        "samples": 28,
+        "percent": 0.4142624648616659
+      },
+      {
+        "symbol": "atomic_swap<u32>",
+        "samples": 26,
+        "percent": 0.38467228880011833
+      },
+      {
+        "symbol": "copied<f32>",
+        "samples": 26,
+        "percent": 0.38467228880011833
+      },
+      {
+        "symbol": "update_response",
+        "samples": 25,
+        "percent": 0.3698772007693446
+      },
+      {
+        "symbol": "next<rodio::queue::SourcesQueueOutput>",
+        "samples": 23,
+        "percent": 0.34028702470779704
+      },
+      {
+        "symbol": "{async_fn#0}",
+        "samples": 23,
+        "percent": 0.34028702470779704
+      },
+      {
+        "symbol": "as_ref<bevy_ecs::storage::table::TableRow>",
+        "samples": 23,
+        "percent": 0.34028702470779704
+      },
+      {
+        "symbol": "visit_ray_node<bevy_raytraced_audio::ray_tracer3d::{impl#2}::segment_is_blocked::{closure_env#0}>",
+        "samples": 23,
+        "percent": 0.34028702470779704
+      },
+      {
+        "symbol": "copy_nonoverlapping<bevy_raytraced_audio::bvh::PrimitiveBounds>",
+        "samples": 23,
+        "percent": 0.34028702470779704
+      },
+      {
+        "symbol": "full_fence",
+        "samples": 22,
+        "percent": 0.32549193667702325
+      },
+      {
+        "symbol": "signal_dependents",
+        "samples": 22,
+        "percent": 0.32549193667702325
+      },
+      {
+        "symbol": "as_ref<bevy_ecs::component::info::ComponentInfo>",
+        "samples": 22,
+        "percent": 0.32549193667702325
+      },
+      {
+        "symbol": "overlaps",
+        "samples": 22,
+        "percent": 0.32549193667702325
+      },
+      {
+        "symbol": "next<rodio::source::uniform::Take<rodio::queue::SourcesQueueOutput>>",
+        "samples": 21,
+        "percent": 0.31069684864624947
+      },
+      {
+        "symbol": "peek_u8",
+        "samples": 20,
+        "percent": 0.2959017606154757
+      },
+      {
+        "symbol": "_mm_and_si128",
+        "samples": 20,
+        "percent": 0.2959017606154757
+      },
+      {
+        "symbol": "atomic_or<usize, usize>",
+        "samples": 19,
+        "percent": 0.2811066725847019
+      },
+      {
+        "symbol": "pop<async_task::runnable::Runnable<()>>",
+        "samples": 18,
+        "percent": 0.2663115845539281
+      }
+    ]
+  },
+  "stress_2d": {
+    "samples": 8024,
+    "profiled": true,
+    "note": "CPU samples collected separately from FPS acceptance, while unrelated wasm builds were running.",
+    "leaf_samples": [
+      {
+        "symbol": "ray_entry",
+        "samples": 1069,
+        "percent": 13.322532402791625
+      },
+      {
+        "symbol": "get<bevy_raytraced_audio::bvh::Node>",
+        "samples": 519,
+        "percent": 6.468095712861416
+      },
+      {
+        "symbol": "visit_ray_node<bevy_raytraced_audio::ray_tracer2d::{impl#2}::segment_is_blocked::{closure_env#0}>",
+        "samples": 415,
+        "percent": 5.171984047856431
+      },
+      {
+        "symbol": "ray_segment_distance",
+        "samples": 367,
+        "percent": 4.5737786640079765
+      },
+      {
+        "symbol": "discover_sources",
+        "samples": 244,
+        "percent": 3.0408773678963112
+      },
+      {
+        "symbol": "convolve<false>",
+        "samples": 243,
+        "percent": 3.0284147557328014
+      },
+      {
+        "symbol": "read<(f64, f64, f64, f64)>",
+        "samples": 179,
+        "percent": 2.2308075772681955
+      },
+      {
+        "symbol": "sqrt",
+        "samples": 118,
+        "percent": 1.4705882352941178
+      },
+      {
+        "symbol": "to_bits",
+        "samples": 114,
+        "percent": 1.4207377866400797
+      },
+      {
+        "symbol": "atomic_compare_exchange<u32>",
+        "samples": 112,
+        "percent": 1.3958125623130608
+      },
+      {
+        "symbol": "recip",
+        "samples": 112,
+        "percent": 1.3958125623130608
+      },
+      {
+        "symbol": "atomic_load<usize>",
+        "samples": 110,
+        "percent": 1.3708873379860418
+      },
+      {
+        "symbol": "closest_hit",
+        "samples": 101,
+        "percent": 1.2587238285144566
+      },
+      {
+        "symbol": "atomic_compare_exchange_weak<usize>",
+        "samples": 96,
+        "percent": 1.1964107676969093
+      },
+      {
+        "symbol": "process",
+        "samples": 94,
+        "percent": 1.1714855433698903
+      },
+      {
+        "symbol": "next",
+        "samples": 93,
+        "percent": 1.159022931206381
+      },
+      {
+        "symbol": "as_ref<bevy_ecs::storage::table::TableRow>",
+        "samples": 79,
+        "percent": 0.9845463609172482
+      },
+      {
+        "symbol": "{closure#0}",
+        "samples": 76,
+        "percent": 0.9471585244267199
+      },
+      {
+        "symbol": "run_unsafe",
+        "samples": 73,
+        "percent": 0.9097706879361914
+      },
+      {
+        "symbol": "cross",
+        "samples": 71,
+        "percent": 0.8848454636091725
+      },
+      {
+        "symbol": "subtract",
+        "samples": 70,
+        "percent": 0.872382851445663
+      },
+      {
+        "symbol": "atomic_compare_exchange<usize>",
+        "samples": 63,
+        "percent": 0.7851445663010967
+      },
+      {
+        "symbol": "full_fence",
+        "samples": 57,
+        "percent": 0.7103688933200398
+      },
+      {
+        "symbol": "atomic_add<usize, usize>",
+        "samples": 56,
+        "percent": 0.6979062811565304
+      },
+      {
+        "symbol": "max",
+        "samples": 53,
+        "percent": 0.660518444666002
+      },
+      {
+        "symbol": "atomic_sub<usize, usize>",
+        "samples": 51,
+        "percent": 0.635593220338983
+      },
+      {
+        "symbol": "pop<async_task::runnable::Runnable<()>>",
+        "samples": 48,
+        "percent": 0.5982053838484547
+      },
+      {
+        "symbol": "can_run",
+        "samples": 47,
+        "percent": 0.5857427716849452
+      },
+      {
+        "symbol": "atomic_swap<u32>",
+        "samples": 45,
+        "percent": 0.5608175473579262
+      },
+      {
+        "symbol": "next<rodio::conversions::sample_rate::SampleRateConverter<rodio::source::uniform::Take<rodio::queue::SourcesQueueOutput>>>",
+        "samples": 41,
+        "percent": 0.5109670987038883
+      },
+      {
+        "symbol": "core::core_arch::x86::sse2::_mm_pause",
+        "samples": 41,
+        "percent": 0.5109670987038883
+      },
+      {
+        "symbol": "all<fixedbitset::block::sse2::Block, fixedbitset::{impl#2}::is_clear::{closure_env#0}>",
+        "samples": 40,
+        "percent": 0.4985044865403789
+      },
+      {
+        "symbol": "first_reflection_geometry",
+        "samples": 40,
+        "percent": 0.4985044865403789
+      },
+      {
+        "symbol": "atomic_or<usize, usize>",
+        "samples": 35,
+        "percent": 0.4361914257228315
+      },
+      {
+        "symbol": "insert_rec",
+        "samples": 35,
+        "percent": 0.4361914257228315
+      },
+      {
+        "symbol": "is_infinite",
+        "samples": 34,
+        "percent": 0.423728813559322
+      },
+      {
+        "symbol": "simd_block_len",
+        "samples": 33,
+        "percent": 0.41126620139581255
+      },
+      {
+        "symbol": "steal<async_task::runnable::Runnable<()>>",
+        "samples": 31,
+        "percent": 0.3863409770687936
+      },
+      {
+        "symbol": "next<rodio::source::periodic::PeriodicAccess<rodio::source::stoppable::Stoppable<rodio::source::skippable::Skippable<rodio::source::amplify::Amplify<rodio::source::pausable::Pausable<rodio::source::position::TrackPosition<rodio::source::speed::Speed<rodio::source::periodic::PeriodicAccess<rodio::source::spatial::Spatial<rodio::source::repeat::Repeat<rodio::decoder::Decoder<core::io::cursor::Cursor<bevy_audio::audio_source::AudioSource>>>>, rodio::spatial_player::{impl#0}::append::{closure_env#0}<rodio::source::repeat::Repeat<rodio::decoder::Decoder<core::io::cursor::Cursor<bevy_audio::audio_source::AudioSource>>>>>>>>>>>, rodio::player::{impl#1}::append::{closure_env#0}<rodio::source::periodic::PeriodicAccess<rodio::source::spatial::Spatial<rodio::source::repeat::Repeat<rodio::decoder::Decoder<core::io::cursor::Cursor<bevy_audio::audio_source::AudioSource>>>>, rodio::spatial_player::{impl#0}::append::{closure_env#0}<rodio::source::repeat::Repeat<rodio::decoder::Decoder<core::io::cursor::Cursor<bevy_audio::audio_source::AudioSource>>>>>>>>",
+        "samples": 28,
+        "percent": 0.3489531405782652
+      },
+      {
+        "symbol": "readonly_run_unsafe<bool>",
+        "samples": 27,
+        "percent": 0.33649052841475574
+      }
+    ]
+  },
+  "stress_3d": {
+    "samples": 5757,
+    "profiled": true,
+    "note": "CPU samples collected separately from FPS acceptance, while unrelated wasm builds were running.",
+    "leaf_samples": [
+      {
+        "symbol": "convolve<true>",
+        "samples": 432,
+        "percent": 7.503908285565399
+      },
+      {
+        "symbol": "process",
+        "samples": 133,
+        "percent": 2.31023102310231
+      },
+      {
+        "symbol": "atomic_compare_exchange_weak<usize>",
+        "samples": 121,
+        "percent": 2.1017891262810493
+      },
+      {
+        "symbol": "atomic_load<usize>",
+        "samples": 111,
+        "percent": 1.9280875455966648
+      },
+      {
+        "symbol": "atomic_compare_exchange<u32>",
+        "samples": 90,
+        "percent": 1.5633142261594581
+      },
+      {
+        "symbol": "{closure#0}",
+        "samples": 88,
+        "percent": 1.5285739100225813
+      },
+      {
+        "symbol": "full_fence",
+        "samples": 84,
+        "percent": 1.4590932777488275
+      },
+      {
+        "symbol": "atomic_swap<u32>",
+        "samples": 73,
+        "percent": 1.2680215389960048
+      },
+      {
+        "symbol": "run_unsafe",
+        "samples": 72,
+        "percent": 1.2506513809275663
+      },
+      {
+        "symbol": "atomic_or<usize, usize>",
+        "samples": 71,
+        "percent": 1.2332812228591281
+      },
+      {
+        "symbol": "atomic_add<usize, usize>",
+        "samples": 66,
+        "percent": 1.1464304325169359
+      },
+      {
+        "symbol": "atomic_sub<usize, usize>",
+        "samples": 57,
+        "percent": 0.9900990099009901
+      },
+      {
+        "symbol": "as_ref<bevy_ecs::storage::table::TableRow>",
+        "samples": 56,
+        "percent": 0.9727288518325516
+      },
+      {
+        "symbol": "next<(dyn rodio::source::Source<Item=f32> + core::marker::Send), alloc::alloc::Global>",
+        "samples": 53,
+        "percent": 0.9206183776272364
+      },
+      {
+        "symbol": "sample_rate<bevy_raytraced_audio_compat_0_19::rodio_source::ProcessedDecoder>",
+        "samples": 52,
+        "percent": 0.903248219558798
+      },
+      {
+        "symbol": "_mm_and_si128",
+        "samples": 48,
+        "percent": 0.8337675872850443
+      },
+      {
+        "symbol": "insert_rec",
+        "samples": 48,
+        "percent": 0.8337675872850443
+      },
+      {
+        "symbol": "atomic_compare_exchange_weak<u32>",
+        "samples": 45,
+        "percent": 0.7816571130797291
+      },
+      {
+        "symbol": "run<()>",
+        "samples": 43,
+        "percent": 0.7469167969428522
+      },
+      {
+        "symbol": "copy_nonoverlapping<u8>",
+        "samples": 43,
+        "percent": 0.7469167969428522
+      },
+      {
+        "symbol": "len<async_task::runnable::Runnable<()>>",
+        "samples": 41,
+        "percent": 0.7121764808059753
+      },
+      {
+        "symbol": "next_binaural_sample<rodio::decoder::Decoder<core::io::cursor::Cursor<bevy_audio::audio_source::AudioSource>>>",
+        "samples": 41,
+        "percent": 0.7121764808059753
+      },
+      {
+        "symbol": "sqrt",
+        "samples": 41,
+        "percent": 0.7121764808059753
+      },
+      {
+        "symbol": "ray_entry",
+        "samples": 41,
+        "percent": 0.7121764808059753
+      },
+      {
+        "symbol": "all<fixedbitset::block::sse2::Block, fixedbitset::{impl#2}::is_clear::{closure_env#0}>",
+        "samples": 38,
+        "percent": 0.6600660066006601
+      },
+      {
+        "symbol": "vk_common_ResetCommandPool",
+        "samples": 38,
+        "percent": 0.6600660066006601
+      },
+      {
+        "symbol": "pop<async_task::runnable::Runnable<()>>",
+        "samples": 33,
+        "percent": 0.5732152162584679
+      },
+      {
+        "symbol": "is_some<nonmax::NonMaxUsize>",
+        "samples": 33,
+        "percent": 0.5732152162584679
+      },
+      {
+        "symbol": "next<rodio::source::position::TrackPosition<rodio::source::speed::Speed<rodio::source::periodic::PeriodicAccess<rodio::source::spatial::Spatial<rodio::source::repeat::Repeat<rodio::decoder::Decoder<core::io::cursor::Cursor<bevy_audio::audio_source::AudioSource>>>>, rodio::spatial_player::{impl#0}::append::{closure_env#0}<rodio::source::repeat::Repeat<rodio::decoder::Decoder<core::io::cursor::Cursor<bevy_audio::audio_source::AudioSource>>>>>>>>",
+        "samples": 31,
+        "percent": 0.5384749001215912
+      },
+      {
+        "symbol": "drop",
+        "samples": 29,
+        "percent": 0.5037345839847143
+      },
+      {
+        "symbol": "next<rodio::conversions::sample_rate::SampleRateConverter<rodio::source::uniform::Take<rodio::queue::SourcesQueueOutput>>>",
+        "samples": 28,
+        "percent": 0.4863644259162758
+      },
+      {
+        "symbol": "eq",
+        "samples": 28,
+        "percent": 0.4863644259162758
+      },
+      {
+        "symbol": "first_reflection",
+        "samples": 28,
+        "percent": 0.4863644259162758
+      },
+      {
+        "symbol": "anv_state_stream_finish",
+        "samples": 28,
+        "percent": 0.4863644259162758
+      },
+      {
+        "symbol": "blorp_emit_pipeline",
+        "samples": 27,
+        "percent": 0.46899426784783743
+      },
+      {
+        "symbol": "next",
+        "samples": 26,
+        "percent": 0.451624109779399
+      },
+      {
+        "symbol": "insert_unchecked",
+        "samples": 26,
+        "percent": 0.451624109779399
+      },
+      {
+        "symbol": "atomic_add<u32, u32>",
+        "samples": 26,
+        "percent": 0.451624109779399
+      },
+      {
+        "symbol": "core::sync::atomic::atomic_compare_exchange::<u32>",
+        "samples": 25,
+        "percent": 0.4342539517109606
+      },
+      {
+        "symbol": "inverse_mdct",
+        "samples": 25,
+        "percent": 0.4342539517109606
+      }
+    ]
+  }
+}

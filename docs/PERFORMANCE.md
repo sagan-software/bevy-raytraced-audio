@@ -180,6 +180,34 @@ each sample. Download its raw JSON and run `scripts/compare-cache.py --browser F
 are reported individually, rather than averaged into dynamic-scene results. Counter
 runs have a fixed frame count independent of Criterion's adaptive iteration counts.
 
+For native interleaved measurements, build `cargo build --release -p acoustic-performance
+--bin cache-paired`, then run `target/release/cache-paired > native-paired.json` while
+the machine is otherwise idle. `compare-cache.py --paired native-paired.json --output
+comparison.json` retains all samples and reports a paired bootstrap interval for the
+cost ratio. It resamples matching on/off sample indices together. This supplements
+Criterion and its reversed-order repeat; disagreements between them remain visible.
+Browser batches yield through `MessageChannel` between cases, avoiding timer clamping
+between timed samples. The timed operation itself is synchronous WASM computation.
+After calibration the paired runners reset both scenes and use identical dynamic
+frame batches, checking their checksums after every pair. Static controls can retain
+different batch lengths because every input is identical. Browser mixed-idle batches
+contain at least ten frames so a miss is always measured above timer resolution.
+This matters: independently calibrated Criterion cases can sample different phases
+of the 1,024-frame movement sequence. Keep those results, but use the aligned paired
+measurements when interpreting small invalidation costs.
+
+The [native paired measurements](performance/cache/native-paired-comparison.json)
+on the i7-8750H found continuously changing cases between -0.82% and +0.66% apparent
+cache overhead. Most paired bootstrap intervals include zero. The 2D active case
+was +0.66% (interval +0.13% to +1.32%); the 3D last-source case was +0.40%
+(+0.19% to +0.63%). All continuously changing cases had zero hits. Mixed-idle cases
+took approximately 90% less time. These results do not establish application FPS.
+The [initial Criterion pass](performance/cache/native-comparison.json) and
+[reverse-order pass](performance/cache/native-reverse-comparison.json) retain their
+larger differences, including regressions, rather than hiding them in a static-heavy
+average. Raw samples and the previous strict production coverage report are alongside
+the comparisons in `docs/performance/cache/`.
+
 ## Actual application frame measurements
 
 Showcase, `stress_2d`, and `stress_3d` accept opt-in benchmark configuration through
@@ -216,8 +244,16 @@ logs, including audio/driver errors. On Linux the performance shell includes Mes
 Vulkan drivers and PipeWire ALSA plugins built against the Nix runtime; it does not
 change the host's driver configuration. `VK_DRIVER_FILES` can select a specific ICD.
 Measured-window native audio underruns invalidate the timing, while startup errors remain in the log.
+The runner retains all repetitions before returning failure if any have underruns.
+Executable hashes, CPU identity, toolchain, window backend and per-process audio
+configuration are recorded. The comparator rejects changed native environments.
 In browsers, activate audio before the measurement window and retain
 `window.acousticFrameReport`; suspended audio or hidden tabs invalidate a timing run.
+Audio state is checked on every measured browser frame. Sampling duration starts at
+the first actual measured frame, even if startup was suspended. Empty samples,
+frames longer than one second, and incomplete windows are rejected. A hidden T3
+preview that pauses rendering cannot provide application-FPS evidence; synchronous
+cache microbenchmarks do not establish continuous rendering.
 
 `compare-frames.py BEFORE AFTER --output REPORT` requires all three applications,
 at least three repetitions each, matching quality/environment, active audio, completed

@@ -9,11 +9,12 @@ mkdir -p "$out"
 cp -a website/. "$out/"
 node website/generate-pages.mjs "$out"
 for name in showcase stress_2d stress_3d; do
-  package="$out/examples/$name/pkg"
+  slug=${name//_/-}
+  package="$out/examples/$slug/pkg"
   mkdir -p "$package"
   wasm-bindgen --target web --out-name app --out-dir "$package" \
     "target/wasm32-unknown-unknown/wasm-release/examples/$name.wasm"
   gzip -n -9 -k -f "$package/app_bg.wasm"
   # Generated artifacts only; source assets stay in their original tracked location.
-  ln -sfn "$PWD/examples/raytraced-audio/assets" "$out/examples/$name/assets"
+  ln -sfn "$PWD/examples/raytraced-audio/assets" "$out/examples/$slug/assets"
 done

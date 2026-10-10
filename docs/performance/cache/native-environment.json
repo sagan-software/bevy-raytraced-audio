@@ -1,0 +1,17 @@
+{
+  "commit": "649d7d3cd9618f2a4e07c5fb985164f68775e2d6",
+  "rustc": "1.99.0 (b940084d7 2026-09-28)",
+  "llvm": "23.1.1",
+  "cpu": "Intel Core i7-8750H",
+  "profile": "bench",
+  "cases": 32,
+  "samples": 30,
+  "warmup_s": 1,
+  "measurement_s": 3,
+  "binary_sha256": "816fd5deac560e79a9b63aca35dec032d018329feb4dcfac14cb3938fc016ed7",
+  "note": "Identical acoustic code to commit; UI/harness edits made during measurements. No concurrent compilation or application measurements. Repeated in reverse policy order. Individual noise and regressions retained.",
+  "paired_binary_sha256": "6a589ef30420d053146c2af9745e83c847c285b50c1834300759faf0e3ff15b4",
+  "paired_samples": 30,
+  "paired_target_ms": 30,
+  "paired_counter_frames": 100
+}

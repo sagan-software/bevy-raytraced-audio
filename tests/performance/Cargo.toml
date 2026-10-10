@@ -29,6 +29,12 @@ test = false
 name = "workloads"
 harness = false
 
+[[bin]]
+name = "cache-paired"
+path = "src/cache_paired.rs"
+bench = false
+test = false
+
 [[bench]]
 name = "cache_behavior"
 harness = false

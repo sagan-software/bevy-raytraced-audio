@@ -31,11 +31,13 @@ use wasm_bindgen::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(
-    inline_js = "export function frame_config() { window.acousticFrameHidden = document.hidden; document.addEventListener('visibilitychange', () => { window.acousticFrameHidden ||= document.hidden; }); return new URLSearchParams(location.search).get('frame_bench') || ''; } export function frame_result(s) { window.acousticFrameReport = {...JSON.parse(s), userAgent: navigator.userAgent, devicePixelRatio, hidden: window.acousticFrameHidden || document.hidden, audioContexts: [...(window.__bevyAudioContexts || [])].map(c => ({state:c.state, sampleRate:c.sampleRate}))}; }"
+    inline_js = "export function frame_config() { window.acousticFrameHidden = document.hidden; document.addEventListener('visibilitychange', () => { window.acousticFrameHidden ||= document.hidden; }); return new URLSearchParams(location.search).get('frame_bench') || ''; } export function frame_audio_running() { return [...(window.__bevyAudioContexts || [])].some(c => c.state === 'running'); } export function frame_result(s) { window.acousticFrameReport = {...JSON.parse(s), userAgent: navigator.userAgent, devicePixelRatio, hidden: window.acousticFrameHidden || document.hidden, audioContexts: [...(window.__bevyAudioContexts || [])].map(c => ({state:c.state, sampleRate:c.sampleRate}))}; }"
 )]
 extern "C" {
     /// Reads the same JSON configuration as the native environment variable.
     fn frame_config() -> String;
+    /// Checks audio on each measured frame, rather than only at report time.
+    fn frame_audio_running() -> bool;
     /// Publishes the complete report for browser automation and downloads.
     fn frame_result(report: &str);
 }
@@ -68,6 +70,8 @@ pub(super) struct FrameBenchmark {
     frame_start: Instant,
     /// Excluded startup and shader/audio warm-up duration.
     warmup: f64,
+    /// Actual beginning of sampling, which may be delayed by browser suspension.
+    measurement_started: Option<Instant>,
     /// Requested sampling duration, excluding warm-up.
     duration: f64,
     /// Full frame intervals, including render scheduling and presentation backpressure.
@@ -86,6 +90,8 @@ pub(super) struct FrameBenchmark {
     finished: bool,
     /// Minimum and maximum live processed sinks during the measured window.
     sink_bounds: [usize; 2],
+    /// Browser audio must remain active throughout the measured frames.
+    audio_continuous: bool,
     /// Optional sampling, deliberately separate from accepted timing runs.
     #[cfg(all(feature = "frame-profile", target_os = "linux"))]
     profiler: Option<pprof::ProfilerGuard<'static>>,
@@ -121,6 +127,7 @@ impl Plugin for FrameBenchmarkPlugin {
                 previous: now,
                 frame_start: now,
                 warmup,
+                measurement_started: None,
                 duration,
                 frame_ms: Vec::new(),
                 update_ms: Vec::new(),
@@ -130,6 +137,7 @@ impl Plugin for FrameBenchmarkPlugin {
                 churn: [0, 0],
                 finished: false,
                 sink_bounds: [usize::MAX, 0],
+                audio_continuous: true,
                 #[cfg(all(feature = "frame-profile", target_os = "linux"))]
                 profiler: None,
             })
@@ -234,8 +242,13 @@ fn begin_frame(world: &mut World) {
         return;
     }
     if now.duration_since(state.started).as_secs_f64() >= state.warmup {
+        #[cfg(target_arch = "wasm32")]
+        {
+            state.audio_continuous &= frame_audio_running();
+        }
         if state.baseline.is_none() {
             state.baseline = Some(diagnostics);
+            state.measurement_started = Some(now);
             #[cfg(not(target_arch = "wasm32"))]
             println!("ACOUSTIC_MEASUREMENT_STARTED");
             state.render_start = rendered;
@@ -391,7 +404,14 @@ fn end_frame(world: &mut World) {
     state.sink_bounds[1] = state.sink_bounds[1].max(sink_count);
     let update = state.frame_start.elapsed().as_secs_f64() * 1000.0;
     state.update_ms.push(update);
-    if state.started.elapsed().as_secs_f64() < state.warmup + state.duration {
+    if state.frame_ms.is_empty()
+        || state
+            .measurement_started
+            .expect("measurement began")
+            .elapsed()
+            .as_secs_f64()
+            < state.duration
+    {
         return;
     }
     state.finished = true;
@@ -409,6 +429,7 @@ fn end_frame(world: &mut World) {
         "despawned_including_warmup":state.churn[1], "statistics":delta,
         "statistics_fields":["hits","computations","forced","cold","scene_changes","listener_changes","settings_changes","source_changes","scheduled","unchanged","throttled","scene_refreshes"],
         "processed_sink_bounds":state.sink_bounds, "processed_sinks":state.sink_bounds[1],
+        "audio_continuous":state.audio_continuous,
         "profiled":cfg!(feature="frame-profile") && state.config["flamegraph"].is_string(),
         "present_mode":"AutoNoVsync", "scenario":"active-v1", "warmup_s":state.warmup, "duration_s":elapsed/1000.0});
     let output = state.config["output"].as_str().map(str::to_owned);

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run real rendered applications serially, alternating cache policies across repetitions."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -8,6 +9,25 @@ import platform
 import subprocess
 
 APPLICATIONS = ('showcase', 'stress_2d', 'stress_3d')
+ENVIRONMENT_KEYS = ('DISPLAY', 'WAYLAND_DISPLAY', 'WAYLAND_SOCKET', 'WGPU_BACKEND',
+                    'VK_DRIVER_FILES', 'BEVY_TASK_THREADS', 'ALSA_PLUGIN_DIR',
+                    'ALSA_CONFIG_PATH', 'PIPEWIRE_ALSA', 'PIPEWIRE_LATENCY', 'PIPEWIRE_QUANTUM')
+
+
+def binary_hash(path):
+    """Record the executable actually measured, independently of working-tree provenance."""
+    with path.open('rb') as binary:
+        return hashlib.file_digest(binary, 'sha256').hexdigest()
+
+
+def cpu_identity():
+    """Exclude current CPU frequency and utilization from hardware matching."""
+    if platform.system() != 'Linux':
+        return platform.processor()
+    rows = json.loads(subprocess.check_output(['lscpu', '--json'], text=True, env=dict(os.environ, LC_ALL='C')))['lscpu']
+    fields = {'Architecture:', 'CPU(s):', 'Vendor ID:', 'Model name:', 'CPU family:',
+              'Model:', 'Stepping:', 'Thread(s) per core:', 'Core(s) per socket:', 'Socket(s):'}
+    return {row['field']: row['data'] for row in rows if row['field'] in fields}
 
 
 def main():
@@ -25,14 +45,20 @@ def main():
     if args.repetitions < 1 or args.duration <= 0 or args.warmup < 0:
         parser.error('Invalid sampling duration/repetitions')
     args.output.mkdir(parents=True, exist_ok=True)
+    if any(args.output.glob('*-off-*.json')) or any(args.output.glob('*-on-*.json')):
+        parser.error('Refusing to overwrite an existing frame measurement directory')
     metadata = {'label': args.label, 'platform': platform.platform(), 'machine': platform.machine(),
                 'cpu_count': os.cpu_count(), 'git': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                 'dirty': subprocess.check_output(['git', 'status', '--porcelain'], text=True),
                 'rustc': subprocess.check_output(['rustc', '-Vv'], text=True),
-                'environment': {key: os.environ.get(key) for key in ('DISPLAY', 'WAYLAND_DISPLAY', 'WGPU_BACKEND', 'VK_DRIVER_FILES', 'BEVY_TASK_THREADS')}}
+                'environment': {key: os.environ.get(key) for key in ENVIRONMENT_KEYS},
+                'cpu_identity': cpu_identity(),
+                'binaries_sha256': {app: binary_hash(args.bin_dir/app)
+                                    for app in ([args.application] if args.application else APPLICATIONS)}}
     (args.output/'environment.json').write_text(json.dumps(metadata, indent=2)+'\n')
     applications = [args.application] if args.application else APPLICATIONS
     modes = {'off': [False], 'on': [True], 'both': [False, True]}[args.cache]
+    invalid = []
     for repetition in range(args.repetitions):
         for application in applications:
             for enabled in modes[::1 if repetition % 2 == 0 else -1]:
@@ -52,10 +78,14 @@ def main():
                     raise ValueError('Measurement-window marker missing')
                 report['audio_errors'] = [line for line in measured_log[1].splitlines() if 'audio stream error' in line]
                 output.write_text(json.dumps(report)+'\n')
-                assert not report['audio_errors'], 'Audio underrun during measurement; keep this run as invalid evidence'
                 assert report['cache_enabled'] == enabled and report['render_schedules'] > 0
                 assert report['processed_sinks'] > 0, 'No processed audio is playing'
-                print(f"  {report['fps']:.2f} FPS, {len(report['frame_ms'])} frame intervals", flush=True)
+                if report['audio_errors']:
+                    invalid.append(stem)
+                print(f"  {report['fps']:.2f} FPS, {len(report['frame_ms'])} frame intervals, "
+                      f"{len(report['audio_errors'])} audio errors", flush=True)
+    if invalid:
+        raise SystemExit(f'Audio underruns invalidate these runs (all retained): {", ".join(invalid)}')
 
 
 if __name__ == '__main__':

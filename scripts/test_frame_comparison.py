@@ -1,7 +1,9 @@
 """Acceptance must reject changes in rendering, acoustic quality, policy, or audio state."""
 import copy
 import importlib.util
+import json
 from pathlib import Path
+import tempfile
 import unittest
 
 SPEC = importlib.util.spec_from_file_location('compare_frames', Path(__file__).with_name('compare-frames.py'))
@@ -38,6 +40,42 @@ class FrameComparisonTests(unittest.TestCase):
             after['showcase'][0][field] = value
             with self.assertRaises(ValueError):
                 MODULE.compare(before, after)
+
+    def test_paused_and_audio_suspended_runs_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for app, rows in self.fixture(100).items():
+                for i, row in enumerate(rows):
+                    row.update(application=app, cache_enabled=False, profiled=False,
+                               frame_ms=[10]*2000, render_schedules=2000,
+                               statistics_fields=['hits', 'unchanged', 'forced', 'computations'],
+                               statistics=[0, 0, 2000, 2000], audio_continuous=True)
+                    Path(directory, f'{app}-{i}.json').write_text(json.dumps(row))
+            MODULE.read_runs(directory)
+            path = Path(directory, 'showcase-0.json')
+            valid = json.loads(path.read_text())
+            for changes in ({'frame_ms': []}, {'frame_ms': [10]},
+                            {'frame_ms': [10]*1800+[2000]}, {'audio_continuous': False},
+                            {'audio_errors': ['underrun']}, {'hidden': True}):
+                path.write_text(json.dumps(dict(valid, **changes)))
+                with self.assertRaises(ValueError):
+                    MODULE.read_runs(directory)
+
+    def test_native_audio_and_hardware_configuration_must_match(self):
+        with tempfile.TemporaryDirectory() as before, tempfile.TemporaryDirectory() as after:
+            metadata = dict(platform='Linux', machine='x86_64', cpu_count=12,
+                            cpu_identity={'Model name:': 'test'}, rustc='fixed toolchain',
+                            environment={'PIPEWIRE_ALSA': None})
+            old, new = [Path(directory, 'environment.json') for directory in (before, after)]
+            old.write_text(json.dumps(metadata))
+            with self.assertRaises(ValueError):
+                MODULE.compare_environments(before, after)
+            new.write_text(json.dumps(metadata))
+            MODULE.compare_environments(before, after)
+            for changes in ({'cpu_identity': {'Model name:': 'different'}},
+                            {'environment': {'PIPEWIRE_ALSA': 'changed'}}):
+                new.write_text(json.dumps(dict(metadata, **changes)))
+                with self.assertRaises(ValueError):
+                    MODULE.compare_environments(before, after)
 
 
 if __name__ == '__main__':

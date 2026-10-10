@@ -1,6 +1,17 @@
 import init, { cache_case_names, CacheWorkload } from "./pkg/acoustic_performance.js";
 await init();
 const build = await fetch("./build.json").then(response => response.json());
+// Yield between cases without background-tab timer clamping inside paired samples.
+const yieldToBrowser = () =>
+  new Promise(resolve => {
+    const channel = new MessageChannel();
+    channel.port1.onmessage = () => {
+      channel.port1.close();
+      channel.port2.close();
+      resolve();
+    };
+    channel.port2.postMessage(null);
+  });
 // Alternate policy order across samples to reduce drift and thermal-order bias.
 window.runCacheBenchmarks = async function({ samples = 30, targetMs = 30, counterFrames = 1000 } = {}) {
   if (!Number.isInteger(samples) || samples < 10 || samples > 200 || targetMs < 10 || targetMs > 1000) {
@@ -15,6 +26,7 @@ window.runCacheBenchmarks = async function({ samples = 30, targetMs = 30, counte
   try {
     for (const name of cache_case_names().split("\n")) {
       document.querySelector("#status").textContent = `Cache comparison: ${name}`;
+      await yieldToBrowser();
       const workloads = [new CacheWorkload(name, false), new CacheWorkload(name, true)];
       try {
         const iterations = workloads.map(workload => {
@@ -28,14 +40,27 @@ window.runCacheBenchmarks = async function({ samples = 30, targetMs = 30, counte
           return count;
         });
         const times = [[], []];
+        // Each mixed-idle batch must contain a miss: all-hit batches can round to zero
+        // under the browser's coarse timer. Both policies still execute identical frames.
+        const commonIterations = Math.max(iterations[0], name.endsWith("mixed_idle") ? 10 : 1);
+        for (const mode of [0, 1]) {
+          if (!name.endsWith("static")) iterations[mode] = commonIterations;
+          workloads[mode].free();
+          workloads[mode] = new CacheWorkload(name, !!mode);
+          workloads[mode].run(1);
+        }
         for (let sample = 0; sample < samples; sample++) {
-          await new Promise(resolve => setTimeout(resolve, 10));
+          const checksums = [];
           for (const mode of sample % 2 ? [1, 0] : [0, 1]) {
             const start = performance.now();
             const checksum = workloads[mode].run(iterations[mode]);
             const elapsed = performance.now() - start;
             if (!Number.isFinite(checksum)) throw Error("Invalid acoustic result");
+            checksums[mode] = checksum;
             times[mode].push(elapsed / iterations[mode]);
+          }
+          if (!name.endsWith("static") && checksums[0] !== checksums[1]) {
+            throw Error(`Mismatched paired input sequence: ${name}`);
           }
         }
         for (const mode of [0, 1]) {
@@ -61,6 +86,8 @@ window.runCacheBenchmarks = async function({ samples = 30, targetMs = 30, counte
     }
     return window.cacheBenchmarkResults = {
       schema: 1,
+      scheduling: "yield-between-cases",
+      sequence_alignment: "common-batches-reset-after-calibration",
       build,
       timestamp: new Date().toISOString(),
       hidden,
