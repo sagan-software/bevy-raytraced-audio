@@ -1,0 +1,277 @@
+diff --git a/src/bvh.rs b/src/bvh.rs
+index 8aea76a..996a248 100644
+--- a/src/bvh.rs
++++ b/src/bvh.rs
+@@ -377,6 +377,80 @@ impl BoundingVolumeHierarchy {
+         completed
+     }
+ 
++    /// Finds any exact blocker without sorting candidates by distance.
++    /// Transmission accumulation retains the ordered traversal above; boolean visibility
++    /// can stop before even testing the other child's bounds once a blocker is found.
++    pub(crate) fn any_segment_hit(
++        &self,
++        ray: Ray,
++        bounds: Bounds,
++        skipped_surface: Option<usize>,
++        mut intersects: impl FnMut(usize) -> bool,
++    ) -> bool {
++        if self.surface_indices.len() <= MAX_LEAF_SURFACES {
++            return !self
++                .visit_candidates_until(bounds, skipped_surface, |index| !intersects(index));
++        }
++        self.any_ray_hit(ray, 1.0, skipped_surface, intersects)
++    }
++
++    /// Finds a blocker along a bounded ray without ordering children by distance.
++    pub(crate) fn any_ray_hit(
++        &self,
++        ray: Ray,
++        maximum_parameter: f64,
++        skipped_surface: Option<usize>,
++        mut intersects: impl FnMut(usize) -> bool,
++    ) -> bool {
++        self.root.is_some_and(|root| {
++            self.any_segment_node(
++                root,
++                ray,
++                maximum_parameter,
++                skipped_surface,
++                &mut intersects,
++            )
++        })
++    }
++
++    /// Visits one node lazily; boolean queries need neither a closest distance nor child sorting.
++    fn any_segment_node(
++        &self,
++        index: usize,
++        ray: Ray,
++        maximum_parameter: f64,
++        skipped_surface: Option<usize>,
++        intersects: &mut impl FnMut(usize) -> bool,
++    ) -> bool {
++        let Some(node) = self.nodes.get(index) else {
++            return false;
++        };
++        if node.bounds.ray_entry(ray, maximum_parameter).is_none() {
++            return false;
++        }
++        match &node.kind {
++            NodeKind::Leaf { indices } => {
++                self.surface_indices
++                    .get(indices.clone())
++                    .is_some_and(|indices| {
++                        indices
++                            .iter()
++                            .any(|&surface| skipped_surface != Some(surface) && intersects(surface))
++                    })
++            }
++            NodeKind::Branch { left, right } => {
++                self.any_segment_node(*left, ray, maximum_parameter, skipped_surface, intersects)
++                    || self.any_segment_node(
++                        *right,
++                        ray,
++                        maximum_parameter,
++                        skipped_surface,
++                        intersects,
++                    )
++            }
++        }
++    }
++
+     /// Visits surfaces whose node bounds a ray reaches before the callback's current closest hit.
+     ///
+     /// The callback returns the ray parameter of an exact hit, which then prunes farther nodes.
+diff --git a/src/ray_tracer2d.rs b/src/ray_tracer2d.rs
+index 9dbfded..ae7afa9 100644
+--- a/src/ray_tracer2d.rs
++++ b/src/ray_tracer2d.rs
+@@ -577,23 +577,21 @@ impl AcousticScene2d {
+             return false;
+         }
+         let direction = offset.scale(length.recip());
+-        let mut blocked = false;
+         let acceleration = self.acceleration();
+-        acceleration.hierarchy.visit_ray(
++        acceleration.hierarchy.any_ray_hit(
+             Ray::new((start.x, start.y, 0.0), (direction.x, direction.y, 0.0)),
+             limit,
++            skipped_segment,
+             |index| {
+-                if blocked || skipped_segment == Some(index) {
+-                    return None;
+-                }
+-                let segment = acceleration.segments.get(index)?;
+-                let distance = ray_segment_distance(start, direction, segment.start, segment.end)?;
+-                blocked = distance < limit;
+-                // A negative hit parameter prunes every remaining node.
+-                blocked.then_some(-1.0)
++                acceleration
++                    .segments
++                    .get(index)
++                    .and_then(|surface| {
++                        ray_segment_distance(start, direction, surface.start, surface.end)
++                    })
++                    .is_some_and(|distance| distance < limit)
+             },
+-        );
+-        blocked
++        )
+     }
+ 
+     /// Finds the closest segment hit along a ray within the escape distance.
+diff --git a/src/ray_tracer3d.rs b/src/ray_tracer3d.rs
+index 2ce700e..7d6b584 100644
+--- a/src/ray_tracer3d.rs
++++ b/src/ray_tracer3d.rs
+@@ -626,25 +626,21 @@ impl AcousticScene3d {
+         }
+         let direction = offset.scale(length.recip());
+         let acceleration = self.acceleration();
+-        let mut blocked = false;
+-        acceleration.hierarchy.visit_ray(
++        acceleration.hierarchy.any_ray_hit(
+             Ray::new(
+                 (start.x, start.y, start.z),
+                 (direction.x, direction.y, direction.z),
+             ),
+             limit,
++            skipped_triangle,
+             |index| {
+-                if blocked || skipped_triangle == Some(index) {
+-                    return None;
+-                }
+-                let triangle = acceleration.triangles.get(index)?;
+-                let distance = ray_triangle_distance(start, direction, triangle)?;
+-                // A negative parameter also prunes nodes containing the segment start.
+-                blocked = distance < limit;
+-                blocked.then_some(-1.0)
++                acceleration
++                    .triangles
++                    .get(index)
++                    .and_then(|surface| ray_triangle_distance(start, direction, surface))
++                    .is_some_and(|distance| distance < limit)
+             },
+-        );
+-        blocked
++        )
+     }
+ }
+ 
+diff --git a/src/scene2d.rs b/src/scene2d.rs
+index 6a2b5da..7eadb36 100644
+--- a/src/scene2d.rs
++++ b/src/scene2d.rs
+@@ -246,12 +246,12 @@ impl AcousticScene2d {
+     ) -> bool {
+         let acceleration = self.acceleration();
+         let offset = end.subtract(start);
+-        !acceleration.hierarchy.visit_segment_candidates(
++        acceleration.hierarchy.any_segment_hit(
+             Ray::new((start.x, start.y, 0.0), (offset.x, offset.y, 0.0)),
+             Bounds::path_2d((start.x, start.y), (end.x, end.y)),
+             skipped_index,
+             |index| {
+-                !acceleration
++                acceleration
+                     .segments
+                     .get(index)
+                     .is_some_and(|segment| path_intersects_geometry(start, end, segment))
+diff --git a/src/scene3d.rs b/src/scene3d.rs
+index b5bea4e..8adf716 100644
+--- a/src/scene3d.rs
++++ b/src/scene3d.rs
+@@ -244,12 +244,12 @@ impl AcousticScene3d {
+     ) -> bool {
+         let acceleration = self.acceleration();
+         let offset = end.subtract(start);
+-        !acceleration.hierarchy.visit_segment_candidates(
++        acceleration.hierarchy.any_segment_hit(
+             Ray::new((start.x, start.y, start.z), (offset.x, offset.y, offset.z)),
+             Bounds::path_3d((start.x, start.y, start.z), (end.x, end.y, end.z)),
+             skipped_index,
+             |index| {
+-                !acceleration
++                acceleration
+                     .triangles
+                     .get(index)
+                     .is_some_and(|triangle| path_intersects_triangle(start, end, triangle))
+diff --git a/tests/unit/bvh.rs b/tests/unit/bvh.rs
+index b101441..8bdf9d7 100644
+--- a/tests/unit/bvh.rs
++++ b/tests/unit/bvh.rs
+@@ -364,6 +364,73 @@ fn segment_candidates_preserve_hits_and_early_exit() {
+     }
+ }
+ 
++/// Any-hit visibility agrees with ordered traversal in both directions and with skipped surfaces.
++#[test]
++fn any_hit_matches_ordered_visibility() {
++    for dimensions in [SceneDimensions::Two, SceneDimensions::Three] {
++        for count in [0, 1, 4, 5, 127] {
++            let surfaces: Vec<_> = (0..count).map(|i| planar_bounds(fixture_x(i))).collect();
++            let hierarchy =
++                BoundingVolumeHierarchy::build(surfaces.iter().copied().enumerate(), dimensions);
++            let bounds = Bounds::path_2d((-1., 0.), (200., 0.));
++            for (origin, direction) in [
++                ((-1., 0., 0.), (201., 0., 0.)),
++                ((200., 0., 0.), (-201., 0., 0.)),
++                ((-1., 2., 0.), (201., 0., 0.)),
++            ] {
++                let ray = super::Ray::new(origin, direction);
++                for selected in [0, count / 2, count.saturating_sub(1), usize::MAX] {
++                    for skip in [None, Some(selected)] {
++                        let hit = |i: usize| {
++                            i == selected
++                                && surfaces
++                                    .get(i)
++                                    .is_some_and(|b| b.ray_entry(ray, 1.).is_some())
++                        };
++                        let expected =
++                            !hierarchy.visit_segment_candidates(ray, bounds, skip, |i| !hit(i));
++                        assert_eq!(hierarchy.any_segment_hit(ray, bounds, skip, hit), expected);
++                        for limit in [0.0, 0.1, 0.5, 1.0, 2.0] {
++                            let reached = |i: usize| {
++                                i == selected
++                                    && surfaces.get(i).is_some_and(|b| b.ray_entry(ray, limit).is_some())
++                            };
++                            let linear = (0..count).any(|i| skip != Some(i) && reached(i));
++                            assert_eq!(hierarchy.any_ray_hit(ray, limit, skip, reached), linear);
++                        }
++                    }
++                }
++            }
++            if count > 4 {
++                let ray = super::Ray::new((-1., 0., 0.), (201., 0., 0.));
++                let mut calls = 0;
++                assert!(hierarchy.any_segment_hit(ray, bounds, None, |_| {
++                    calls += 1;
++                    true
++                }));
++                assert_eq!(calls, 1);
++                let mut broken = hierarchy.clone();
++                broken.root = None;
++                assert!(!broken.any_segment_hit(ray, bounds, None, |_| panic!("missing root")));
++                assert!(
++                    !hierarchy.any_segment_node(usize::MAX, ray, 1.0, None, &mut |_| panic!(
++                        "missing node"
++                    ))
++                );
++                broken.root = hierarchy.root;
++                broken.surface_indices.clear();
++                assert!(!broken.any_segment_node(
++                    broken.root.unwrap(),
++                    ray,
++                    1.0,
++                    None,
++                    &mut |_| panic!("missing indices")
++                ));
++            }
++        }
++    }
++}
++
+ /// Parallel planar groups reject only tangential misses; mixed and oblique planes fall back.
+ #[test]
+ fn reflection_bounds_handle_every_axis_and_fallback() {

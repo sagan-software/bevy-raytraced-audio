@@ -6,9 +6,13 @@
 )]
 use bevy::{
     audio::Volume,
+    diagnostic::DiagnosticsStore,
     platform::time::Instant,
     prelude::*,
-    render::{Render, RenderApp, RenderSystems, renderer::RenderAdapterInfo},
+    render::{
+        Render, RenderApp, RenderSystems, diagnostic::RenderDiagnosticsPlugin,
+        renderer::RenderAdapterInfo,
+    },
     window::{PresentMode, PrimaryWindow},
 };
 use bevy_raytraced_audio::{ListenerTrace2d, ListenerTrace3d, TraceCacheStatistics};
@@ -114,6 +118,11 @@ impl Plugin for FrameBenchmarkPlugin {
             return;
         }
         let config: Value = serde_json::from_str(&input).expect("frame benchmark JSON");
+        if config["render_profile"].as_bool().unwrap_or(false)
+            && !app.is_plugin_added::<RenderDiagnosticsPlugin>()
+        {
+            app.add_plugins(RenderDiagnosticsPlugin);
+        }
         let warmup = config["warmup_s"].as_f64().unwrap_or(15.0);
         let duration = config["duration_s"].as_f64().unwrap_or(20.0);
         assert!(warmup.is_finite() && warmup >= 0.0 && duration.is_finite() && duration > 0.0);
@@ -430,7 +439,7 @@ fn end_frame(world: &mut World) {
         "statistics_fields":["hits","computations","forced","cold","scene_changes","listener_changes","settings_changes","source_changes","scheduled","unchanged","throttled","scene_refreshes"],
         "processed_sink_bounds":state.sink_bounds, "processed_sinks":state.sink_bounds[1],
         "audio_continuous":state.audio_continuous,
-        "profiled":cfg!(feature="frame-profile") && state.config["flamegraph"].is_string(),
+        "profiled":(cfg!(feature="frame-profile") && state.config["flamegraph"].is_string()) || state.config["render_profile"].as_bool().unwrap_or(false),
         "present_mode":"AutoNoVsync", "scenario":"active-v1", "warmup_s":state.warmup, "duration_s":elapsed/1000.0});
     let output = state.config["output"].as_str().map(str::to_owned);
     #[cfg(all(feature = "frame-profile", target_os = "linux"))]
@@ -444,6 +453,20 @@ fn end_frame(world: &mut World) {
                     .expect("profile file"),
             )
             .expect("flamegraph");
+    }
+    if report["configuration"]["render_profile"]
+        .as_bool()
+        .unwrap_or(false)
+        && let Some(diagnostics) = world.get_resource::<DiagnosticsStore>()
+    {
+        // Bevy's bounded history is a tail sample, not an average of the full run.
+        report["render_diagnostics_tail"] = diagnostics
+            .iter()
+            .map(|diagnostic| {
+                json!({"path":diagnostic.path().as_str(), "unit":diagnostic.suffix,
+                    "values":diagnostic.values().copied().collect::<Vec<_>>()})
+            })
+            .collect();
     }
     if let Ok(window) = world
         .query_filtered::<&Window, With<PrimaryWindow>>()

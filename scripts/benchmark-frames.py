@@ -36,6 +36,8 @@ def main():
     parser.add_argument('output', type=Path)
     parser.add_argument('--label', required=True)
     parser.add_argument('--bin-dir', type=Path, default=Path('target/application-bench/examples'))
+    parser.add_argument('--reference-bin-dir', type=Path,
+                        help='Interleave preserved reference binaries; write before/ and after/ directories')
     parser.add_argument('--repetitions', type=int, default=3)
     parser.add_argument('--warmup', type=float, default=15)
     parser.add_argument('--duration', type=float, default=20)
@@ -44,46 +46,53 @@ def main():
     args = parser.parse_args()
     if args.repetitions < 1 or args.duration <= 0 or args.warmup < 0:
         parser.error('Invalid sampling duration/repetitions')
-    args.output.mkdir(parents=True, exist_ok=True)
-    if any(args.output.glob('*-off-*.json')) or any(args.output.glob('*-on-*.json')):
-        parser.error('Refusing to overwrite an existing frame measurement directory')
+    applications = [args.application] if args.application else APPLICATIONS
+    builds = [(args.bin_dir, args.output, args.label)]
+    if args.reference_bin_dir:
+        builds = [(args.reference_bin_dir, args.output/'before', args.label+'-reference'),
+                  (args.bin_dir, args.output/'after', args.label)]
+    for _, directory, _ in builds:
+        directory.mkdir(parents=True, exist_ok=True)
+        if any(directory.glob('*-off-*.json')) or any(directory.glob('*-on-*.json')):
+            parser.error('Refusing to overwrite an existing frame measurement directory')
     metadata = {'label': args.label, 'platform': platform.platform(), 'machine': platform.machine(),
                 'cpu_count': os.cpu_count(), 'git': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                 'dirty': subprocess.check_output(['git', 'status', '--porcelain'], text=True),
                 'rustc': subprocess.check_output(['rustc', '-Vv'], text=True),
                 'environment': {key: os.environ.get(key) for key in ENVIRONMENT_KEYS},
-                'cpu_identity': cpu_identity(),
-                'binaries_sha256': {app: binary_hash(args.bin_dir/app)
-                                    for app in ([args.application] if args.application else APPLICATIONS)}}
-    (args.output/'environment.json').write_text(json.dumps(metadata, indent=2)+'\n')
-    applications = [args.application] if args.application else APPLICATIONS
+                'cpu_identity': cpu_identity()}
+    for binaries, directory, label in builds:
+        record = dict(metadata, label=label,
+                      binaries_sha256={app: binary_hash(binaries/app) for app in applications})
+        (directory/'environment.json').write_text(json.dumps(record, indent=2)+'\n')
     modes = {'off': [False], 'on': [True], 'both': [False, True]}[args.cache]
     invalid = []
     for repetition in range(args.repetitions):
-        for application in applications:
+        for app_index, application in enumerate(applications):
             for enabled in modes[::1 if repetition % 2 == 0 else -1]:
-                stem = f'{application}-{"on" if enabled else "off"}-{repetition}'
-                output = (args.output/f'{stem}.json').resolve()
-                config = {'cache': enabled, 'warmup_s': args.warmup, 'duration_s': args.duration,
-                          'output': str(output), 'label': args.label, 'interval_s': 0.0}
-                env = dict(os.environ, ACOUSTIC_FRAME_BENCH=json.dumps(config),
-                           BEVY_ASSET_ROOT=str(Path('examples/raytraced-audio').resolve()))
-                print(f'Measuring {stem}', flush=True)
-                with (args.output/f'{stem}.log').open('w') as log:
-                    subprocess.run([str((args.bin_dir/application).resolve())], env=env, stdout=log,
-                                   stderr=subprocess.STDOUT, check=True, timeout=args.warmup+args.duration+120)
-                report = json.loads(output.read_text())
-                measured_log = (args.output/f'{stem}.log').read_text().split('ACOUSTIC_MEASUREMENT_STARTED', 1)
-                if len(measured_log) != 2:
-                    raise ValueError('Measurement-window marker missing')
-                report['audio_errors'] = [line for line in measured_log[1].splitlines() if 'audio stream error' in line]
-                output.write_text(json.dumps(report)+'\n')
-                assert report['cache_enabled'] == enabled and report['render_schedules'] > 0
-                assert report['processed_sinks'] > 0, 'No processed audio is playing'
-                if report['audio_errors']:
-                    invalid.append(stem)
-                print(f"  {report['fps']:.2f} FPS, {len(report['frame_ms'])} frame intervals, "
-                      f"{len(report['audio_errors'])} audio errors", flush=True)
+                for binaries, directory, label in builds[::1 if (repetition+app_index) % 2 == 0 else -1]:
+                    stem = f'{application}-{"on" if enabled else "off"}-{repetition}'
+                    output = (directory/f'{stem}.json').resolve()
+                    config = {'cache': enabled, 'warmup_s': args.warmup, 'duration_s': args.duration,
+                              'output': str(output), 'label': label, 'interval_s': 0.0}
+                    env = dict(os.environ, ACOUSTIC_FRAME_BENCH=json.dumps(config),
+                               BEVY_ASSET_ROOT=str(Path('examples/raytraced-audio').resolve()))
+                    print(f'Measuring {label}/{stem}', flush=True)
+                    with (directory/f'{stem}.log').open('w') as log:
+                        subprocess.run([str((binaries/application).resolve())], env=env, stdout=log,
+                                       stderr=subprocess.STDOUT, check=True, timeout=args.warmup+args.duration+120)
+                    report = json.loads(output.read_text())
+                    measured_log = (directory/f'{stem}.log').read_text().split('ACOUSTIC_MEASUREMENT_STARTED', 1)
+                    if len(measured_log) != 2:
+                        raise ValueError('Measurement-window marker missing')
+                    report['audio_errors'] = [line for line in measured_log[1].splitlines() if 'audio stream error' in line]
+                    output.write_text(json.dumps(report)+'\n')
+                    assert report['cache_enabled'] == enabled and report['render_schedules'] > 0
+                    assert report['processed_sinks'] > 0, 'No processed audio is playing'
+                    if report['audio_errors']:
+                        invalid.append(f'{label}/{stem}')
+                    print(f"  {report['fps']:.2f} FPS, {len(report['frame_ms'])} frame intervals, "
+                          f"{len(report['audio_errors'])} audio errors", flush=True)
     if invalid:
         raise SystemExit(f'Audio underruns invalidate these runs (all retained): {", ".join(invalid)}')
 

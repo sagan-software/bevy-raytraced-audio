@@ -18,8 +18,9 @@ def read_runs(directory):
             continue
         if row['application'] not in APPLICATIONS:
             raise ValueError(f'Unexpected application: {path}')
-        if row.get('hidden', False) or row['profiled'] or row.get('audio_errors') or not row.get('audio_continuous', True):
-            raise ValueError(f'Hidden or profiled timing: {path}')
+        if (row.get('hidden', False) or row['profiled'] or row.get('audio_errors')
+                or row.get('external_interference') or not row.get('audio_continuous', True)):
+            raise ValueError(f'Invalid timing (visibility, profiling, audio or external interference): {path}')
         samples = row['frame_ms']
         if not samples or not all(math.isfinite(x) and x > 0 for x in samples):
             raise ValueError(f'Invalid frame samples: {path}')

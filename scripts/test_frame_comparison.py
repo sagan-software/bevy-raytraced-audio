@@ -1,14 +1,20 @@
 """Acceptance must reject changes in rendering, acoustic quality, policy, or audio state."""
 import copy
+import contextlib
 import importlib.util
+import io
 import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 SPEC = importlib.util.spec_from_file_location('compare_frames', Path(__file__).with_name('compare-frames.py'))
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
+DRIVER_SPEC = importlib.util.spec_from_file_location('benchmark_frames', Path(__file__).with_name('benchmark-frames.py'))
+DRIVER = importlib.util.module_from_spec(DRIVER_SPEC)
+DRIVER_SPEC.loader.exec_module(DRIVER)
 
 
 class FrameComparisonTests(unittest.TestCase):
@@ -55,7 +61,8 @@ class FrameComparisonTests(unittest.TestCase):
             valid = json.loads(path.read_text())
             for changes in ({'frame_ms': []}, {'frame_ms': [10]},
                             {'frame_ms': [10]*1800+[2000]}, {'audio_continuous': False},
-                            {'audio_errors': ['underrun']}, {'hidden': True}):
+                            {'audio_errors': ['underrun']}, {'hidden': True},
+                            {'external_interference': 'concurrent filesystem inventory'}):
                 path.write_text(json.dumps(dict(valid, **changes)))
                 with self.assertRaises(ValueError):
                     MODULE.read_runs(directory)
@@ -76,6 +83,40 @@ class FrameComparisonTests(unittest.TestCase):
                 new.write_text(json.dumps(dict(metadata, **changes)))
                 with self.assertRaises(ValueError):
                     MODULE.compare_environments(before, after)
+
+    def test_reference_driver_alternates_builds_and_preserves_each_run(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for build in ('old', 'new'):
+                (root/build).mkdir()
+                for app in DRIVER.APPLICATIONS:
+                    (root/build/app).write_bytes(build.encode())
+            order = []
+
+            def run(command, *, env, stdout, **_):
+                config = json.loads(env['ACOUSTIC_FRAME_BENCH'])
+                order.append(Path(command[0]).parent.name)
+                Path(config['output']).write_text(json.dumps(dict(
+                    cache_enabled=config['cache'], render_schedules=100, processed_sinks=8,
+                    fps=100, frame_ms=[10]*100)))
+                stdout.write('ACOUSTIC_MEASUREMENT_STARTED\n')
+
+            def metadata(command, **_):
+                return '{"lscpu":[]}' if command[0] == 'lscpu' else 'test metadata'
+
+            argv = ['benchmark-frames.py', str(root/'measurements'), '--label', 'test',
+                    '--bin-dir', str(root/'new'), '--reference-bin-dir', str(root/'old'),
+                    '--cache', 'off', '--repetitions', '2']
+            with mock.patch('sys.argv', argv), mock.patch.object(DRIVER.subprocess, 'run', run), \
+                    mock.patch.object(DRIVER.subprocess, 'check_output', metadata), \
+                    contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                DRIVER.main()
+                with self.assertRaises(SystemExit):
+                    DRIVER.main()  # Existing evidence must never be silently overwritten.
+            self.assertEqual(order, ['old', 'new', 'new', 'old', 'old', 'new',
+                                     'new', 'old', 'old', 'new', 'new', 'old'])
+            for build in ('before', 'after'):
+                self.assertEqual(len(list((root/'measurements'/build).glob('*-off-*.json'))), 6)
 
 
 if __name__ == '__main__':

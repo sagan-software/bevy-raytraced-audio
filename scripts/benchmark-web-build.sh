@@ -14,7 +14,7 @@ fi
 cargo build --locked -p acoustic-performance --lib --target wasm32-unknown-unknown --profile "$bench_profile"
 mkdir -p "$out/pkg"
 wasm-bindgen --target web --out-dir "$out/pkg" "$bench_target/wasm32-unknown-unknown/$bench_profile/acoustic_performance.wasm"
-cp tests/performance/web/index.html tests/performance/web/runner.mjs tests/performance/web/cache-runner.mjs "$out/"
+cp tests/performance/web/index.html tests/performance/web/runner.mjs tests/performance/web/cache-runner.mjs tests/performance/web/compare-workloads.mjs "$out/"
 python3 - "$out" "$bench_profile" <<'PYMETA'
 import json, pathlib, subprocess, sys
 pathlib.Path(sys.argv[1], 'build.json').write_text(json.dumps({

@@ -208,6 +208,14 @@ larger differences, including regressions, rather than hiding them in a static-h
 average. Raw samples and the previous strict production coverage report are alongside
 the comparisons in `docs/performance/cache/`.
 
+The [aligned browser repeat](performance/cache/browser-paired-comparison.json) found
+continuously changing cases between -1.39% and +1.76% overhead; every paired interval
+included zero. Mixed-idle cases took 89.90% (2D) and 90.63% (3D) less time. The T3
+preview was hidden although `document.hidden` reported false. These are synchronous
+WASM measurements on the browser host, not rendered-frame evidence or a comparison
+of native and browser hardware. The rejected earlier paired run is retained: its
+mixed-idle hit-only batches rounded to zero on the browser's timer.
+
 ## Actual application frame measurements
 
 Showcase, `stress_2d`, and `stress_3d` accept opt-in benchmark configuration through
@@ -233,6 +241,10 @@ than its refresh rate. Browser presentation may remain vsync limited.
 cargo build --locked -p bevy-raytraced-audio-examples --profile application-bench \
   --features frame-profile --example showcase --example stress_2d --example stress_3d
 python3 scripts/benchmark-frames.py target/performance/frames-baseline --label baseline
+# Preserve the reference executables before rebuilding the candidate, then interleave them:
+python3 scripts/benchmark-frames.py target/performance/frames-paired --label candidate \
+  --reference-bin-dir target/performance/frame-baseline-bin \
+  --bin-dir target/application-bench/examples --cache off
 scripts/benchmark-frame-web-build.sh target/performance/frame-web-baseline
 # Set this as the browser query's frame_bench value, URL-encoded:
 # {"cache":false,"warmup_s":15,"duration_s":20,"interval_s":0,"label":"baseline"}
@@ -247,6 +259,18 @@ Measured-window native audio underruns invalidate the timing, while startup erro
 The runner retains all repetitions before returning failure if any have underruns.
 Executable hashes, CPU identity, toolchain, window backend and per-process audio
 configuration are recorded. The comparator rejects changed native environments.
+With `--reference-bin-dir`, the driver alternates old/new executable order across
+applications and repetitions, retaining both sides in `before/` and `after/`.
+Reports marked with external interference are rejected; they are not silently dropped
+from an otherwise accepted suite.
+
+On the measured Linux host, the default 44.1 kHz PipeWire ALSA stream repeatedly
+underran during Showcase. The per-process setting `PIPEWIRE_ALSA='{ alsa.rate=48000 }'`
+eliminated those underruns in the later paired trial. Both old and new executables
+must receive that same setting; this environment change is not an application
+optimization. No host audio configuration was changed. Earlier invalid runs remain
+in the evidence archive.
+
 In browsers, activate audio before the measurement window and retain
 `window.acousticFrameReport`; suspended audio or hidden tabs invalidate a timing run.
 Audio state is checked on every measured browser frame. Sampling duration starts at
@@ -268,3 +292,24 @@ For a separate native flamegraph run, enable `frame-profile` at build time and a
 `"flamegraph":"OUTPUT.svg"` to the JSON configuration. Sampling starts after warm-up.
 Never use a profiled run as FPS acceptance evidence. Earlier kernel benchmark gains,
 particularly warm result-cache hits, do not establish application-FPS gains.
+
+For GPU investigation, add `"render_profile":true` to enable Bevy's render diagnostics.
+The final report includes each diagnostic's bounded history, path and unit. These
+are tail samples rather than full-window averages. This option also marks the run
+as profiled so it cannot enter the FPS acceptance comparison. In the retained
+[render profile](performance/frames/render-profile.json.gz), Showcase's opaque pass
+averaged about 10.2 ms in that tail; its CPU audio optimization alone cannot remove
+that GPU work. The 2D flamegraph instead highlights BVH traversal and ray/segment
+intersection work. Linux `perf` was restricted on this host, so the retained CPU
+flamegraphs use the userspace sampler.
+
+The [any-hit traversal experiment](performance/frames/rejected-any-hit.json.gz) completed
+all eighteen unprofiled native runs without measured audio underruns. Its three-run
+median FPS ratios were 0.988 for Showcase, 0.913 for 2D stress, and 0.983 for 3D stress;
+the equal-weight geometric mean was **0.961**, with a conservative repetition range
+of 0.850–1.144. It failed the 1.5× gate. The large spread, especially in 3D, also limits
+claims about small differences. This experiment does not advance the baseline.
+The earlier [by-reference BVH experiment](performance/frames/rejected-bvh.json.gz)
+and [depth-prepass experiment](performance/frames/rejected-depth-prepass.json) are
+retained as rejected trials. The former includes a repetition explicitly marked as
+contaminated by concurrent filesystem work. None counts as an accepted FPS round.

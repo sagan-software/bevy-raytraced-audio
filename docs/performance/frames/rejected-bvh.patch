@@ -1,0 +1,191 @@
+diff --git a/examples/raytraced-audio/examples/frame_benchmark.rs b/examples/raytraced-audio/examples/frame_benchmark.rs
+index 9130d76..3c5f615 100644
+--- a/examples/raytraced-audio/examples/frame_benchmark.rs
++++ b/examples/raytraced-audio/examples/frame_benchmark.rs
+@@ -6,9 +6,13 @@
+ )]
+ use bevy::{
+     audio::Volume,
++    diagnostic::DiagnosticsStore,
+     platform::time::Instant,
+     prelude::*,
+-    render::{Render, RenderApp, RenderSystems, renderer::RenderAdapterInfo},
++    render::{
++        Render, RenderApp, RenderSystems, diagnostic::RenderDiagnosticsPlugin,
++        renderer::RenderAdapterInfo,
++    },
+     window::{PresentMode, PrimaryWindow},
+ };
+ use bevy_raytraced_audio::{ListenerTrace2d, ListenerTrace3d, TraceCacheStatistics};
+@@ -114,6 +118,11 @@ impl Plugin for FrameBenchmarkPlugin {
+             return;
+         }
+         let config: Value = serde_json::from_str(&input).expect("frame benchmark JSON");
++        if config["render_profile"].as_bool().unwrap_or(false)
++            && !app.is_plugin_added::<RenderDiagnosticsPlugin>()
++        {
++            app.add_plugins(RenderDiagnosticsPlugin);
++        }
+         let warmup = config["warmup_s"].as_f64().unwrap_or(15.0);
+         let duration = config["duration_s"].as_f64().unwrap_or(20.0);
+         assert!(warmup.is_finite() && warmup >= 0.0 && duration.is_finite() && duration > 0.0);
+@@ -430,7 +439,7 @@ fn end_frame(world: &mut World) {
+         "statistics_fields":["hits","computations","forced","cold","scene_changes","listener_changes","settings_changes","source_changes","scheduled","unchanged","throttled","scene_refreshes"],
+         "processed_sink_bounds":state.sink_bounds, "processed_sinks":state.sink_bounds[1],
+         "audio_continuous":state.audio_continuous,
+-        "profiled":cfg!(feature="frame-profile") && state.config["flamegraph"].is_string(),
++        "profiled":(cfg!(feature="frame-profile") && state.config["flamegraph"].is_string()) || state.config["render_profile"].as_bool().unwrap_or(false),
+         "present_mode":"AutoNoVsync", "scenario":"active-v1", "warmup_s":state.warmup, "duration_s":elapsed/1000.0});
+     let output = state.config["output"].as_str().map(str::to_owned);
+     #[cfg(all(feature = "frame-profile", target_os = "linux"))]
+@@ -445,6 +454,20 @@ fn end_frame(world: &mut World) {
+             )
+             .expect("flamegraph");
+     }
++    if report["configuration"]["render_profile"]
++        .as_bool()
++        .unwrap_or(false)
++        && let Some(diagnostics) = world.get_resource::<DiagnosticsStore>()
++    {
++        // Bevy's bounded history is a tail sample, not an average of the full run.
++        report["render_diagnostics_tail"] = diagnostics
++            .iter()
++            .map(|diagnostic| {
++                json!({"path":diagnostic.path().as_str(), "unit":diagnostic.suffix,
++                    "values":diagnostic.values().copied().collect::<Vec<_>>()})
++            })
++            .collect();
++    }
+     if let Ok(window) = world
+         .query_filtered::<&Window, With<PrimaryWindow>>()
+         .single(world)
+diff --git a/src/binaural.rs b/src/binaural.rs
+index 40b3c55..6c48771 100644
+--- a/src/binaural.rs
++++ b/src/binaural.rs
+@@ -376,7 +376,7 @@ impl BinauralProcessor {
+                 .unwrap_or([0.; 2])
+                 .map(|coefficient| direct * coefficient)
+         } else if self.smoothing_active {
+-            convolve::<true>(&mut self.current, &self.target, history, self.smoothing)
++            convolve_smoothed(&mut self.current, &self.target, history, self.smoothing)
+         } else {
+             convolve::<false>(&mut self.current, &self.target, history, self.smoothing)
+         };
+@@ -414,6 +414,20 @@ impl BinauralProcessor {
+     }
+ }
+ 
++/// Outlines the moving-coefficient path without adding a call to static convolutions.
++///
++/// Keeping this boundary preserves separate slice borrows for LLVM's alias analysis;
++/// the measured x86-64 application build otherwise scalarizes coefficient updates.
++#[inline(never)]
++fn convolve_smoothed(
++    current: &mut [[f32; 2]],
++    target: &[[f32; 2]],
++    input: &[f32],
++    smoothing: f32,
++) -> [f32; 2] {
++    convolve::<true>(current, target, input, smoothing)
++}
++
+ /// Four independent accumulation lanes expose SIMD without changing FIR length or smoothing.
+ ///
+ /// Only the summation order changes. A scalar reference test bounds the rounding difference.
+diff --git a/src/bvh.rs b/src/bvh.rs
+index 8aea76a..c176964 100644
+--- a/src/bvh.rs
++++ b/src/bvh.rs
+@@ -126,7 +126,7 @@ impl Bounds {
+     }
+ 
+     /// Returns the ray parameter where a ray enters these closed bounds, if before the limit.
+-    fn ray_entry(self, ray: Ray, maximum_parameter: f64) -> Option<f64> {
++    fn ray_entry(&self, ray: &Ray, maximum_parameter: f64) -> Option<f64> {
+         let mut entry = 0.0_f64;
+         let mut exit = maximum_parameter;
+         for (origin, inverse_direction, minimum, maximum) in [
+@@ -392,10 +392,10 @@ impl BoundingVolumeHierarchy {
+         let root_is_reached = self
+             .nodes
+             .get(root)
+-            .and_then(|node| node.bounds.ray_entry(ray, maximum_parameter))
++            .and_then(|node| node.bounds.ray_entry(&ray, maximum_parameter))
+             .is_some();
+         if root_is_reached {
+-            self.visit_ray_node(root, ray, &mut maximum_parameter, &mut hit_parameter);
++            self.visit_ray_node(root, &ray, &mut maximum_parameter, &mut hit_parameter);
+         }
+     }
+ 
+@@ -406,7 +406,7 @@ impl BoundingVolumeHierarchy {
+     fn visit_ray_node(
+         &self,
+         node_index: usize,
+-        ray: Ray,
++        ray: &Ray,
+         maximum_parameter: &mut f64,
+         hit_parameter: &mut impl FnMut(usize) -> Option<f64>,
+     ) {
+diff --git a/tests/unit/bvh.rs b/tests/unit/bvh.rs
+index b101441..b5d4fff 100644
+--- a/tests/unit/bvh.rs
++++ b/tests/unit/bvh.rs
+@@ -264,11 +264,11 @@ fn ray_queries_match_exhaustive_bounds_on_tall_surfaces() {
+                 let ray = Ray::new((f64::from(x), 0., f64::from(z)), direction);
+                 let expected = surfaces
+                     .iter()
+-                    .filter_map(|b| b.ray_entry(ray, 1000.))
++                    .filter_map(|b| b.ray_entry(&ray, 1000.))
+                     .min_by(f64::total_cmp);
+                 let mut nearest: Option<f64> = None;
+                 hierarchy.visit_ray(ray, 1000., |index| {
+-                    let distance = surfaces.get(index).unwrap().ray_entry(ray, 1000.)?;
++                    let distance = surfaces.get(index).unwrap().ray_entry(&ray, 1000.)?;
+                     nearest = Some(nearest.map_or(distance, |old| old.min(distance)));
+                     Some(distance)
+                 });
+@@ -284,11 +284,11 @@ fn invalid_and_terminated_ray_visits_do_no_work() {
+     let hierarchy = BoundingVolumeHierarchy::build([(0, planar_bounds(0.))], SceneDimensions::Two);
+     let ray = super::Ray::new((0., 0., 0.), (1., 0., 0.));
+     let mut callback = |_| panic!("no valid surface visit");
+-    hierarchy.visit_ray_node(usize::MAX, ray, &mut 1., &mut callback);
+-    hierarchy.visit_ray_node(hierarchy.root.unwrap(), ray, &mut -1., &mut callback);
++    hierarchy.visit_ray_node(usize::MAX, &ray, &mut 1., &mut callback);
++    hierarchy.visit_ray_node(hierarchy.root.unwrap(), &ray, &mut -1., &mut callback);
+     let mut broken = hierarchy.clone();
+     broken.surface_indices.clear();
+-    broken.visit_ray_node(broken.root.unwrap(), ray, &mut 1., &mut callback);
++    broken.visit_ray_node(broken.root.unwrap(), &ray, &mut 1., &mut callback);
+ }
+ 
+ /// One callback interface handles normal branches, early termination, and invalid storage.
+@@ -302,21 +302,21 @@ fn traversal_callbacks_cover_valid_and_invalid_nodes() {
+     let bounds = Bounds::path_2d((-1., 0.), (20., 0.));
+     let ray = super::Ray::new((-1., 0., 0.), (1., 0., 0.));
+     let mut ray_callback: fn(usize) -> Option<f64> = |_| None;
+-    hierarchy.visit_ray_node(usize::MAX, ray, &mut 100., &mut ray_callback);
+-    hierarchy.visit_ray_node(root, ray, &mut -1., &mut ray_callback);
+-    hierarchy.visit_ray_node(root, ray, &mut 100., &mut ray_callback);
++    hierarchy.visit_ray_node(usize::MAX, &ray, &mut 100., &mut ray_callback);
++    hierarchy.visit_ray_node(root, &ray, &mut -1., &mut ray_callback);
++    hierarchy.visit_ray_node(root, &ray, &mut 100., &mut ray_callback);
+     hierarchy.visit_ray_node(
+         root,
+-        super::Ray::new((20., 0., 0.), (-1., 0., 0.)),
++        &super::Ray::new((20., 0., 0.), (-1., 0., 0.)),
+         &mut 100.,
+         &mut ray_callback,
+     );
+     let mut broken = hierarchy.clone();
+     broken.surface_indices.clear();
+-    broken.visit_ray_node(root, ray, &mut 100., &mut ray_callback);
++    broken.visit_ray_node(root, &ray, &mut 100., &mut ray_callback);
+     ray_callback = |_| Some(-1.);
+     let mut maximum = 100.;
+-    hierarchy.visit_ray_node(root, ray, &mut maximum, &mut ray_callback);
++    hierarchy.visit_ray_node(root, &ray, &mut maximum, &mut ray_callback);
+     assert_eq!(maximum, -1.);
+ 
+     let mut candidate_callback: fn(usize) -> bool = |_| true;
