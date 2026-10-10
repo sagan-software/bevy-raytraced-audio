@@ -1,0 +1,30 @@
+{
+  "audioContexts": [
+    {
+      "sampleRate": 44100,
+      "state": "running"
+    }
+  ],
+  "audioGraph": {
+    "outputConnections": 709,
+    "startedSources": 709
+  },
+  "canvas": {
+    "height": 1005,
+    "width": 1856
+  },
+  "rendererReady": true,
+  "status": "Spatial sound is on. Click the scene to give it keyboard focus.",
+  "timestamp": "2026-10-10T19:26:48.247Z",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) T3Code(Alpha)/0.0.45 Chrome/152.0.7977.78 Electron/44.3.0 Safari/537.36",
+  "mute_observed": "suspended",
+  "resume_observed": {
+    "button": "Mute sound",
+    "states": [
+      "running"
+    ],
+    "status": "Spatial sound is on. Click the scene to give it keyboard focus."
+  },
+  "note": "Renderer readiness includes observed WebGL draw activity. Audio graph counts are cumulative browser buffer scheduling/connections, not simultaneous emitter counts. This is a render/audio graph smoke test, not a physical listening, FPS, latency or underrun measurement.",
+  "renderer": "ANGLE NVIDIA GeForce RTX 5070 Ti, WebGL 2"
+}

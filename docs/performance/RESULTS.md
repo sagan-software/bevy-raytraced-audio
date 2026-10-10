@@ -69,7 +69,7 @@ Tests compare cached geometry with scalar calculations, delay indexing with the
 modulo reference and HRTF coefficients with the fused reference (error < 1e-6).
 
 All four native rounds pass the fixed 51-case gate. Their cumulative geometric
-mean ratio is **24.767×**. Round 4's biggest gain is the 1,024-triangle miss query
+mean ratio is **24.767×** ([full cumulative comparison](cumulative-native-comparison.json)). Round 4's biggest gain is the 1,024-triangle miss query
 (16.24 µs to 32.09 ns, 506×). Its largest regression is the small 3D reflection
 iterator (61.35 ns to 88.04 ns, 43.5% more latency). Every case, including
 regressions, remains in the aggregate and raw comparison.
@@ -133,5 +133,55 @@ cache invalidation, scalar geometry/FIR references and extreme floating-point
 inputs. Strict core, performance-harness and Bevy 0.19 adapter Clippy passed.
 The full WebGL2 showcase also builds for `wasm32-unknown-unknown`.
 
-Additional environment timings, final browser execution and final CI results
-are recorded below as verification completes.
+The final production commit `980b05f` passed the [Linux, macOS and Windows
+performance workflow](https://github.com/sagan-software/bevy-raytraced-audio/actions/runs/38079190428).
+These are correctness/build/smoke checks, not timing claims for those hosted OSes.
+The [Rust compatibility matrix](https://github.com/sagan-software/bevy-raytraced-audio/actions/runs/38079190498)
+also passed on Rust 1.96.1, 1.97.1, 1.98.1 and 1.99.0, including workspace
+adapter tests and each selected Bevy adapter feature. The [CI record](ci-verification.json)
+identifies the tested production revision; subsequent result-only commits do not
+change its code.
+
+## Additional paired environments
+
+Both variants use the same before/after inventories, 30 Criterion samples,
+1-second warmup and 3-second measurement targets. Builds are frozen before timing;
+compilation, coverage, browser timing and profiling do not run concurrently.
+These compare the original application with the final application, rather than
+introducing further optimization rounds.
+
+| Configuration                                         | Cases | Final/original throughput ratio | Conservative lower bound |
+| ----------------------------------------------------- | ----: | ------------------------------: | -----------------------: |
+| CPU-specific core, `RUSTFLAGS="-C target-cpu=native"` |    37 |                         28.230× |                  27.484× |
+| Adapter task configuration, `BEVY_TASK_THREADS=1`     |    14 |                         12.031× |                  11.514× |
+
+The [environment and binary hashes](additional-environments.json), complete
+[cpu-specific comparison](cpu-native-comparison.json), [adapter comparison](single-worker-comparison.json)
+and raw [core](cpu-native-samples.json)/[adapter](single-worker-samples.json)
+estimates and samples are retained. The thread setting configures Bevy's pool;
+it does not imply the entire process contains only one OS thread.
+
+## Final flame graphs and application smoke test
+
+Final userspace samples retain these remaining hot paths:
+
+- [Changing 3D scene](flamegraphs/final-churn.svg): 27,856 samples, including 27.8%
+  in the visibility traversal callback and 13.5% in BVH ray-entry tests.
+- [Changing DSP voices](flamegraphs/final-dsp.svg): 8,834 samples, with 82.7% in
+  `process_sample_split`.
+- [Moving HRTF](flamegraphs/final-hrtf.svg): 5,414 samples, with 76.4% in smoothed
+  convolution and 16.6% in the response-resampling iterator.
+
+The [sample summary](flamegraphs/final-summary.json) includes checksums and the
+profiling executable hash. The final changing-scene graph uses 128 surfaces;
+the original listener graph uses 1,024 emitters. Their percentages are not a
+paired speed comparison. The DSP and HRTF graphs still expose substantial
+per-sample processing work after the optimizations.
+
+The full WebGL2 showcase rendered on the real Chromium browser's NVIDIA RTX 5070 Ti
+backend. The renderer readiness check observed draw calls; a 44.1 kHz audio
+context ran with scheduled sources connected to its output. Suspended and resumed
+states were also observed. [Smoke-test details](showcase-browser.json) and a
+[screenshot](showcase-browser.png) are retained. This verifies application startup,
+rendering and the browser audio graph, not physical sound quality, frame rate,
+audio latency or absence of underruns.
