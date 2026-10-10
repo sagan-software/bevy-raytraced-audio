@@ -401,4 +401,109 @@ mod tests {
             .volume()
             .to_linear()
     }
+
+    /// Static inputs reuse traces; moving, removing and replacing sources invalidate the cache.
+    #[test]
+    fn deterministic_trace_cache_observes_emitter_changes() {
+        use super::RaytracedAudioListenerTrace2d;
+        use bevy::prelude::DetectChanges;
+        let mut app = App::new();
+        app.add_plugins((TransformPlugin, RaytracedAudio2dPlugin::default()));
+        app.world_mut()
+            .spawn((RaytracedAudioListener2d, Transform::default()));
+        let emitter = app
+            .world_mut()
+            .spawn((RaytracedAudioEmitter2d, Transform::from_xyz(2., 0., 0.)))
+            .id();
+        app.update();
+        let tick = app
+            .world()
+            .get_resource_ref::<RaytracedAudioListenerTrace2d>()
+            .unwrap()
+            .last_changed();
+        app.update();
+        assert_eq!(
+            tick,
+            app.world()
+                .get_resource_ref::<RaytracedAudioListenerTrace2d>()
+                .unwrap()
+                .last_changed()
+        );
+        app.world_mut()
+            .get_mut::<Transform>(emitter)
+            .unwrap()
+            .translation
+            .x = 3.;
+        app.update();
+        assert_eq!(
+            app.world()
+                .get::<RaytracedAudioResponse2d>(emitter)
+                .unwrap()
+                .response()
+                .direct
+                .distance_m(),
+            3.
+        );
+        app.world_mut().despawn(emitter);
+        app.update();
+        assert!(
+            app.world()
+                .resource::<RaytracedAudioListenerTrace2d>()
+                .trace()
+                .unwrap()
+                .sources()
+                .is_empty()
+        );
+        let replacement = app
+            .world_mut()
+            .spawn((RaytracedAudioEmitter2d, Transform::from_xyz(4., 0., 0.)))
+            .id();
+        app.update();
+        assert_eq!(
+            app.world()
+                .get::<RaytracedAudioResponse2d>(replacement)
+                .unwrap()
+                .response()
+                .direct
+                .distance_m(),
+            4.
+        );
+    }
+
+    /// Adding opt-in path output to an idle emitter still populates it immediately.
+    #[test]
+    fn cached_emitter_accepts_new_reflection_output() {
+        use super::RaytracedAudioReflectionPaths2d;
+        let mut app = App::new();
+        app.add_plugins((TransformPlugin, RaytracedAudio2dPlugin::default()));
+        app.world_mut()
+            .spawn((RaytracedAudioListener2d, Transform::from_xyz(0., 2., 0.)));
+        let emitter = app
+            .world_mut()
+            .spawn((RaytracedAudioEmitter2d, Transform::default()))
+            .id();
+        app.world_mut().spawn((
+            RaytracedAudioSurface2d::new(
+                Vec2::new(1., -1.),
+                Vec2::new(1., 3.),
+                AcousticMaterial::default(),
+            )
+            .unwrap(),
+            Transform::default(),
+        ));
+        app.update();
+        app.update();
+        app.world_mut()
+            .entity_mut(emitter)
+            .insert(RaytracedAudioReflectionPaths2d::default());
+        app.update();
+        assert_eq!(
+            app.world()
+                .get::<RaytracedAudioReflectionPaths2d>(emitter)
+                .unwrap()
+                .paths()
+                .len(),
+            1
+        );
+    }
 }

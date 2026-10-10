@@ -13,9 +13,10 @@ pub struct RaytracedAudioTracing2d {
     pub settings: RayTraceSettings,
     /// Whether the listener trace runs; disabled tracing uses direct transmission only.
     pub enabled: bool,
-    /// Minimum real seconds between traces; `0` traces every frame.
+    /// Minimum real seconds between changed-input traces; `0` permits updates every frame.
     ///
-    /// Surface changes and newly traced emitters always trigger an immediate trace.
+    /// Identical inputs reuse their deterministic result. Surface changes and newly traced
+    /// emitters always trigger an immediate trace.
     /// Direct/image-source response components share this cadence when tracing is enabled.
     /// Sink volumes and DSP controls still update every frame.
     pub interval_s: f32,

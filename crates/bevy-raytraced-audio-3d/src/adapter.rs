@@ -558,4 +558,72 @@ mod tests {
         app.update();
         assert_eq!(render(), [0.0; 2]);
     }
+
+    /// Static inputs reuse traces; moving, removing and replacing sources invalidate the cache.
+    #[test]
+    fn deterministic_trace_cache_observes_emitter_changes() {
+        use super::RaytracedAudioListenerTrace3d;
+        use bevy::prelude::DetectChanges;
+        let mut app = App::new();
+        app.add_plugins((TransformPlugin, RaytracedAudio3dPlugin::default()));
+        app.world_mut()
+            .spawn((RaytracedAudioListener3d, Transform::default()));
+        let emitter = app
+            .world_mut()
+            .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(2., 0., 0.)))
+            .id();
+        app.update();
+        let tick = app
+            .world()
+            .get_resource_ref::<RaytracedAudioListenerTrace3d>()
+            .unwrap()
+            .last_changed();
+        app.update();
+        assert_eq!(
+            tick,
+            app.world()
+                .get_resource_ref::<RaytracedAudioListenerTrace3d>()
+                .unwrap()
+                .last_changed()
+        );
+        app.world_mut()
+            .get_mut::<Transform>(emitter)
+            .unwrap()
+            .translation
+            .x = 3.;
+        app.update();
+        assert_eq!(
+            app.world()
+                .get::<RaytracedAudioResponse3d>(emitter)
+                .unwrap()
+                .response()
+                .direct
+                .distance_m(),
+            3.
+        );
+        app.world_mut().despawn(emitter);
+        app.update();
+        assert!(
+            app.world()
+                .resource::<RaytracedAudioListenerTrace3d>()
+                .trace()
+                .unwrap()
+                .sources()
+                .is_empty()
+        );
+        let replacement = app
+            .world_mut()
+            .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(4., 0., 0.)))
+            .id();
+        app.update();
+        assert_eq!(
+            app.world()
+                .get::<RaytracedAudioResponse3d>(replacement)
+                .unwrap()
+                .response()
+                .direct
+                .distance_m(),
+            4.
+        );
+    }
 }

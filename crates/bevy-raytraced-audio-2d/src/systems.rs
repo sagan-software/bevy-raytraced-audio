@@ -84,7 +84,9 @@ pub(super) fn update_raytraced_audio(
     trace_scratch.since_trace_s += delta_s;
     let due = tracing.is_changed()
         || scene_changed
-        || trace_scratch.since_trace_s >= tracing.interval_s
+        || (trace_scratch.since_trace_s >= tracing.interval_s
+            && (trace_scratch.listener != listener
+                || source_positions_changed(&emitters, &trace_scratch)))
         || has_untraced_emitter(&emitters, &trace_scratch.indices)
         || listener_trace.valid != listener.is_some();
     if due {
@@ -122,6 +124,8 @@ pub(super) struct TraceScratch {
     indices: EntityHashMap<usize>,
     /// Real seconds since the last trace.
     since_trace_s: f32,
+    /// Listener position used by the cached deterministic trace.
+    listener: Option<Listener2d>,
 }
 
 /// Returns whether any emitter with a finite position is missing from the last trace.
@@ -130,6 +134,27 @@ fn has_untraced_emitter(emitters: &EmitterQuery<'_, '_>, indices: &EntityHashMap
         let translation = transform.translation();
         translation.x.is_finite() && translation.y.is_finite() && !indices.contains_key(&entity)
     })
+}
+
+/// Compares current finite sources with cached input, including removals and invalid transforms.
+fn source_positions_changed(emitters: &EmitterQuery<'_, '_>, scratch: &TraceScratch) -> bool {
+    let mut valid_count = 0;
+    for (entity, transform, ..) in emitters {
+        let translation = transform.translation();
+        if let Ok(position) = Point2::try_new(translation.x, translation.y) {
+            valid_count += 1;
+            let previous = scratch
+                .indices
+                .get(&entity)
+                .and_then(|index| scratch.sources.get(*index));
+            if previous != Some(&Emitter2d::new(position)) {
+                return true;
+            }
+        } else if scratch.indices.contains_key(&entity) {
+            return true;
+        }
+    }
+    valid_count != scratch.sources.len()
 }
 
 /// Read-only view of the latest listener trace used while updating emitters.
@@ -167,6 +192,7 @@ fn trace_listener(
     listener_trace: &mut RaytracedAudioListenerTrace2d,
     scratch: &mut TraceScratch,
 ) {
+    scratch.listener = listener;
     scratch.sources.clear();
     scratch.indices.clear();
     let Some(listener) = listener else {
@@ -308,6 +334,9 @@ fn update_emitter(
         .zip(listener)
         .map(|(position, listener)| {
             if !traced.refresh_legacy
+                && !reflection_paths
+                    .as_ref()
+                    .is_some_and(DetectChanges::is_added)
                 && let Some(cached) = response_state.as_deref()
             {
                 return cached.response;
