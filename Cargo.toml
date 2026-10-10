@@ -46,6 +46,7 @@ members = [
   "crates/bevy-raytraced-audio-compat-0-20",
   "examples/raytraced-audio",
   "tests/bevy-adapters",
+  "tests/performance",
 ]
 default-members = ["."]
 exclude = ["vendor/rodio"]
@@ -81,6 +82,16 @@ strip = "debuginfo"
 inherits = "release"
 opt-level = "s"
 strip = "debuginfo"
+
+# Keep optimized stack frames symbolizable for flamegraphs and Callgrind.
+[profile.bench]
+debug = "line-tables-only"
+strip = "none"
+
+[profile.profiling]
+inherits = "release"
+debug = 2
+strip = "none"
 
 # https://doc.rust-lang.org/rustc/lints/listing/index.html
 [workspace.lints.rust]

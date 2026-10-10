@@ -1,6 +1,6 @@
 //! Measures complete warmed Bevy acoustic updates for source and surface counts.
 
-use bevy::app::TaskPoolPlugin;
+use bevy::app::{TaskPoolOptions, TaskPoolPlugin};
 use bevy::prelude::{App, Transform, TransformPlugin, Vec2, Vec3};
 use bevy_raytraced_audio::{AcousticMaterial, GeometryError};
 use bevy_raytraced_audio_2d::{
@@ -19,7 +19,7 @@ fn main() -> Result<(), GeometryError> {
     let mut criterion = Criterion::default().configure_from_args();
     benchmark_2d(&mut criterion)?;
     benchmark_3d(&mut criterion)?;
-    benchmark_dispatch_policy(&mut criterion)?;
+    benchmark_churn(&mut criterion)?;
     criterion.final_summary();
     Ok(())
 }
@@ -78,34 +78,42 @@ fn benchmark_3d(criterion: &mut Criterion) -> Result<(), GeometryError> {
     Ok(())
 }
 
-/// Compares serial and task-pool dispatch at the stress workload and crossover boundary.
-fn benchmark_dispatch_policy(criterion: &mut Criterion) -> Result<(), GeometryError> {
-    benchmark_dispatch_policy_2d(criterion)?;
-    benchmark_dispatch_policy_3d(criterion)?;
-    Ok(())
-}
-
-/// Measures serial and task-pool dispatch for 2D workload sizes near the parallel threshold.
-fn benchmark_dispatch_policy_2d(criterion: &mut Criterion) -> Result<(), GeometryError> {
-    let mut group = criterion.benchmark_group("adapter_schedule/dispatch_policy/2d");
-    for (emitter_count, surface_count) in [(16_usize, 32_usize), (64, 64)] {
-        for with_task_pool in [false, true] {
-            let dispatch = if with_task_pool {
-                "task_pool"
+/// Measures geometry/source movement and entity churn in a single real ECS update.
+fn benchmark_churn(criterion: &mut Criterion) -> Result<(), GeometryError> {
+    let mut group = criterion.benchmark_group("adapter_schedule/churn");
+    for count in [128_usize, 1024] {
+        for dimension in [2, 3] {
+            let mut app = if dimension == 2 {
+                app_2d(count, count, true)?
             } else {
-                "serial"
+                app_3d(count, count, true)?
             };
-            let mut app = app_2d(emitter_count, surface_count, with_task_pool)?;
             app.update();
-            group.throughput(Throughput::Elements(
-                u64::try_from(emitter_count).unwrap_or(u64::MAX),
-            ));
-            let id = BenchmarkId::new(
-                "sources_surfaces_dispatch",
-                format!("{emitter_count}_{surface_count}_{dispatch}"),
-            );
-            group.bench_function(id, |bencher| {
-                bencher.iter(|| black_box(&mut app).update());
+            let mut frame = 0_u32;
+            group.bench_function(BenchmarkId::new(format!("{dimension}d"), count), |b| {
+                b.iter(|| {
+                    frame = (frame + 1) % 2;
+                    let delta = if frame == 0 { 0.01 } else { -0.01 };
+                    let world = app.world_mut();
+                    for mut transform in world.query::<&mut Transform>().iter_mut(world) {
+                        transform.translation.x += delta;
+                        transform.translation.y -= delta;
+                    }
+                    // Replace voices every frame as well as moving every source and surface.
+                    for _ in 0..16 {
+                        let entity = if dimension == 2 {
+                            world
+                                .spawn((RaytracedAudioEmitter2d, Transform::default()))
+                                .id()
+                        } else {
+                            world
+                                .spawn((RaytracedAudioEmitter3d, Transform::default()))
+                                .id()
+                        };
+                        world.despawn(entity);
+                    }
+                    black_box(&mut app).update();
+                });
             });
         }
     }
@@ -113,32 +121,15 @@ fn benchmark_dispatch_policy_2d(criterion: &mut Criterion) -> Result<(), Geometr
     Ok(())
 }
 
-/// Measures serial and task-pool dispatch for 3D workload sizes near the parallel threshold.
-fn benchmark_dispatch_policy_3d(criterion: &mut Criterion) -> Result<(), GeometryError> {
-    let mut group = criterion.benchmark_group("adapter_schedule/dispatch_policy/3d");
-    for (emitter_count, surface_count) in [(16_usize, 32_usize), (64, 64)] {
-        for with_task_pool in [false, true] {
-            let dispatch = if with_task_pool {
-                "task_pool"
-            } else {
-                "serial"
-            };
-            let mut app = app_3d(emitter_count, surface_count, with_task_pool)?;
-            app.update();
-            group.throughput(Throughput::Elements(
-                u64::try_from(emitter_count).unwrap_or(u64::MAX),
-            ));
-            let id = BenchmarkId::new(
-                "sources_surfaces_dispatch",
-                format!("{emitter_count}_{surface_count}_{dispatch}"),
-            );
-            group.bench_function(id, |bencher| {
-                bencher.iter(|| black_box(&mut app).update());
-            });
-        }
+/// Configures a fresh process's shared pool; run separate processes for thread-count comparisons.
+fn task_pool() -> TaskPoolPlugin {
+    let threads = std::env::var("BEVY_TASK_THREADS")
+        .ok()
+        .and_then(|n| n.parse().ok())
+        .unwrap_or(4);
+    TaskPoolPlugin {
+        task_pool_options: TaskPoolOptions::with_num_threads(threads),
     }
-    group.finish();
-    Ok(())
 }
 
 /// Builds a warmed headless 2D Bevy app with deterministic geometry.
@@ -149,7 +140,7 @@ fn app_2d(
 ) -> Result<App, GeometryError> {
     let mut app = App::new();
     if with_task_pool {
-        app.add_plugins(TaskPoolPlugin::default());
+        app.add_plugins(task_pool());
     }
     app.add_plugins((TransformPlugin, RaytracedAudio2dPlugin::default()));
     app.world_mut()
@@ -188,7 +179,7 @@ fn app_3d(
 ) -> Result<App, GeometryError> {
     let mut app = App::new();
     if with_task_pool {
-        app.add_plugins(TaskPoolPlugin::default());
+        app.add_plugins(task_pool());
     }
     app.add_plugins((TransformPlugin, RaytracedAudio3dPlugin::default()));
     app.world_mut()

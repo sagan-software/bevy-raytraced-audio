@@ -129,6 +129,26 @@
         runtimeLibraryPath = pkgs.lib.makeLibraryPath bevyBuildInputs;
         pkgConfigPath = pkgs.lib.makeSearchPathOutput "dev" "lib/pkgconfig" bevyBuildInputs;
 
+        performanceTools = [
+          pkgs.flamegraph
+          pkgs.inferno
+          pkgs.hyperfine
+          pkgs.htop
+          pkgs.gnuplot
+          pkgs.cargo-bloat
+          pkgs.cargo-llvm-cov
+          pkgs.nodejs
+          pkgs.wasm-bindgen-cli
+        ]
+        ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+          pkgs.perf
+          pkgs.valgrind
+          pkgs.heaptrack
+          pkgs.gdb
+          pkgs.strace
+          pkgs.sysstat
+        ];
+
         bevyBrpMcp =
           let
             pname = "bevy_brp_mcp";
@@ -616,6 +636,7 @@
               export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
               export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
               cargo bench --package bevy-raytraced-audio --bench propagation --locked -- "$@"
+              cargo bench --package acoustic-performance --bench workloads --locked -- "$@"
               cargo bench --package bevy-raytraced-audio-public-tests --bench adapter_schedule --locked -- "$@"
             ''
           );
@@ -749,6 +770,16 @@
 
         formatter = formatRepo;
 
+        # Avoid rebuilding the editor/Bevy CLI to run standalone profiling tools.
+        devShells.performance = pkgs.mkShell {
+          packages = [ rustToolchain pkgs.python3 pkgs.pkg-config ] ++ performanceTools;
+          buildInputs = bevyBuildInputs;
+          shellHook = ''
+            export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
+            export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+          '';
+        };
+
         devShells.default = pkgs.mkShell {
           packages = [
             bevyBrpMcp
@@ -765,7 +796,8 @@
             rustToolchain
           ]
           ++ cacheTools
-          ++ bevyBuildInputs;
+          ++ bevyBuildInputs
+          ++ performanceTools;
           shellHook = ''
             ${aiSupport.shellHook}
             export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"

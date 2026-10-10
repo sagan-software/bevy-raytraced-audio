@@ -1,0 +1,39 @@
+[package]
+name = "acoustic-performance"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[features]
+sampling = ["dep:pprof"]
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+bench = false
+
+[[bin]]
+name = "acoustic-performance"
+path = "src/main.rs"
+bench = false
+test = false
+
+[[bench]]
+name = "workloads"
+harness = false
+
+[dependencies]
+bevy-raytraced-audio = { path = "../.." }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+pprof = { version = "0.15", optional = true, default-features = false, features = ["flamegraph"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+criterion.workspace = true
+
+[lints]
+workspace = true

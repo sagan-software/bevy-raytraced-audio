@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acoustic benchmark laboratory</title>
+<style>body{font:16px system-ui;max-width:1000px;margin:3rem auto;padding:1rem;background:#111827;color:#e5e7eb}button,input{font:inherit;padding:.6rem}pre{white-space:pre-wrap}td,th{text-align:left;padding:.5rem;border-bottom:1px solid #374151}</style>
+<h1>Acoustic benchmark laboratory</h1>
+<p>Runs the same deterministic workloads as native Criterion. Keep this tab visible. Results measure acoustic computation, not rendering, audio devices, or display FPS.</p>
+<label>Build <input id="build" value="baseline"></label> <button id="run" disabled>Run suite</button> <button id="save" disabled>Download JSON</button>
+<p id="status">Loading WebAssembly…</p><table><thead><tr><th>Workload</th><th>Median ms</th><th>p95 ms</th></tr></thead><tbody id="results"></tbody></table>
+<script type="module" src="runner.mjs"></script>
