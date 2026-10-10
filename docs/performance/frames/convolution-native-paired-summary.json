@@ -1,0 +1,55 @@
+{
+  "measurement_kind": "whole_process_native",
+  "geomean_speedup": 1.277575775585616,
+  "cases": [
+    {
+      "name": "hrtf/44100/static",
+      "speedup": 1.0745752704810927,
+      "paired_bootstrap_95_percent_interval": [
+        1.061010895094894,
+        1.08874377078498
+      ]
+    },
+    {
+      "name": "hrtf/48000/static",
+      "speedup": 1.0716409971460843,
+      "paired_bootstrap_95_percent_interval": [
+        1.0650816981158515,
+        1.0792892085277517
+      ]
+    },
+    {
+      "name": "hrtf/96000/static",
+      "speedup": 1.071678701962545,
+      "paired_bootstrap_95_percent_interval": [
+        1.066567352411947,
+        1.076930523055694
+      ]
+    },
+    {
+      "name": "hrtf/44100/moving",
+      "speedup": 1.9517760466098453,
+      "paired_bootstrap_95_percent_interval": [
+        1.9455113342423211,
+        1.9578606142527253
+      ]
+    },
+    {
+      "name": "hrtf/48000/moving",
+      "speedup": 1.9857106229454629,
+      "paired_bootstrap_95_percent_interval": [
+        1.9747754333412009,
+        1.9970168284942118
+      ]
+    },
+    {
+      "name": "hrtf/48000/bypass",
+      "speedup": 0.9091243840272841,
+      "paired_bootstrap_95_percent_interval": [
+        0.9038199178178726,
+        0.9141042510513756
+      ]
+    }
+  ],
+  "limitation": "Only the six HRTF cases; includes construction/process startup; not application FPS or the complete Criterion suite. Paired intervals do not establish a joint confidence interval."
+}

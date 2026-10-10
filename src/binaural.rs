@@ -376,7 +376,14 @@ impl BinauralProcessor {
                 .unwrap_or([0.; 2])
                 .map(|coefficient| direct * coefficient)
         } else if self.smoothing_active {
-            convolve::<true>(&mut self.current, &self.target, history, self.smoothing)
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                convolve_smoothed(&mut self.current, &self.target, history, self.smoothing)
+            }
+            #[cfg(target_arch = "wasm32")]
+            {
+                convolve::<true>(&mut self.current, &self.target, history, self.smoothing)
+            }
         } else {
             convolve::<false>(&mut self.current, &self.target, history, self.smoothing)
         };
@@ -414,9 +421,33 @@ impl BinauralProcessor {
     }
 }
 
+/// Outlines the moving-coefficient path without adding a call to static convolutions.
+///
+/// Keeping this boundary preserves separate slice borrows for LLVM's alias analysis;
+/// the measured x86-64 application build otherwise scalarizes coefficient updates.
+/// WebAssembly retains its original boundary, which performed better for static sources.
+#[cfg(not(target_arch = "wasm32"))]
+#[inline(never)]
+fn convolve_smoothed(
+    current: &mut [[f32; 2]],
+    target: &[[f32; 2]],
+    input: &[f32],
+    smoothing: f32,
+) -> [f32; 2] {
+    convolve::<true>(current, target, input, smoothing)
+}
+
 /// Four independent accumulation lanes expose SIMD without changing FIR length or smoothing.
 ///
 /// Only the summation order changes. A scalar reference test bounds the rounding difference.
+#[cfg_attr(not(target_arch = "wasm32"), inline(always))]
+#[cfg_attr(
+    not(target_arch = "wasm32"),
+    expect(
+        clippy::inline_always,
+        reason = "retain one shared loop inside the intentional smoothing boundary and the static caller"
+    )
+)]
 #[expect(
     clippy::suboptimal_flops,
     reason = "portable multiply/add avoids software FMA in the audio callback"

@@ -21,6 +21,10 @@ jobs:
           toolchain: 1.99.0
           targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
+      - name: Validate frame measurement guards
+        run: python scripts/test_frame_comparison.py
+      - name: Validate native paired measurement guards
+        run: python scripts/test_binary_pair.py
       - name: Correctness and simultaneous-change stress
         run: cargo test --locked -p bevy-raytraced-audio -p acoustic-performance
       - name: Compile native benchmarks

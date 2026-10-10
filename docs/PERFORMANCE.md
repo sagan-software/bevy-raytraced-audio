@@ -313,3 +313,35 @@ The earlier [by-reference BVH experiment](performance/frames/rejected-bvh.json.g
 and [depth-prepass experiment](performance/frames/rejected-depth-prepass.json) are
 retained as rejected trials. The former includes a repetition explicitly marked as
 contaminated by concurrent filesystem work. None counts as an accepted FPS round.
+
+## Native audio optimization outside result caching
+
+The smoothing convolution keeps a separate function boundary on native targets.
+This preserves LLVM's knowledge that the input, target and writable coefficient
+slices do not alias, allowing packed coefficient updates in the measured x86-64
+build. FIR lengths, source movement, smoothing arithmetic and acoustic quality are
+unchanged. This is computation on changing coefficients, with no result-cache hits.
+WebAssembly keeps the original code path: the final WASM file is byte-identical to
+the preserved browser baseline (`daf0635852487dfec637ce892534cc81bf2038300e6b88ac4f104bfe9208f938`).
+
+The [paired native measurements](performance/frames/convolution-native-paired-summary.json)
+alternated executables for thirty samples per case, with identical operation counts
+and exact checksum equality. Static cases improved by about 7%; moving 44.1/48 kHz
+cases improved by 1.952×/1.986×. Bypass regressed to 0.909×. The equal-weight geometric
+mean across these **six HRTF cases only** was 1.278×. This does not meet the 1.5×
+application-FPS gate or describe the whole Criterion suite. The larger differences
+in the [sequential Hyperfine measurements](performance/frames/convolution-native-hyperfine.json)
+are retained too. All twenty-one shared native workloads produced matching checksums
+in the separate parity check.
+
+```sh
+python3 scripts/benchmark-binary-pair.py reference-driver candidate-driver paired.json \
+  --prefix hrtf/ --samples 30 --batch-ms 200
+```
+
+This supplementary runner measures whole processes, including construction and
+startup. Criterion remains the tool for excluding setup from loop timings. The
+runner records executable hashes and toolchain, alternates reference/candidate order,
+checks every measured pair's output, refuses to overwrite evidence, and marks partial
+reports incomplete. Without `--prefix`, it measures the full shared kernel inventory;
+those kernels are distinct from the rendered application workloads.

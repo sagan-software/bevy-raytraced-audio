@@ -1,0 +1,138 @@
+{
+  "baseline_revision": "2b48a18",
+  "candidate_base_revision": "ebf5812",
+  "measurement_kind": "native_checksum_parity",
+  "cases": [
+    {
+      "name": "listener/2d/1",
+      "iterations": 16,
+      "before_checksum": "10.416328430175781",
+      "after_checksum": "10.416328430175781"
+    },
+    {
+      "name": "listener/2d/64",
+      "iterations": 16,
+      "before_checksum": "750.540403842926",
+      "after_checksum": "750.540403842926"
+    },
+    {
+      "name": "listener/2d/1024",
+      "iterations": 16,
+      "before_checksum": "15957.474390506744",
+      "after_checksum": "15957.474390506744"
+    },
+    {
+      "name": "listener/3d/1",
+      "iterations": 16,
+      "before_checksum": "16",
+      "after_checksum": "16"
+    },
+    {
+      "name": "listener/3d/64",
+      "iterations": 16,
+      "before_checksum": "998.1209669113159",
+      "after_checksum": "998.1209669113159"
+    },
+    {
+      "name": "listener/3d/1024",
+      "iterations": 16,
+      "before_checksum": "16350.437780380249",
+      "after_checksum": "16350.437780380249"
+    },
+    {
+      "name": "listener/2d/recorded",
+      "iterations": 16,
+      "before_checksum": "750.540403842926",
+      "after_checksum": "750.540403842926"
+    },
+    {
+      "name": "listener/3d/recorded",
+      "iterations": 16,
+      "before_checksum": "998.1209669113159",
+      "after_checksum": "998.1209669113159"
+    },
+    {
+      "name": "churn/2d/128",
+      "iterations": 16,
+      "before_checksum": "2048",
+      "after_checksum": "2048"
+    },
+    {
+      "name": "churn/3d/128",
+      "iterations": 16,
+      "before_checksum": "2048",
+      "after_checksum": "2048"
+    },
+    {
+      "name": "churn/2d/1024",
+      "iterations": 16,
+      "before_checksum": "3507.404371720029",
+      "after_checksum": "3507.404371720029"
+    },
+    {
+      "name": "churn/3d/1024",
+      "iterations": 16,
+      "before_checksum": "12477.855393439531",
+      "after_checksum": "12477.855393439531"
+    },
+    {
+      "name": "dsp/44100/mono",
+      "iterations": 16,
+      "before_checksum": "-1.3555816567968577",
+      "after_checksum": "-1.3555816567968577"
+    },
+    {
+      "name": "dsp/48000/stereo",
+      "iterations": 16,
+      "before_checksum": "-1.280001712962985",
+      "after_checksum": "-1.280001712962985"
+    },
+    {
+      "name": "dsp/48000/changing64",
+      "iterations": 16,
+      "before_checksum": "-60.78145909309387",
+      "after_checksum": "-60.78145909309387"
+    },
+    {
+      "name": "hrtf/44100/static",
+      "iterations": 16,
+      "before_checksum": "38.99280668050051",
+      "after_checksum": "38.99280668050051"
+    },
+    {
+      "name": "hrtf/48000/static",
+      "iterations": 16,
+      "before_checksum": "38.992944996804",
+      "after_checksum": "38.992944996804"
+    },
+    {
+      "name": "hrtf/96000/static",
+      "iterations": 16,
+      "before_checksum": "38.992774503771216",
+      "after_checksum": "38.992774503771216"
+    },
+    {
+      "name": "hrtf/44100/moving",
+      "iterations": 16,
+      "before_checksum": "43.1578241896932",
+      "after_checksum": "43.1578241896932"
+    },
+    {
+      "name": "hrtf/48000/moving",
+      "iterations": 16,
+      "before_checksum": "42.85100905163563",
+      "after_checksum": "42.85100905163563"
+    },
+    {
+      "name": "hrtf/48000/bypass",
+      "iterations": 16,
+      "before_checksum": "37.49010191857815",
+      "after_checksum": "37.49010191857815"
+    }
+  ],
+  "binaries_sha256": {
+    "target/performance/dsp-baseline": "b8a0311a737af6a4cad4fb0345ea9ae60417c4def7443ce47bd8100bfc9d3953",
+    "target/application-bench/acoustic-performance": "2409d4f71cae5b34056e676a1b970785b56caf221e6cae97db6478e95b97cadd"
+  },
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n"
+}
