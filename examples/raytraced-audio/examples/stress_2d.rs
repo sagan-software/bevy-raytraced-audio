@@ -2,7 +2,7 @@
 
 use bevy::{
     asset::AssetMetaCheck,
-    audio::{AudioPlugin, SpatialScale},
+    audio::{AudioPlugin, SpatialScale, Volume},
     camera::ScalingMode,
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
@@ -20,15 +20,22 @@ use std::f32::consts::TAU;
 const EMITTER_COUNT: usize = 16;
 /// Exact `f32` representation of the fixed emitter count.
 const EMITTER_COUNT_FLOAT: f32 = 16.0;
+/// Looping recordings mixed across the moving sources.
+const STRESS_SOUNDS: [&str; 4] = [
+    "audio/music_loop.ogg",
+    "audio/fire_crackle.ogg",
+    "audio/voice.ogg",
+    "audio/rain_loop.ogg",
+];
 /// Number of acoustic surfaces rebuilt and queried each frame.
 const SURFACE_COUNT: usize = 32;
 
-/// Starts the stress scene with one spatial audio voice and 16 traced emitters.
+/// Starts the stress scene with four spatial audio voices and 16 traced emitters.
 fn main() {
     App::new()
         .add_plugins(
             DefaultPlugins
-                // The bundled WAV uses Bevy's default metadata and needs no sidecar request.
+                // The bundled recordings use Bevy's default metadata and need no sidecar request.
                 .set(AssetPlugin {
                     meta_check: AssetMetaCheck::Never,
                     ..default()
@@ -84,10 +91,15 @@ fn setup(mut commands: Commands<'_, '_>, asset_server: Res<'_, AssetServer>) {
             Transform::from_xyz(5.0 * phase.cos(), 5.0 * phase.sin(), 1.0),
             OrbitPhase { radians: phase },
         ));
-        if emitter_index == 0 {
+        // Every fourth source plays a quiet recording, so four different loops are mixed.
+        if let Some(sound) = STRESS_SOUNDS.get(emitter_index / 4)
+            && emitter_index % 4 == 0
+        {
             emitter.insert((
-                AudioPlayer::new(asset_server.load("audio/bevy-raytraced-audio-chime.wav")),
-                PlaybackSettings::LOOP.with_spatial(true),
+                AudioPlayer::new(asset_server.load(*sound)),
+                PlaybackSettings::LOOP
+                    .with_spatial(true)
+                    .with_volume(Volume::Linear(0.3)),
             ));
         }
     }

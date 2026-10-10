@@ -1,8 +1,11 @@
 //! Public facade for the Bevy 3D acoustic adapter.
 
+#[cfg(feature = "debug_draw")]
+mod debug_draw;
 mod emitter;
 mod listener;
 mod plugin;
+mod ray_tracing;
 mod reflection_paths;
 mod response;
 mod settings;
@@ -10,9 +13,23 @@ mod surface;
 mod systems;
 mod volume;
 
+// The ray-kind mask is shared with the 2D drawing so both adapters accept the same value.
+#[cfg(feature = "debug_draw")]
+pub use crate::audio_2d::RayKindMask;
+pub use crate::processed_audio::{
+    RaytracedAudioPlayer, RaytracedAudioPrepareSystems, RaytracedAudioPrepared,
+    RaytracedAudioProcessingPlugin, RaytracedAudioSource,
+};
+#[cfg(feature = "debug_draw")]
+pub use debug_draw::RaytracedAudioDebugDraw3d;
 pub use emitter::RaytracedAudioEmitter3d;
 pub use listener::RaytracedAudioListener3d;
+#[cfg(feature = "debug_draw")]
+pub use plugin::RaytracedAudio3dDebugPlugin;
 pub use plugin::RaytracedAudio3dPlugin;
+pub use ray_tracing::{
+    RaytracedAudioListenerTrace3d, RaytracedAudioRayResponse3d, RaytracedAudioTracing3d,
+};
 pub use reflection_paths::RaytracedAudioReflectionPaths3d;
 pub use response::RaytracedAudioResponse3d;
 pub use surface::RaytracedAudioSurface3d;
@@ -22,10 +39,266 @@ mod tests {
     //! Adapter behavior tests compiled against each supported Bevy minor.
 
     use super::{RaytracedAudio3dPlugin, RaytracedAudioEmitter3d, RaytracedAudioListener3d};
+    use super::{RaytracedAudioListenerTrace3d, RaytracedAudioRayResponse3d};
     use super::{RaytracedAudioResponse3d, RaytracedAudioSurface3d};
     use bevy::audio::{AudioSink, AudioSinkPlayback, Volume};
     use bevy::prelude::{App, Entity, Transform, TransformPlugin, Vec3};
     use bevy_raytraced_audio::{AcousticMaterial, BandGain};
+
+    /// Spawns a closed axis-aligned box of opaque triangles centred on `center`.
+    fn spawn_sealed_box(
+        app: &mut App,
+        center: Vec3,
+        half: f32,
+    ) -> Result<(), bevy_raytraced_audio::GeometryError> {
+        // Each face is two triangles over its four corners, listed around the face.
+        let faces = [
+            [
+                (-1., -1., -1.),
+                (1., -1., -1.),
+                (1., 1., -1.),
+                (-1., 1., -1.),
+            ],
+            [(-1., -1., 1.), (1., -1., 1.), (1., 1., 1.), (-1., 1., 1.)],
+            [
+                (-1., -1., -1.),
+                (1., -1., -1.),
+                (1., -1., 1.),
+                (-1., -1., 1.),
+            ],
+            [(-1., 1., -1.), (1., 1., -1.), (1., 1., 1.), (-1., 1., 1.)],
+            [
+                (-1., -1., -1.),
+                (-1., 1., -1.),
+                (-1., 1., 1.),
+                (-1., -1., 1.),
+            ],
+            [(1., -1., -1.), (1., 1., -1.), (1., 1., 1.), (1., -1., 1.)],
+        ];
+        for corners in faces {
+            let [a, b, c, d] = corners.map(|(x, y, z)| center + Vec3::new(x, y, z) * half);
+            for vertices in [[a, b, c], [a, c, d]] {
+                app.world_mut().spawn((
+                    RaytracedAudioSurface3d::new(vertices, AcousticMaterial::default())?,
+                    Transform::default(),
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    /// A sealed box around the emitter hides it from every listener ray.
+    #[test]
+    fn sealed_box_fully_muffles_traced_emitter() -> Result<(), bevy_raytraced_audio::GeometryError>
+    {
+        let mut app = App::new();
+        app.add_plugins(TransformPlugin);
+        app.add_plugins(RaytracedAudio3dPlugin::default());
+        app.world_mut()
+            .spawn((RaytracedAudioListener3d, Transform::from_xyz(5.0, 0.0, 0.0)));
+        let emitter = app
+            .world_mut()
+            .spawn((RaytracedAudioEmitter3d, Transform::default()))
+            .id();
+        spawn_sealed_box(&mut app, Vec3::ZERO, 1.0)?;
+
+        app.update();
+
+        let response = app
+            .world()
+            .get::<RaytracedAudioRayResponse3d>(emitter)
+            .expect("the adapter publishes a traced response")
+            .response();
+        assert!(!response.is_direct_visible());
+        assert!(response.clarity() < f32::EPSILON, "{response:?}");
+        Ok(())
+    }
+
+    /// The listener trace resource holds results once a unique listener exists.
+    #[test]
+    fn listener_trace_becomes_valid() {
+        let mut app = App::new();
+        app.add_plugins(TransformPlugin);
+        app.add_plugins(RaytracedAudio3dPlugin::default());
+        app.update();
+        assert!(
+            app.world()
+                .resource::<RaytracedAudioListenerTrace3d>()
+                .trace()
+                .is_none()
+        );
+
+        app.world_mut()
+            .spawn((RaytracedAudioListener3d, Transform::default()));
+        app.world_mut()
+            .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(2.0, 0.0, 0.0)));
+        app.update();
+
+        let trace = app
+            .world()
+            .resource::<RaytracedAudioListenerTrace3d>()
+            .trace()
+            .expect("a unique listener produces a trace");
+        assert_eq!(trace.sources().len(), 1);
+        assert!(trace.sources()[0].is_direct_visible());
+    }
+
+    /// Image-source responses obey the trace interval instead of repeating work every render frame.
+    #[test]
+    fn image_source_queries_share_listener_trace_cadence() {
+        use super::RaytracedAudioTracing3d;
+        use bevy::prelude::{Real, Time};
+        use std::time::Duration;
+        let mut app = App::new();
+        app.add_plugins((TransformPlugin, RaytracedAudio3dPlugin::default()));
+        app.insert_resource(Time::<Real>::default());
+        app.world_mut()
+            .resource_mut::<RaytracedAudioTracing3d>()
+            .interval_s = 0.1;
+        app.world_mut()
+            .spawn((RaytracedAudioListener3d, Transform::default()));
+        let emitter = app
+            .world_mut()
+            .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(2.0, 0.0, 0.0)))
+            .id();
+        app.update();
+        app.world_mut()
+            .get_mut::<Transform>(emitter)
+            .unwrap()
+            .translation
+            .x = 4.0;
+        app.update();
+        assert!(
+            (app.world()
+                .get::<RaytracedAudioResponse3d>(emitter)
+                .unwrap()
+                .response()
+                .direct
+                .distance_m()
+                - 2.0)
+                .abs()
+                < f64::EPSILON
+        );
+        app.world_mut()
+            .resource_mut::<Time<Real>>()
+            .advance_by(Duration::from_millis(110));
+        app.update();
+        assert!(
+            (app.world()
+                .get::<RaytracedAudioResponse3d>(emitter)
+                .unwrap()
+                .response()
+                .direct
+                .distance_m()
+                - 4.0)
+                .abs()
+                < f64::EPSILON
+        );
+        app.world_mut()
+            .resource_mut::<RaytracedAudioTracing3d>()
+            .enabled = false;
+        app.world_mut()
+            .get_mut::<Transform>(emitter)
+            .unwrap()
+            .translation
+            .x = 6.0;
+        app.update();
+        assert!(
+            (app.world()
+                .get::<RaytracedAudioResponse3d>(emitter)
+                .unwrap()
+                .response()
+                .direct
+                .distance_m()
+                - 6.0)
+                .abs()
+                < f64::EPSILON
+        );
+    }
+
+    /// Runtime toggles bypass the trace interval and clear stale processed-audio parameters.
+    #[test]
+    fn tracing_toggle_resets_processed_audio_immediately() {
+        use super::{
+            RaytracedAudioListenerTrace3d, RaytracedAudioPlayer, RaytracedAudioRayResponse3d,
+            RaytracedAudioTracing3d,
+        };
+        use bevy::prelude::{Handle, Real, Time};
+        use bevy_raytraced_audio::{MuffleFilter, ReverbEstimate};
+        use std::sync::Arc;
+
+        let mut app = App::new();
+        app.add_plugins(TransformPlugin);
+        app.add_plugins(RaytracedAudio3dPlugin::default());
+        // Zero elapsed time prevents the periodic trace from hiding invalidation bugs.
+        app.insert_resource(Time::<Real>::default());
+        app.world_mut()
+            .resource_mut::<RaytracedAudioTracing3d>()
+            .interval_s = 60.0;
+        let listener = app
+            .world_mut()
+            .spawn((RaytracedAudioListener3d, Transform::default()))
+            .id();
+        let player = RaytracedAudioPlayer::new(Handle::default());
+        let params = Arc::clone(player.params());
+        let emitter = app
+            .world_mut()
+            .spawn((
+                RaytracedAudioEmitter3d,
+                Transform::from_xyz(2.0, 0.0, 0.0),
+                player,
+            ))
+            .id();
+        app.update();
+        assert!(
+            app.world()
+                .resource::<RaytracedAudioListenerTrace3d>()
+                .trace()
+                .is_some()
+        );
+
+        params.set_filter(MuffleFilter::SILENT);
+        params.set_reverb(ReverbEstimate::from_parameters(1.0, 2.0, 0.1), 1.0);
+        app.world_mut()
+            .resource_mut::<RaytracedAudioTracing3d>()
+            .enabled = false;
+        app.update();
+        assert!(
+            app.world()
+                .resource::<RaytracedAudioListenerTrace3d>()
+                .trace()
+                .is_none()
+        );
+        assert!(
+            app.world()
+                .get::<RaytracedAudioRayResponse3d>(emitter)
+                .is_none()
+        );
+        assert_eq!(params.filter(), MuffleFilter::CLEAR);
+        assert!(params.wet_gain().abs() < f32::EPSILON);
+
+        app.world_mut()
+            .resource_mut::<RaytracedAudioTracing3d>()
+            .enabled = true;
+        app.update();
+        assert!(
+            app.world()
+                .get::<RaytracedAudioRayResponse3d>(emitter)
+                .is_some()
+        );
+        params.set_filter(MuffleFilter::SILENT);
+        params.set_reverb(ReverbEstimate::from_parameters(1.0, 2.0, 0.1), 1.0);
+        app.world_mut().despawn(listener);
+        app.update();
+        assert!(
+            app.world()
+                .resource::<RaytracedAudioListenerTrace3d>()
+                .trace()
+                .is_none()
+        );
+        assert_eq!(params.filter(), MuffleFilter::CLEAR);
+        assert!(params.wet_gain().abs() < f32::EPSILON);
+    }
 
     /// The plugin writes an occluded response after transforms propagate.
     #[test]
@@ -239,5 +512,50 @@ mod tests {
             .expect("emitter retains its audio sink")
             .volume()
             .to_linear()
+    }
+    /// Head rotation updates every frame, even while geometry tracing is throttled.
+    #[test]
+    fn binaural_pose_tracks_rotated_listener_and_missing_listener() {
+        use super::{RaytracedAudioPlayer, RaytracedAudioTracing3d};
+        use bevy::prelude::{Handle, Quat, Real, Time};
+        use bevy_raytraced_audio::BinauralProcessor;
+        use std::sync::Arc;
+        let mut app = App::new();
+        app.add_plugins((TransformPlugin, RaytracedAudio3dPlugin::default()));
+        app.insert_resource(Time::<Real>::default());
+        app.world_mut()
+            .resource_mut::<RaytracedAudioTracing3d>()
+            .interval_s = 60.0;
+        let head = app
+            .world_mut()
+            .spawn((RaytracedAudioListener3d, Transform::default()))
+            .id();
+        let player = RaytracedAudioPlayer::new(Handle::default()).with_binaural(1.0);
+        let params = Arc::clone(player.binaural_params().unwrap());
+        params.set_enabled(false); // Simple stereo makes rotation assertions unambiguous.
+        app.world_mut().spawn((
+            RaytracedAudioEmitter3d,
+            player,
+            Transform::from_xyz(1.0, 0.0, 0.0),
+        ));
+        app.update();
+        let render = || BinauralProcessor::new(Arc::clone(&params), 44_100).process_frame(1.0, 0.0);
+        let [left, right] = render();
+        assert!(right > 0.99 && left < 0.01);
+        app.world_mut().get_mut::<Transform>(head).unwrap().rotation =
+            Quat::from_rotation_y(core::f32::consts::PI);
+        app.update();
+        let [left, right] = render();
+        assert!(left > 0.99 && right < 0.01);
+        let duplicate = app
+            .world_mut()
+            .spawn((RaytracedAudioListener3d, Transform::default()))
+            .id();
+        app.update();
+        assert_eq!(render(), [0.0; 2]);
+        app.world_mut().despawn(duplicate);
+        app.world_mut().despawn(head);
+        app.update();
+        assert_eq!(render(), [0.0; 2]);
     }
 }

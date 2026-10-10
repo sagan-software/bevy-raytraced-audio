@@ -1,6 +1,137 @@
 # Tests and benchmark results
 
-## Verification snapshot
+The current checks cover the listener-ray and DSP update. The older performance
+and coverage measurements are retained separately below; they do not measure
+the new sandbox, processed audio, or nine-example gallery.
+
+## Current verification: 2026-10-09
+
+The local Rust 1.99.0 run passed:
+
+- `cargo nextest run --locked --workspace --all-targets`: 214 entries, including
+  180 tests and 34 benchmark cases. The benchmark cases ran alongside browser
+  compilation, so this run does not establish a new timing baseline.
+- `cargo test --locked --workspace --doc`: eight doctests across the four Bevy
+  compatibility packages.
+- Strict workspace Clippy, followed by a strict examples check after the final
+  sandbox changes.
+- `RUSTDOCFLAGS='-D warnings' cargo doc --locked --workspace --no-deps --document-private-items`.
+- `node --test website/tests/*.test.mjs`: 52 tests.
+
+The regressions cover immediate filter/reverb reset when tracing is disabled,
+delayed echoes surviving their initial silent pre-delay, live filter changes
+across audio loops, fully absorbing rooms producing no reverb send, finite DSP
+parameters, and bounded player movement after an inactive browser frame.
+All 18 Ogg recordings decoded fully to finite, unclipped mono samples at
+44.1 kHz. The real-recording muffling test retained bass while reducing treble.
+The sandbox movement regression also passed after the final HUD changes.
+
+The complete browser builder produced nine optimized WebAssembly examples,
+19 gallery/example/embed pages, and the Markdown book. All nine routes rendered
+with running Web Audio graphs and no observed console errors or failed requests.
+Browser input checks covered doors, windows, room size, clutter, source
+switching, ray visibility/speed/pause, processing bypass, wall construction and
+removal, and player movement while ray animation was paused. The gallery's
+embedded sandbox also loaded successfully.
+
+Nonzero output samples were observed in the sandbox, 3D doorway, and clap demo.
+The gallery and sandbox had no page-level horizontal overflow at 390 pixels;
+the sandbox uses a compact status panel at narrow widths. These are browser
+signal and layout checks, not a physical listening test. The collaborative
+browser throttled inactive frames, so no new FPS claim is made.
+
+The first-person sandbox follow-up passed 167 workspace library/integration
+tests, five sandbox tests, strict workspace and final examples Clippy, and 55
+website tests. Its stereo regression renders rodio output for 192 combinations
+of view mode, heading, pitch, side, and distance. It also checks camera-relative
+movement, wall collision, nearest-wall crosshair targeting, Escape restoration,
+and cursor capture being requested only on mode transitions. The workspace
+backports rodio's upstream two-line panning correction without updating the
+published 0.22.2 dependency stack.
+
+The sandbox WASM was rebuilt for that follow-up. Browser checks covered the
+humanoid, first-person mouse look, crosshair wall removal/construction, and
+returning overhead. With rain muted and processing bypassed, captured browser
+PCM had a right/left RMS ratio of 1.27 with the speaker on the right, then a
+left/right ratio of 1.49 after turning to put it on the left. These are signal
+checks, not headphone listening. The embedded preview rejects pointer lock;
+the loader handles that rejection and explains the Q/E and PgUp/PgDn fallback.
+
+Fresh coverage, physical-device listening, and full rendered-frame benchmarks
+remain outstanding. The checks below describe the earlier implementation.
+
+## Acoustic village follow-up (2026-10-10)
+
+The village follow-up passes **178 workspace library/integration tests**, **9
+sandbox tests**, and **56 website tests**. Strict workspace Clippy and the final
+examples Clippy pass. The audio fixtures decode all 20 Ogg recordings. The
+sandbox tests use its actual module geometry for aperture and floor checks and
+run the real movement system up and down both stairs with structural colliders.
+They also check camera independence, rotated-door collision, solid stair bulk,
+bridge clearance, category isolation, and actual rodio stereo samples.
+
+Core regressions cover shared 2D segment joins and 3D triangle diagonals without
+merging separate wall layers. Update-cadence regressions compile against all
+four supported Bevy versions. A rodio test checks that positional downmixing
+averages mono, stereo and six-channel input instead of summing it. Generated
+website source now includes the sandbox's local Rust modules as well as its
+entry point.
+
+Browser verification loaded the actual CC0 models, furnishings and recordings;
+checked mouse-facing rotation with an independent overhead camera; opened
+single/double doors and a window; removed and rebuilt a marked wall section;
+entered first person; walked through open
+double doors; inspected basement and upstairs cutaways; and compared the stream
+on the bridge with the water's edge. Speech changes from strongly attenuated
+treble behind closed leaves to 100% along the open direct path. The water has a
+blocked path above the bridge deck and a clear path beside it. No runtime or
+asset-fetch errors were observed during these checks. Pointer lock rejection
+in the embedded preview remains handled, with Q/R and PgUp/PgDn as fallback.
+
+A separate output-muted verification tab captured 172 consecutive scheduled
+buffers over eight seconds in the bridge scenario: no late buffers, peak 0.0192.
+Master mute plus processing bypass subsequently produced 217,088 exact-zero
+samples, confirming that bypass cannot unmute excluded sounds. The earlier
+first-pass speech probe peaked at 0.3455 with no clipping. Embedded-preview
+view transitions can still stall the main-thread Web Audio scheduling; these
+checks do not claim glitch-free playback under arbitrary rendering load.
+See the [audit](SANDBOX-AUDIT.md) for reproducible presets, confirmed fixes and
+physical-model limitations. Physical headphone listening and HRTF elevation
+are not covered by these signal checks.
+
+All nine WebGL2 WebAssembly examples were rebuilt and passed browser startup
+checks with active audio graphs and no observed runtime or asset-fetch errors.
+The generated gallery, book, example routes, and sampled assets passed 56 HTTP
+checks; all nine compressed WebAssembly files passed integrity checks. The
+34 bundled GLB models resolve their texture references and retain the three
+original pack licenses. The final sandbox check also confirmed that basement
+interaction prompts no longer target doors or editable walls on the floor above.
+
+## Elevation and material update (2026-10-10)
+
+The elevation/material change passed 205 Rust tests: core geometry and DSP,
+all four compatibility crates, public adapter tests, decoded audio fixtures,
+and eleven showcase regressions. The 56 website tests passed. Focused Clippy
+checks reported no new project warnings (the vendored rodio warnings remain).
+Rust, Markdown/JavaScript and Nix formatting checks passed.
+
+The showcase was built for WebGL2/WebAssembly and exercised in the collaborative
+Chromium preview. Checks covered above/below presets, independent HRTF and room
+bypasses, tile/carpet/furniture replacement, indoor and outdoor clap/gunshot
+playback, and first-person view. No scene runtime errors were observed. The
+preview rejects pointer lock; its existing Q/R and PgUp/PgDn fallback remains
+available.
+
+A warmed capture covering 2,538 scheduled stereo buffers (5,197,824 frames)
+reported no buffers more than 20 ms late and a peak amplitude of 0.0702.
+The earlier capture during scene startup did contain late buffers; this is not
+a claim that loading or all devices are glitch-free. Tests verify actual
+muffled footsteps retain different above/below waveforms, but physical
+headphone listening and individual localization accuracy remain subjective.
+The [research note](research/vertical-audio-and-materials.md) describes the
+measurement range and remaining acoustic approximations.
+
+## Historical verification snapshot
 
 The local verification run used Rust 1.99.0 on Linux 6.18.49, on an Intel Core i7-8565U laptop CPU. On 2026-10-06, `nix run .#check` passed formatting, strict Clippy, Bevy 0.17–0.20 release-candidate checks, 108 workspace tests, doctests, rustdoc, benchmark compilation, and the coverage threshold. `nix run .#features` compiled all four Bevy selections. `nix run .#dylint` passed the `correctness`, `perf`, and `suspicious` lint groups.
 
@@ -39,17 +170,17 @@ The measured Bevy update schedules exclude browser rendering and presentation. A
 
 The 2026-10-07 run collected three consecutive one-second bins for each route at 1,215 × 700 pixels, for 15 bins total. Every bin exceeded 90 callbacks per second.
 
-| Route | Callback range per second |
-| --- | ---: |
-| Forest 3D | 120–127 |
-| Minimal 2D | 136–145 |
-| Minimal 3D | 93–100 |
-| Stress 2D | 127–143 |
-| Stress 3D | 119–129 |
+| Route      | Callback range per second |
+| ---------- | ------------------------: |
+| Forest 3D  |                   120–127 |
+| Minimal 2D |                   136–145 |
+| Minimal 3D |                    93–100 |
+| Stress 2D  |                   127–143 |
+| Stress 3D  |                   119–129 |
 
 These are uncapped browser animation-frame callbacks, not physical display presentations. Normal headless synchronization capped the on-canvas diagnostic near 60 FPS. Native window presentation and a 90 Hz display remain unverified.
 
-## Browser checks
+## Historical browser checks
 
 `nix run .#web-build` built the gallery, Markdown book, and five separate WebAssembly examples. The repository's GitHub Pages workflow deploys the gallery and book at [the published site](https://sagan-software.github.io/bevy-raytraced-audio/).
 
@@ -62,6 +193,6 @@ Firefox 157 headless returned `null` from `canvas.getContext("webgl2")`. The rou
 ## Scope not verified
 
 - GPU tracing is not implemented. `AudioBackendPreference::Auto` logs that GPU compute is unavailable and keeps CPU tracing active. The new adapter tests cover that no-renderer fallback, but they do not exercise GPU device detection, pipeline failures, device loss, readback, or CPU/GPU parity.
-- Reflections are response data only. The adapter scales sink volume by the mean direct amplitude gain and does not process samples with filters, reflection taps, or late reverb.
+- The new processed player applies muffling and aggregate reverb. Individual delayed reflection taps, codec allocation behavior under load, and physical listening quality remain unverified.
 - The benchmark suite has no allocation counter and does not measure the audio callback. It measures geometry queries and scheduled Bevy updates.
 - Native window rendering and sound from a physical audio device have not been verified. The browser frame samples exceeded 90 callbacks per second with VSync disabled; that run does not test a physical display's refresh rate.

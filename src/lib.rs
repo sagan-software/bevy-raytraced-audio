@@ -1,7 +1,9 @@
 //! Bevy-independent acoustic propagation primitives shared by the 2D and 3D adapters.
 //!
-//! `Scene2d` and `Scene3d` trace direct paths and first-order reflection paths
-//! through explicit segments and triangles. `AcousticMaterial`, `BandAbsorption`,
+//! [`AcousticScene2d`] and [`AcousticScene3d`] trace direct paths, image-source reflections,
+//! and listener rays through explicit segments and triangles. Listener traces estimate
+//! muffling, room reverb, and outdoor ambience; [`AcousticDspProcessor`] applies smoothed
+//! filtering and reverb to decoded samples. `AcousticMaterial`, `BandAbsorption`,
 //! and `BandGain` validate per-band energy absorption and amplitude transmission.
 //! The Bevy adapters consume response values without replacing Bevy's audio
 //! playback system. This crate has no Bevy dependency, so each adapter can target
@@ -12,7 +14,9 @@ mod backend_preference;
 mod band_absorption;
 mod band_energy;
 mod band_gain;
+mod binaural;
 mod bvh;
+mod dsp;
 mod emitter2d;
 mod emitter3d;
 mod geometry_error;
@@ -22,6 +26,9 @@ mod math2d;
 mod math3d;
 mod point2;
 mod point3;
+mod ray_trace;
+mod ray_tracer2d;
+mod ray_tracer3d;
 mod reflection_path2d;
 mod reflection_path3d;
 mod reflection_surface_index;
@@ -38,6 +45,8 @@ pub use self::backend_preference::AudioBackendPreference;
 pub use self::band_absorption::BandAbsorption;
 pub use self::band_energy::BandEnergy;
 pub use self::band_gain::BandGain;
+pub use self::binaural::{BinauralParams, BinauralProcessor};
+pub use self::dsp::{AcousticDspParams, AcousticDspProcessor};
 pub use self::emitter2d::Emitter2d;
 pub use self::emitter3d::Emitter3d;
 pub use self::geometry_error::GeometryError;
@@ -45,6 +54,12 @@ pub use self::listener2d::Listener2d;
 pub use self::listener3d::Listener3d;
 pub use self::point2::Point2;
 pub use self::point3::Point3;
+pub use self::ray_trace::{
+    MuffleFilter, RayKind, RayTraceSettings, ReverbEstimate, SPEED_OF_SOUND_M_PER_S,
+    SourceRayResponse, muffle_strength,
+};
+pub use self::ray_tracer2d::{ListenerTrace2d, RaySegment2d};
+pub use self::ray_tracer3d::{ListenerTrace3d, RaySegment3d};
 pub use self::reflection_path2d::ReflectionPath2d;
 pub use self::reflection_path3d::ReflectionPath3d;
 pub use self::reflection_surface_index::ReflectionSurfaceIndex;

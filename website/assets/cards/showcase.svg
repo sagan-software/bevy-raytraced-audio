@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320">
+  <rect width="640" height="320" fill="#243329" />
+  <path d="M294 0h55l-9 92 16 85-7 143h-63l9-135-14-87z" fill="#397681" />
+  <path
+    d="m319 8-5 77 13 91-9 132"
+    fill="none"
+    stroke="#80d6dc"
+    stroke-width="3"
+    stroke-dasharray="18 16"
+    opacity=".6"
+  />
+  <g fill="#354044" stroke="#abb1c4" stroke-width="7" stroke-linejoin="round">
+    <path d="M45 40h202v143H45z" />
+    <path d="M396 50h199v139H396z" />
+  </g>
+  <g fill="none" stroke="#68c7d2" stroke-width="6">
+    <path d="M75 40h34M45 83v35M570 50h-35M595 86v36" />
+  </g>
+  <path d="M146 43v45m0 49v43" stroke="#abb1c4" stroke-width="6" />
+  <path d="m146 88 27 17m-27 32 27-17" stroke="#f3a67f" stroke-width="5" />
+  <path
+    d="M487 53v63h44V53m-44 13h44m-44 13h44m-44 13h44m-44 13h44"
+    fill="none"
+    stroke="#8d919f"
+    stroke-width="3"
+  />
+  <path d="M438 127h51v49h-51z" fill="#21272e" />
+  <path
+    d="M440 137h47m-47 10h47m-47 10h47m-47 10h47"
+    stroke="#797f90"
+    stroke-width="3"
+  />
+  <g fill="#d58f67" stroke="#f3c59a" stroke-width="3">
+    <path d="M246 235h151v40H246z" />
+    <path d="m246 235-35 7v34l35-1m151-40 35 7v34l-35-1" />
+  </g>
+  <path
+    d="M261 238v34m17-34v34m17-34v34m17-34v34m17-34v34m17-34v34m17-34v34m17-34v34"
+    stroke="#845f45"
+    stroke-width="2"
+  />
+  <g fill="none" stroke-linecap="round">
+    <path d="M197 112 146 112 100 112" stroke="#78e8aa" stroke-width="3" />
+    <path d="m197 112 32-47-38-17-32 49" stroke="#73bed7" stroke-width="2" />
+    <path
+      d="M493 155 540 120"
+      stroke="#ffb66f"
+      stroke-width="3"
+      stroke-dasharray="5 6"
+    />
+  </g>
+  <g fill="#f3a67f">
+    <circle cx="95" cy="105" r="7" />
+    <rect x="87" y="115" width="16" height="21" rx="3" />
+  </g>
+  <g fill="#65b5e8">
+    <circle cx="199" cy="106" r="7" />
+    <rect x="191" y="116" width="16" height="21" rx="3" />
+  </g>
+  <g fill="#c79bf3">
+    <circle cx="547" cy="115" r="7" />
+    <rect x="539" y="125" width="16" height="21" rx="3" />
+  </g>
+  <g fill="#60886b">
+    <circle cx="65" cy="253" r="21" />
+    <circle cx="577" cy="265" r="25" />
+    <circle cx="210" cy="292" r="11" />
+  </g>
+</svg>

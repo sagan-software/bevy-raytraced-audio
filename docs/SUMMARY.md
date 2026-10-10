@@ -4,6 +4,7 @@
 - [Architecture and current API](DESIGN.md)
 - [Bevy and Rust compatibility](COMPATIBILITY.md)
 - [Native and browser examples](EXAMPLES.md)
+- [Acoustic village audit and listening scenarios](SANDBOX-AUDIT.md)
 - [Tests, coverage, and benchmarks](TESTING-AND-BENCHMARKS.md)
 - [Nix workflows](NIX.md)
 - [Sagan Dylints](DYLINTS.md)

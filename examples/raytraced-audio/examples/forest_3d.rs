@@ -6,7 +6,7 @@
 
 use bevy::{
     asset::AssetMetaCheck,
-    audio::{AudioPlugin, SpatialScale},
+    audio::{AudioPlugin, SpatialScale, Volume},
     diagnostic::{Diagnostic, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     input::mouse::{AccumulatedMouseMotion, MouseWheel},
     prelude::*,
@@ -60,7 +60,7 @@ const TREE_CANOPY_LAYERS_METERS: [(f32, f32, f32); 3] =
     [(1.2, 1.9, 0.65), (0.9, 1.6, 1.4), (0.62, 1.3, 2.0)];
 /// Source sway angular speed, in radians per second.
 const EMITTER_SWAY_RADIANS_PER_SECOND: f32 = 0.42;
-/// Initial source phase places the chime behind the brush screen, in radians.
+/// Initial source phase places the music behind the brush screen, in radians.
 const EMITTER_START_PHASE_RADIANS: f32 = std::f32::consts::FRAC_PI_2;
 /// Source travel across the arch opening, in meters.
 const EMITTER_SWAY_RADIUS_METERS: f32 = 4.2;
@@ -80,7 +80,7 @@ const EMITTER_SIZE_PHASE_MULTIPLIER: f32 = 5.7;
 const EMITTER_SIZE_PULSE_AMPLITUDE: f32 = 0.08;
 /// Initial camera distance from its focus point, in meters.
 const INITIAL_CAMERA_DISTANCE_METERS: f32 = 15.5;
-/// Horizontal frame width that contains the listener, chime, and arch, in meters.
+/// Horizontal frame width that contains the listener, music source, and arch, in meters.
 const CAMERA_ACOUSTIC_FRAME_WIDTH_METERS: f32 = 22.0;
 /// Vertical camera field of view in radians.
 const CAMERA_VERTICAL_FOV_RADIANS: f32 = std::f32::consts::FRAC_PI_4;
@@ -100,7 +100,7 @@ fn main() {
     App::new()
         .add_plugins(
             DefaultPlugins
-                // The bundled WAV uses Bevy's default metadata and needs no sidecar request.
+                // The bundled recordings use Bevy's default metadata and need no sidecar request.
                 .set(AssetPlugin {
                     meta_check: AssetMetaCheck::Never,
                     ..default()
@@ -147,7 +147,7 @@ fn main() {
         .run();
 }
 
-/// Creates the forest, listener, moving chime, surfaces, camera, and in-scene help.
+/// Creates the forest, ambience, listener, moving music source, surfaces, camera, and in-scene help.
 fn setup_scene(
     mut commands: Commands<'_, '_>,
     asset_server: Res<'_, AssetServer>,
@@ -243,10 +243,10 @@ fn setup_scene(
         ..default()
     });
     commands.spawn((
-        Name::new("Looping spatial chime"),
+        Name::new("Looping spatial music"),
         RaytracedAudioEmitter3d,
         RaytracedAudioReflectionPaths3d::default(),
-        AudioPlayer::new(asset_server.load("audio/bevy-raytraced-audio-chime.wav")),
+        AudioPlayer::new(asset_server.load("audio/music_loop.ogg")),
         PlaybackSettings::LOOP.with_spatial(true),
         Mesh3d(emitter_mesh),
         MeshMaterial3d(emitter_material),
@@ -267,6 +267,13 @@ fn setup_scene(
             pitch_radians: INITIAL_CAMERA_PITCH_RADIANS,
             zoom_factor: 1.0,
         },
+    ));
+
+    // Birdsong and dawn air form a quiet, non-spatial outdoor bed under the traced music.
+    commands.spawn((
+        Name::new("Forest ambience"),
+        AudioPlayer::new(asset_server.load("audio/forest_ambience.ogg")),
+        PlaybackSettings::LOOP.with_volume(Volume::Linear(0.35)),
     ));
 
     spawn_help_overlay(&mut commands);
@@ -645,11 +652,11 @@ fn control_scene(
     if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) {
         movement.z += 1.0;
     }
+    movement = movement.normalize_or_zero();
     if keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight) {
         movement *= 1.6;
     }
-    listener.translation +=
-        movement.normalize_or_zero() * LISTENER_SPEED_METERS_PER_SECOND * time.delta_secs();
+    listener.translation += movement * LISTENER_SPEED_METERS_PER_SECOND * time.delta_secs();
     listener.translation.x = listener
         .translation
         .x
@@ -1050,7 +1057,7 @@ mod tests {
         assert!(transform.translation.z.abs() >= 3.0);
     }
 
-    /// Starts the moving chime with its direct path attenuated by the visible brush screen.
+    /// Starts the moving music source with its direct path attenuated by the visible brush screen.
     #[test]
     fn forest_showcase_starts_with_a_brush_attenuated_direct_path() {
         let mut app = App::new();

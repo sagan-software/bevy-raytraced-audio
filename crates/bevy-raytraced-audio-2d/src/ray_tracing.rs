@@ -1,0 +1,65 @@
+//! Listener ray-tracing configuration, shared results, and per-emitter responses for 2D.
+
+use bevy::prelude::{Component, Resource};
+use bevy_raytraced_audio::{ListenerTrace2d, RayTraceSettings, SourceRayResponse};
+
+/// Runtime configuration for the 2D listener ray trace.
+///
+/// Change it at runtime to adjust ray counts, toggle ray recording for visualization, or fall
+/// back to direct-path transmission only.
+#[derive(Resource, Clone, Copy, Debug, PartialEq)]
+pub struct RaytracedAudioTracing2d {
+    /// Ray counts, bounce limits, and recording options.
+    pub settings: RayTraceSettings,
+    /// Whether the listener trace runs; disabled tracing uses direct transmission only.
+    pub enabled: bool,
+    /// Minimum real seconds between traces; `0` traces every frame.
+    ///
+    /// Surface changes and newly traced emitters always trigger an immediate trace.
+    /// Direct/image-source response components share this cadence when tracing is enabled.
+    /// Sink volumes and DSP controls still update every frame.
+    pub interval_s: f32,
+}
+
+impl Default for RaytracedAudioTracing2d {
+    /// Enables tracing at up to 30 traces per second with default settings.
+    fn default() -> Self {
+        Self {
+            settings: RayTraceSettings::default(),
+            enabled: true,
+            interval_s: 1.0 / 30.0,
+        }
+    }
+}
+
+/// The latest 2D listener trace, including recorded rays when recording is enabled.
+#[derive(Resource, Debug, Default)]
+pub struct RaytracedAudioListenerTrace2d {
+    /// Reused trace output.
+    pub(super) trace: ListenerTrace2d,
+    /// Whether `trace` holds results for the current listener.
+    pub(super) valid: bool,
+}
+
+impl RaytracedAudioListenerTrace2d {
+    /// Returns the latest trace, or `None` when tracing is disabled or no unique listener exists.
+    #[must_use]
+    pub const fn trace(&self) -> Option<&ListenerTrace2d> {
+        if self.valid { Some(&self.trace) } else { None }
+    }
+}
+
+/// How one 2D emitter sounds from the listener after the latest ray trace.
+#[derive(Component, Clone, Copy, Debug)]
+pub struct RaytracedAudioRayResponse2d {
+    /// Latest traced muffling response.
+    pub(super) response: SourceRayResponse,
+}
+
+impl RaytracedAudioRayResponse2d {
+    /// Returns the latest traced muffling response.
+    #[must_use]
+    pub const fn response(self) -> SourceRayResponse {
+        self.response
+    }
+}

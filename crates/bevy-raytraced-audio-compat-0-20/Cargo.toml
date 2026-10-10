@@ -2,15 +2,18 @@
 name = "bevy-raytraced-audio-compat-0-20"
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
+rust-version.workspace = true
 description = "Bevy 0.20 release-candidate compatibility implementation for ray-traced audio adapters"
 
+[features]
+debug_draw = ["bevy/bevy_color", "bevy/bevy_gizmos"]
+
 [dependencies]
-bevy = { version = "=0.20.0-rc.2", default-features = false, features = ["bevy_audio"] }
+bevy = { version = "=0.20.0-rc.2", default-features = false, features = ["bevy_asset", "bevy_audio"] }
+bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
 bevy_ecs = "=0.20.0-rc.2"
 log = "0.4"
-bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
 
 [dev-dependencies]
 rodio = { version = "0.22", default-features = false }

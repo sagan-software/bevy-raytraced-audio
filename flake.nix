@@ -69,13 +69,17 @@
               );
           in
           pkgs.lib.cleanSourceFilter path type
-          && (craneLib.filterCargoSources path type || isSharedRustModule);
+          && (
+            craneLib.filterCargoSources path type
+            || isSharedRustModule
+            || pkgs.lib.hasSuffix "/src/hrtf/kemar.bin" pathString
+          );
         src = pkgs.lib.cleanSourceWith {
           src = ./.;
           filter = filterCargoAndSharedSources;
           name = "source-with-shared-modules";
         };
-        # The audio fixture test embeds a WAV file, which Crane's default filter omits.
+        # Audio fixture tests embed WAV and Ogg files, which Crane's default filter omits.
         srcWithAudioAssets = pkgs.lib.cleanSourceWith {
           src = ./.;
           filter =
@@ -84,7 +88,7 @@
             || (
               pkgs.lib.cleanSourceFilter path type
               && type == "regular"
-              && pkgs.lib.hasSuffix ".wav" (toString path)
+              && (pkgs.lib.hasSuffix ".wav" (toString path) || pkgs.lib.hasSuffix ".ogg" (toString path))
             );
           name = "source-with-audio-assets";
         };
@@ -242,6 +246,7 @@
             ".git/**"
             "target/**"
             "result*/**"
+            "vendor/**"
           ];
           settings.formatter.dprint.options = [
             "--allow-no-files"
@@ -262,6 +267,7 @@
             ".git/**"
             "target/**"
             "result*/**"
+            "vendor/**"
           ];
           settings.formatter.dprint.options = [
             "--allow-no-files"
@@ -682,6 +688,10 @@
         runStress2d = runExample "stress_2d";
         runStress3d = runExample "stress_3d";
         runForest3d = runExample "forest_3d";
+        runShowcase = runExample "showcase";
+        runReverb2d = runExample "reverb_2d";
+        runAmbience2d = runExample "ambience_2d";
+        runPermeation2d = runExample "permeation_2d";
 
       in
       {
@@ -710,6 +720,10 @@
               stress-2d = flake-utils.lib.mkApp { drv = runStress2d; };
               stress-3d = flake-utils.lib.mkApp { drv = runStress3d; };
               forest-3d = flake-utils.lib.mkApp { drv = runForest3d; };
+              showcase = flake-utils.lib.mkApp { drv = runShowcase; };
+              reverb-2d = flake-utils.lib.mkApp { drv = runReverb2d; };
+              ambience-2d = flake-utils.lib.mkApp { drv = runAmbience2d; };
+              permeation-2d = flake-utils.lib.mkApp { drv = runPermeation2d; };
               check = flake-utils.lib.mkApp { drv = runChecks; };
               clippy = flake-utils.lib.mkApp { drv = runClippy; };
               test = flake-utils.lib.mkApp { drv = runTests; };

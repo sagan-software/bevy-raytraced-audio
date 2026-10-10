@@ -9,6 +9,8 @@ pub struct AcousticMaterial {
     absorption: BandAbsorption,
     /// Transmitted amplitude fraction for each of the three bands.
     transmission: BandGain,
+    /// Optional diffuse-reflection fraction; absent values use the trace-wide setting.
+    scattering: Option<f32>,
 }
 
 impl AcousticMaterial {
@@ -18,6 +20,7 @@ impl AcousticMaterial {
         Self {
             absorption,
             transmission: BandGain::ZERO,
+            scattering: None,
         }
     }
 
@@ -52,6 +55,25 @@ impl AcousticMaterial {
 
         self.transmission = transmission;
         Ok(self)
+    }
+
+    /// Overrides the trace-wide scattering with this surface's diffuse-reflection fraction.
+    ///
+    /// Smooth walls can use `0`, while irregular furnishings can use larger fractions.
+    /// Scattering changes reflection directions, not the material's energy budget.
+    ///
+    /// # Errors
+    /// Returns an error for non-finite values or values outside `[0, 1]`.
+    pub fn try_with_scattering(mut self, scattering: f32) -> Result<Self, GeometryError> {
+        BandAbsorption::try_new(scattering, scattering, scattering)?;
+        self.scattering = Some(scattering);
+        Ok(self)
+    }
+
+    /// Returns the surface scattering override, or `None` to use the trace-wide value.
+    #[must_use]
+    pub const fn scattering(self) -> Option<f32> {
+        self.scattering
     }
 
     /// Returns the material's three-band absorption coefficients.
@@ -89,6 +111,7 @@ impl Default for AcousticMaterial {
         Self {
             absorption: BandAbsorption::default(),
             transmission: BandGain::ZERO,
+            scattering: None,
         }
     }
 }

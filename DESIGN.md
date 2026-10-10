@@ -3,10 +3,13 @@
 ## Structure
 
 The landing page follows Bevy's example catalogue: a category index, search,
-category headings, and two-column example cards. A forest scene leads the
-catalogue with an animated, muted preview. Selecting its launch control
-replaces the preview with the Bevy scene; a standalone route remains available.
-The 2D tutorial, 3D tutorial, and stress tests keep separate browser routes.
+category headings, and two-column example cards. The ray-traced audio sandbox
+(`showcase`) leads the catalogue with a static preview. Selecting its launch
+control replaces the preview with the Bevy scene; a standalone route remains
+available. `website/generate-pages.mjs` writes the landing page and every
+example page from `website/example-catalog.mjs`. Like Bevy's example pages,
+each route shows the running scene, then its title, description, controls, and
+tips, then the full highlighted Rust source with a GitHub link.
 
 ## Visual system
 

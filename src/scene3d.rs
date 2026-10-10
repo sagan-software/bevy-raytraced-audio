@@ -91,28 +91,7 @@ impl AcousticScene3d {
         let receiver = Vector3::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
 
-        // If source and listener coincide, the path has no interior where a surface can attenuate it.
-        let acceleration = self.acceleration();
-        let mut direct_occluded = false;
-        let mut direct_gain = BandGain::UNITY;
-        if direct_distance > 0.0 {
-            let _traversal_completed = acceleration.hierarchy.visit_candidates_until(
-                Bounds::path_3d(
-                    (source.x, source.y, source.z),
-                    (receiver.x, receiver.y, receiver.z),
-                ),
-                None,
-                |index| {
-                    if let Some(triangle) = acceleration.triangles.get(index)
-                        && path_intersects_triangle(source, receiver, triangle)
-                    {
-                        direct_occluded |= triangle.transmission != BandGain::UNITY;
-                        direct_gain = direct_gain.multiply(triangle.transmission);
-                    }
-                    direct_gain != BandGain::ZERO
-                },
-            );
-        }
+        let (direct_gain, direct_occluded) = self.direct_transmission(source, receiver);
         let direct = PathResponse::new(direct_distance, direct_gain, direct_occluded);
 
         // Fused accumulation preserves the existing aggregate result for every visible path.
@@ -137,6 +116,55 @@ impl AcousticScene3d {
             direct,
             BandEnergy::from_solver(reflected_low, reflected_mid, reflected_high),
         )
+    }
+
+    /// Multiplies transmission once per distinct surface crossing on an open path.
+    /// Coplanar triangles with the same material share a crossing at mesh seams.
+    ///
+    /// Returns the accumulated band gain and whether any crossed triangle attenuates a band.
+    pub(crate) fn direct_transmission(
+        &self,
+        source: Vector3,
+        receiver: Vector3,
+    ) -> (BandGain, bool) {
+        // If source and listener coincide, the path has no interior where a surface can attenuate it.
+        let acceleration = self.acceleration();
+        let mut direct_occluded = false;
+        let mut direct_gain = BandGain::UNITY;
+        let mut crossings: Vec<(f64, Vector3, BandGain)> = Vec::new();
+        if receiver.subtract(source).length() > 0.0 {
+            let _traversal_completed = acceleration.hierarchy.visit_candidates_until(
+                Bounds::path_3d(
+                    (source.x, source.y, source.z),
+                    (receiver.x, receiver.y, receiver.z),
+                ),
+                None,
+                |index| {
+                    if let Some(triangle) = acceleration.triangles.get(index)
+                        && let Some(parameter) = path_triangle_parameter(source, receiver, triangle)
+                    {
+                        let normal = triangle.normal.scale(1.0 / triangle.normal_length);
+                        if crossings.iter().any(|&(previous, previous_normal, gain)| {
+                            (previous - parameter).abs() <= PARAMETER_EPSILON
+                                && previous_normal.dot(normal).abs() >= 1.0 - PARALLEL_EPSILON
+                                && gain == triangle.transmission
+                        }) {
+                            return true;
+                        }
+                        crossings.push((parameter, normal, triangle.transmission));
+                        direct_occluded |= triangle.transmission != BandGain::UNITY;
+                        direct_gain = direct_gain.multiply(triangle.transmission);
+                    }
+                    direct_gain != BandGain::ZERO
+                },
+            );
+        }
+        (direct_gain, direct_occluded)
+    }
+
+    /// Returns the registered triangles in insertion order.
+    pub(crate) fn triangles(&self) -> &[Triangle3d] {
+        &self.triangles
     }
 
     /// Builds a lazy path iterator from the query's already-converted endpoints and distance.
@@ -180,7 +208,7 @@ impl AcousticScene3d {
     }
 
     /// Checks whether another registered triangle crosses an open reflection leg.
-    fn segment_is_occluded(
+    pub(crate) fn segment_is_occluded(
         &self,
         start: Vector3,
         end: Vector3,
@@ -200,7 +228,7 @@ impl AcousticScene3d {
     }
 
     /// Builds one deterministic hierarchy and reuses it until a surface mutation.
-    fn acceleration(&self) -> &SceneAcceleration3d {
+    pub(crate) fn acceleration(&self) -> &SceneAcceleration3d {
         self.acceleration.get_or_init(|| {
             let triangles: Vec<_> = self
                 .triangles
@@ -225,23 +253,23 @@ impl AcousticScene3d {
 
 /// Cached triangle values derived once after a scene mutation.
 #[derive(Clone, Copy, Debug)]
-struct TriangleGeometry {
+pub(crate) struct TriangleGeometry {
     /// First vertex, used as the origin for barycentric coordinates.
-    origin: Vector3,
+    pub(crate) origin: Vector3,
     /// Edge from the first vertex to the second vertex.
-    edge_a: Vector3,
+    pub(crate) edge_a: Vector3,
     /// Edge from the first vertex to the third vertex.
-    edge_b: Vector3,
+    pub(crate) edge_b: Vector3,
     /// Unnormalized normal retained for reflection and ray intersection math.
-    normal: Vector3,
+    pub(crate) normal: Vector3,
     /// Squared normal length used to reflect the source point.
     normal_squared: f64,
     /// Normal length used for scale-relative parallel checks.
-    normal_length: f64,
+    pub(crate) normal_length: f64,
     /// First edge length used for scale-relative parallel checks.
-    edge_a_length: f64,
+    pub(crate) edge_a_length: f64,
     /// Second edge length used for scale-relative parallel checks.
-    edge_b_length: f64,
+    pub(crate) edge_b_length: f64,
     /// Precomputed inner products used by barycentric projection.
     barycentric_basis: BarycentricBasis,
     /// Triangle bounds padded by the narrow-phase barycentric tolerance.
@@ -336,11 +364,11 @@ impl BarycentricBasis {
 
 /// Lazily derived per-scene geometry and its bounds hierarchy.
 #[derive(Clone, Debug)]
-struct SceneAcceleration3d {
+pub(crate) struct SceneAcceleration3d {
     /// Balanced hierarchy for broad-phase candidate rejection.
-    hierarchy: BoundingVolumeHierarchy,
+    pub(crate) hierarchy: BoundingVolumeHierarchy,
     /// Triangles with cached coordinates and material properties.
-    triangles: Vec<TriangleGeometry>,
+    pub(crate) triangles: Vec<TriangleGeometry>,
 }
 
 /// Finds one valid image-source reflection and returns its point and path length.
@@ -439,12 +467,21 @@ fn path_intersects_triangle(
     path_end: Vector3,
     triangle: &TriangleGeometry,
 ) -> bool {
+    path_triangle_parameter(path_start, path_end, triangle).is_some()
+}
+
+/// Returns the crossing fraction along an open path, including shared triangle edges.
+fn path_triangle_parameter(
+    path_start: Vector3,
+    path_end: Vector3,
+    triangle: &TriangleGeometry,
+) -> Option<f64> {
     let path_bounds = Bounds::path_3d(
         (path_start.x, path_start.y, path_start.z),
         (path_end.x, path_end.y, path_end.z),
     );
     if !triangle.bounds.overlaps(path_bounds) {
-        return false;
+        return None;
     }
 
     let edge_a = triangle.edge_a;
@@ -455,25 +492,26 @@ fn path_intersects_triangle(
     let determinant_scale = direction.length() * triangle.edge_a_length * triangle.edge_b_length;
     if determinant.abs() <= PARALLEL_EPSILON * determinant_scale {
         // A path parallel to the plane does not cross the triangle surface.
-        return false;
+        return None;
     }
 
     let inverse_determinant = 1.0 / determinant;
     let origin_delta = path_start.subtract(triangle.origin);
     let coordinate_a = origin_delta.dot(determinant_vector) * inverse_determinant;
     if !(-PARAMETER_EPSILON..=1.0 + PARAMETER_EPSILON).contains(&coordinate_a) {
-        return false;
+        return None;
     }
 
     let cross_vector = origin_delta.cross(edge_a);
     let coordinate_b = direction.dot(cross_vector) * inverse_determinant;
     if coordinate_b < -PARAMETER_EPSILON || coordinate_a + coordinate_b > 1.0 + PARAMETER_EPSILON {
-        return false;
+        return None;
     }
 
     // Endpoints do not block; the path must cross the triangle interior.
     let path_parameter = edge_b.dot(cross_vector) * inverse_determinant;
-    path_parameter > PARAMETER_EPSILON && path_parameter < 1.0 - PARAMETER_EPSILON
+    (path_parameter > PARAMETER_EPSILON && path_parameter < 1.0 - PARAMETER_EPSILON)
+        .then_some(path_parameter)
 }
 
 #[cfg(test)]
@@ -489,6 +527,35 @@ mod tests {
     /// Makes a double-precision test vector.
     fn vector(x: f64, y: f64, z: f64) -> Vector3 {
         Vector3 { x, y, z }
+    }
+
+    /// Adjacent triangles form one wall crossing, even exactly on their shared diagonal.
+    #[test]
+    fn transmission_does_not_double_attenuate_mesh_seams() {
+        let gain = crate::BandGain::try_new(0.5, 0.3, 0.1).unwrap();
+        let material = AcousticMaterial::default()
+            .try_with_transmission(gain)
+            .unwrap();
+        let mut scene = AcousticScene3d::default();
+        for x in [0.0, 0.2] {
+            let corners = [
+                Point3::try_new(x, -1.0, -1.0).unwrap(),
+                Point3::try_new(x, 1.0, -1.0).unwrap(),
+                Point3::try_new(x, 1.0, 1.0).unwrap(),
+                Point3::try_new(x, -1.0, 1.0).unwrap(),
+            ];
+            for indices in [[0, 1, 2], [0, 2, 3]] {
+                scene.add_triangle(
+                    Triangle3d::try_new(indices.map(|i| corners[i]), material).unwrap(),
+                );
+            }
+        }
+        for offset in [-0.01, 0.0, 0.01] {
+            let (actual, occluded) =
+                scene.direct_transmission(vector(-1.0, offset, 0.0), vector(1.0, offset, 0.0));
+            assert!(occluded);
+            assert_eq!(actual, gain.multiply(gain), "offset={offset}");
+        }
     }
 
     /// Captured paths match the response query and stale outputs clear without losing capacity.

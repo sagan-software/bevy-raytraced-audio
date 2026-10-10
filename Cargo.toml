@@ -1,16 +1,16 @@
 [package]
 name = "bevy-raytraced-audio"
 version.workspace = true
+autobenches = false
+autobins = false
+autoexamples = false
+autotests = false
 edition.workspace = true
-rust-version.workspace = true
-description = "CPU ray-traced acoustic propagation for Bevy projects"
 license.workspace = true
 readme = "README.md"
 repository.workspace = true
-autobins = false
-autobenches = false
-autoexamples = false
-autotests = false
+rust-version.workspace = true
+description = "CPU ray-traced acoustic propagation for Bevy projects"
 
 [lib]
 bench = false
@@ -38,24 +38,29 @@ workspace = true
 
 [workspace]
 members = [
+  "crates/bevy-raytraced-audio-2d",
+  "crates/bevy-raytraced-audio-3d",
   "crates/bevy-raytraced-audio-compat-0-17",
   "crates/bevy-raytraced-audio-compat-0-18",
   "crates/bevy-raytraced-audio-compat-0-19",
   "crates/bevy-raytraced-audio-compat-0-20",
-  "crates/bevy-raytraced-audio-2d",
-  "crates/bevy-raytraced-audio-3d",
   "examples/raytraced-audio",
   "tests/bevy-adapters",
 ]
 default-members = ["."]
+exclude = ["vendor/rodio"]
 resolver = "3"
+
+[patch.crates-io]
+# Backport the upstream stereo-panning fix without changing the audio stack.
+rodio = { path = "vendor/rodio" }
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.96.1"
 license = "MIT"
 repository = "https://github.com/sagan-software/bevy-raytraced-audio"
+rust-version = "1.96.1"
 
 [workspace.dependencies]
 criterion = { version = "0.8.2", features = ["html_reports"] }
@@ -127,10 +132,7 @@ trivial_casts = "warn"
 trivial_numeric_casts = "warn"
 unit_bindings = "warn"
 unknown_lints = "deny"
-unexpected_cfgs = { level = "warn", check-cfg = [
-  "cfg(coverage)",
-  'cfg(dylint_lib, values("correctness", "perf", "suspicious"))',
-] }
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)", 'cfg(dylint_lib, values("correctness", "perf", "suspicious"))'] }
 unnameable_types = "warn"
 # unqualified-local-imports = "warn"
 unreachable_pub = { level = "warn", priority = 1 }
@@ -207,5 +209,5 @@ unnecessary_wraps = { level = "warn", priority = 1 }
 
 [workspace.metadata.dylint]
 libraries = [
-  { git = "https://github.com/sagan-software/dylints", branch = "main", pattern = [ "lints/correctness", "lints/perf", "lints/suspicious" ] },
+  { git = "https://github.com/sagan-software/dylints", branch = "main", pattern = ["lints/correctness", "lints/perf", "lints/suspicious"] },
 ]

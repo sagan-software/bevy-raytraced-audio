@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320">
+  <rect width="640" height="320" fill="#20262c" />
+  <path
+    d="M90 40h460v240H90z"
+    fill="#2a2b30"
+    stroke="#9c9aa6"
+    stroke-width="10"
+    stroke-linejoin="round"
+  />
+  <g fill="#45434c">
+    <rect x="400" y="70" width="70" height="40" rx="4" />
+    <rect x="150" y="200" width="56" height="44" rx="4" />
+  </g>
+  <g
+    fill="none"
+    stroke="#63cde0"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M300 170 545 95 380 45 300 170" />
+    <path d="M300 170 95 120 210 275 300 170" opacity=".8" />
+    <path d="M300 170 470 275 545 210 300 170" opacity=".65" />
+    <path d="M300 170 160 45 95 75 300 170" opacity=".5" />
+  </g>
+  <g fill="none" stroke="#63cde0" opacity=".35">
+    <circle cx="300" cy="170" r="40" />
+    <circle cx="300" cy="170" r="72" />
+    <circle cx="300" cy="170" r="104" />
+  </g>
+  <circle cx="300" cy="170" r="14" fill="#65e7a0" />
+  <text
+    x="580"
+    y="292"
+    fill="#b7b5bf"
+    font-family="Fira Sans, sans-serif"
+    font-size="14"
+    text-anchor="end"
+  >RT60 2.4 s</text>
+</svg>

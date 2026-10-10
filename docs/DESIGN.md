@@ -2,12 +2,12 @@
 
 ## Crates
 
-| Crate | Responsibility | Bevy dependency |
-| --- | --- | --- |
-| `bevy-raytraced-audio` | Validated acoustic materials, geometry, 2D/3D scenes, CPU path queries, and response values | None |
-| `bevy-raytraced-audio-2d` | 2D listener, emitter, explicit segment surfaces, plugin, and response components | Select one `bevy_0_17` through `bevy_0_20` feature |
-| `bevy-raytraced-audio-3d` | 3D listener, emitter, explicit triangle surfaces, plugin, and response components | Select one `bevy_0_17` through `bevy_0_20` feature |
-| `bevy-raytraced-audio-compat-0-17` through `-0-20` | Version-specific Bevy audio sink access | One exact Bevy minor per crate |
+| Crate                                              | Responsibility                                                                              | Bevy dependency                                    |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `bevy-raytraced-audio`                             | Validated acoustic materials, geometry, 2D/3D scenes, CPU path queries, and response values | None                                               |
+| `bevy-raytraced-audio-2d`                          | 2D listener, emitter, explicit segment surfaces, plugin, and response components            | Select one `bevy_0_17` through `bevy_0_20` feature |
+| `bevy-raytraced-audio-3d`                          | 3D listener, emitter, explicit triangle surfaces, plugin, and response components           | Select one `bevy_0_17` through `bevy_0_20` feature |
+| `bevy-raytraced-audio-compat-0-17` through `-0-20` | Version-specific Bevy audio sink and processed decoder integration                          | One exact Bevy minor per crate                     |
 
 The 2D and 3D crates are separate workspace members. One project uses one Bevy
 minor feature on each adapter. The core has no Bevy, renderer, or audio-device
@@ -33,7 +33,7 @@ commands.spawn((
 ```
 
 `RaytracedAudio2dPlugin::with_occluded_gain` and its 3D equivalent select the
-linear sink volume used when all three accumulated direct-path gains are zero.
+linear sink fallback for fully silent traced or direct-only paths.
 The default is zero. Invalid gains return `GeometryError` before plugin
 construction.
 
@@ -57,11 +57,25 @@ therefore blocks direct transmission and leaves all incident energy available
 for reflection. A fully transmitting surface has zero absorption and unit
 transmission, so it contributes no reflected energy.
 
-The response is data, not rendered sound. The Bevy adapter scales the existing
-`AudioSink` or `SpatialAudioSink` volume by the arithmetic mean of the three
-accumulated amplitude gains. It uses the configured fallback only when all
-three gains are zero. The scalar sink cannot apply frequency-dependent gains.
-Reflection results are available to the caller but do not change samples.
+These direct/image-source responses remain available as geometry data. The
+adapter also fires a configurable set of rays from the listener, following
+specular and diffuse bounces, source visibility, echo returns, escaped paths,
+and per-band wall transmission. It derives a low/high-frequency muffle filter,
+a room reverb estimate, and outdoor ambience direction from these samples.
+
+Use `RaytracedAudioPlayer` instead of `AudioPlayer` for audible filtering and
+reverb. Its per-entity asset decodes through a smoothed two-band filter and a
+Schroeder network with traced pre-delay, wet gain, and decay time. Bevy still
+owns the audio device, sinks, spatialization, and playback settings. Loops restart
+inside the processed decoder so parameter changes remain audible after the
+first repetition. One-shots retain their reverb tails, bounded to six seconds.
+
+Plain `AudioPlayer` emitters use the mean of the traced low/high gains for sink
+volume. `without_ray_tracing()` restores direct-only behavior using the mean
+of all three direct transmission bands. The configured occluded gain applies
+to fully silent scalar paths. Disabling tracing or losing a valid listener
+clears stale DSP filtering and reverb before direct-only or unmodified playback.
+The processing bypass remains under the caller's control.
 
 ## Per-emitter reflection paths
 
@@ -74,14 +88,15 @@ invalid transforms, and coincident emitter/listener positions clear stale
 entries.
 
 The component is absent by default. Existing projects can add it only to
-emitters whose path data they consume. The minimal examples use it to draw
+emitters whose path data they consume. The forest example uses it to draw
 reflection polylines. Each candidate path is omitted if another registered
 surface crosses either open reflection leg, regardless of that surface's
 transmission.
 
 The reflecting surface itself is excluded from those tests. This output does
-not change Bevy audio samples. Filtering, reflection playback,
-late reverb, and source decoding changes are outside this version.
+not create individual audible reflection taps. The processed player uses the
+listener trace's aggregate reverb estimate, not a separate sample delay per
+image-source path.
 
 ## Update flow
 
@@ -90,7 +105,10 @@ propagation. It retains a local core scene and rebuilds that scene when a
 surface component or transform changes, a surface is added or removed, a
 surface lacks a transform, or the listener becomes invalid. Core queries build
 and cache a BVH after the scene changes. The adapter does not incrementally
-refit the hierarchy.
+refit the hierarchy. Listener tracing runs at up to 30 Hz by default, with
+immediate retracing after configuration or surface changes and for new emitters.
+Debug drawing replays a recorded trace at a user-selected visual speed; it does
+not slow the audio stream or modify acoustic travel times.
 
 ## Backend boundary
 
@@ -104,10 +122,12 @@ The Nix and browser builds compile the CPU backend.
 
 ## Runtime constraints
 
-Audio output and asset loading remain Bevy responsibilities. The adapter does
-not own an audio callback and does not add a second sound engine. It changes
-volume on existing sink components and leaves playback lifecycle controls with
-Bevy.
+Audio output and asset loading remain Bevy responsibilities. The core DSP
+processor preallocates its delay lines and reads atomic parameters without
+locking or allocating in `process_sample`. This guarantee does not cover Bevy's
+codec decoder or the allocation involved in restarting an encoded loop. The
+adapter registers a Bevy `Decodable` source and leaves device and sink lifecycle
+controls with Bevy.
 
 The current plugin retains a scene built from explicit ECS surfaces between
 surface changes. It processes fewer than 16 emitters sequentially. At 16 or
@@ -121,7 +141,7 @@ query API in their ECS source ([0.17.3](https://github.com/bevyengine/bevy/blob/
 [0.19.1](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_ecs/src/system/query.rs),
 [0.20.0-rc.2](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_ecs/src/system/query.rs)).
 
-The 2026-10-06 quick benchmark measured the 16-emitter/32-surface stress
+The 2026-10-06 quick benchmark, before listener tracing and DSP were added, measured the 16-emitter/32-surface stress
 schedule at 77.20 microseconds in 2D and 81.42 microseconds in 3D on the
 serial path. The task-pool path measured 73.98 microseconds and 78.62
 microseconds. At 128 emitters and 256 surfaces, it measured 0.445 ms in 2D and

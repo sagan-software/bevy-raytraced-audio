@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320">
+  <rect width="640" height="320" fill="#1f2a26" />
+  <g stroke="#8fb7c9" stroke-width="2" opacity=".55" stroke-linecap="round">
+    <path d="M40 40l-8 16M90 70l-8 16M60 130l-8 16M30 210l-8 16M85 255l-8 16M560 40l-8 16M610 90l-8 16M590 170l-8 16M545 250l-8 16M615 280l-8 16M300 18l-8 16M380 300l-8 16M200 296l-8 16M460 16l-8 16" />
+  </g>
+  <path d="M150 70h340v180H150z" fill="#2f2c28" />
+  <path
+    d="M150 70h120m60 0h160v180H360m-60 0H150z"
+    fill="none"
+    stroke="#d99c5c"
+    stroke-width="8"
+    stroke-linejoin="round"
+  />
+  <path d="M270 70h60" stroke="#8fb7c9" stroke-width="3" />
+  <path
+    d="M300 250h60"
+    stroke="#f0c48a"
+    stroke-width="3"
+    stroke-dasharray="6 6"
+  />
+  <g fill="none" stroke-width="3" stroke-linecap="round">
+    <path d="M250 175 300 70 320 10" stroke="#f2d166" />
+    <path d="M250 175 290 70 250 10" stroke="#f2d166" opacity=".7" />
+    <path d="M250 175 330 250 360 310" stroke="#f2d166" opacity=".8" />
+    <path d="M250 175 150 120 250 70 150 200" stroke="#63cde0" opacity=".45" />
+  </g>
+  <circle cx="250" cy="175" r="14" fill="#65e7a0" />
+</svg>

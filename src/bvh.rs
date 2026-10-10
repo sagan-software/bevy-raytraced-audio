@@ -125,6 +125,59 @@ impl Bounds {
         }
     }
 
+    /// Returns the ray parameter where a ray enters these closed bounds, if before the limit.
+    fn ray_entry(self, ray: Ray, maximum_parameter: f64) -> Option<f64> {
+        let mut entry = 0.0_f64;
+        let mut exit = maximum_parameter;
+        for (origin, inverse_direction, minimum, maximum) in [
+            (
+                ray.origin.0,
+                ray.inverse_direction.0,
+                self.min_x,
+                self.max_x,
+            ),
+            (
+                ray.origin.1,
+                ray.inverse_direction.1,
+                self.min_y,
+                self.max_y,
+            ),
+            (
+                ray.origin.2,
+                ray.inverse_direction.2,
+                self.min_z,
+                self.max_z,
+            ),
+        ] {
+            if inverse_direction.is_infinite() {
+                // A ray parallel to this slab must already lie between its planes.
+                if origin < minimum || origin > maximum {
+                    return None;
+                }
+                continue;
+            }
+            let first = (minimum - origin) * inverse_direction;
+            let second = (maximum - origin) * inverse_direction;
+            // Plain comparisons avoid the NaN and signed-zero handling of `f64::min` and
+            // `f64::max`; every operand here is finite, and this runs for each visited node.
+            let (near, far) = if first <= second {
+                (first, second)
+            } else {
+                (second, first)
+            };
+            if near > entry {
+                entry = near;
+            }
+            if far < exit {
+                exit = far;
+            }
+            if entry > exit {
+                return None;
+            }
+        }
+        Some(entry)
+    }
+
     /// Combines two bounds into the smallest bounds containing both.
     const fn union(self, other: Self) -> Self {
         Self {
@@ -241,6 +294,90 @@ impl BoundingVolumeHierarchy {
             return true;
         };
         self.visit_candidate_node(root, path_bounds, skipped_surface, &mut visit_surface)
+    }
+
+    /// Visits surfaces whose node bounds a ray reaches before the callback's current closest hit.
+    ///
+    /// The callback returns the ray parameter of an exact hit, which then prunes farther nodes.
+    pub(crate) fn visit_ray(
+        &self,
+        ray: Ray,
+        mut maximum_parameter: f64,
+        mut hit_parameter: impl FnMut(usize) -> Option<f64>,
+    ) {
+        let Some(root) = self.root else {
+            return;
+        };
+        let root_is_reached = self
+            .nodes
+            .get(root)
+            .and_then(|node| node.bounds.ray_entry(ray, maximum_parameter))
+            .is_some();
+        if root_is_reached {
+            self.visit_ray_node(root, ray, &mut maximum_parameter, &mut hit_parameter);
+        }
+    }
+
+    /// Visits one node the ray already reaches: its stored primitives, then children nearest-first.
+    ///
+    /// Each child's slab entry is computed once here; a child is skipped when an earlier hit has
+    /// moved the limit in front of its entry, which matches re-running the full slab test.
+    fn visit_ray_node(
+        &self,
+        node_index: usize,
+        ray: Ray,
+        maximum_parameter: &mut f64,
+        hit_parameter: &mut impl FnMut(usize) -> Option<f64>,
+    ) {
+        let Some(node) = self.nodes.get(node_index) else {
+            return;
+        };
+        let mut record = |surface_index: usize, maximum_parameter: &mut f64| {
+            if let Some(parameter) = hit_parameter(surface_index)
+                && parameter < *maximum_parameter
+            {
+                *maximum_parameter = parameter;
+            }
+        };
+
+        match &node.kind {
+            NodeKind::Leaf { indices } => {
+                if let Some(surface_indices) = self.surface_indices.get(indices.clone()) {
+                    for surface_index in surface_indices {
+                        record(*surface_index, maximum_parameter);
+                    }
+                }
+            }
+            NodeKind::Branch {
+                surface_index,
+                left,
+                right,
+            } => {
+                record(*surface_index, maximum_parameter);
+                let left_entry = self
+                    .nodes
+                    .get(*left)
+                    .and_then(|child| child.bounds.ray_entry(ray, *maximum_parameter));
+                let right_entry = self
+                    .nodes
+                    .get(*right)
+                    .and_then(|child| child.bounds.ray_entry(ray, *maximum_parameter));
+                // Visiting the nearer child first lets its hits prune the farther child.
+                let children = match (left_entry, right_entry) {
+                    (Some(left_parameter), Some(right_parameter))
+                        if right_parameter < left_parameter =>
+                    {
+                        [(*right, right_entry), (*left, left_entry)]
+                    }
+                    _ => [(*left, left_entry), (*right, right_entry)],
+                };
+                for (child, entry) in children {
+                    if entry.is_some_and(|parameter| parameter <= *maximum_parameter) {
+                        self.visit_ray_node(child, ray, maximum_parameter, hit_parameter);
+                    }
+                }
+            }
+        }
     }
 
     /// Partitions one nonempty slice and appends its node after all child nodes.
@@ -395,6 +532,29 @@ impl BoundingVolumeHierarchy {
         intersects_surface: &mut impl FnMut(usize) -> bool,
     ) -> bool {
         skipped_surface != Some(surface_index) && intersects_surface(surface_index)
+    }
+}
+
+/// A half-line with a precomputed reciprocal direction for slab tests.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct Ray {
+    /// Ray origin in scene coordinates; 2D scenes use zero depth.
+    origin: (f64, f64, f64),
+    /// Componentwise reciprocal of the ray direction; zero components become infinite.
+    inverse_direction: (f64, f64, f64),
+}
+
+impl Ray {
+    /// Builds a ray from its origin and nonzero direction.
+    pub(crate) const fn new(origin: (f64, f64, f64), direction: (f64, f64, f64)) -> Self {
+        Self {
+            origin,
+            inverse_direction: (
+                direction.0.recip(),
+                direction.1.recip(),
+                direction.2.recip(),
+            ),
+        }
     }
 }
 

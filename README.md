@@ -5,14 +5,26 @@ adapters are opt-in: existing `AudioPlayer`, `PlaybackSettings`, and Bevy audio
 plugins keep controlling playback. Mark only the listeners, emitters, and
 surfaces that should take part in acoustic queries.
 
-**Current scope:** explicit surfaces control direct-path transmission through
-Bevy's existing sink volume. Each material stores per-band absorption energy
-`A` and amplitude transmission `T`, with `A + T² <= 1`; remaining energy
-contributes to first-order reflections. The core reports reflection paths and
-energy by band. Attach `RaytracedAudioReflectionPaths2d` or
-`RaytracedAudioReflectionPaths3d` to an emitter to read individual paths. The
-adapter does not filter samples or play reflection taps. GPU tracing, mesh
-extraction, and reverb DSP are not implemented.
+**How it works:** at up to 30 updates per second by default, the adapter fires rays
+outward from the listener and follows their bounces off your explicit surfaces, the approach
+shown in Vercidium's [A First Look At Raytraced Audio](https://www.youtube.com/watch?v=u6EuAUjq92k).
+Each bounce point checks for:
+
+- **Occlusion (green rays):** line of sight to each source. The fraction of rays that find a
+  source sets how clear or muffled it sounds. Hidden sources lose treble before bass.
+- **Echo (blue rays):** line of sight back to the listener. Their surviving energy and lengths estimate
+  reverb loudness, pre-delay, and decay time (Eyring RT60 from the mean free path).
+- **Escape:** rays that leave the scene make the space sound outdoor. Their last echo point
+  gives the direction outdoor ambience such as rain should come from (yellow rays).
+- **Permeation (orange rays):** straight paths through walls lose energy at each crossed
+  surface according to its per-band transmission, so thick walls muffle more than thin ones.
+
+Play a sound with `RaytracedAudioPlayer` to hear the result. It decodes your Bevy `AudioSource`
+through a lock-free low/high-frequency muffle filter and a small Schroeder reverb driven by the
+trace, and lets one-shot reverb tails ring out. Plain `AudioPlayer` emitters still work; they get
+volume-only muffling. With the `debug_draw` feature, `RaytracedAudio2dDebugPlugin` or
+`RaytracedAudio3dDebugPlugin` animates the rays so you can watch them travel and bounce. GPU
+tracing and mesh extraction are not implemented.
 
 ## Quick start
 
@@ -30,6 +42,7 @@ entities:
 use bevy::prelude::*;
 use bevy_raytraced_audio_2d::{
     RaytracedAudio2dPlugin, RaytracedAudioEmitter2d, RaytracedAudioListener2d,
+    RaytracedAudioPlayer,
 };
 
 fn configure_audio(app: &mut App) {
@@ -38,7 +51,9 @@ fn configure_audio(app: &mut App) {
 
 fn spawn_audio(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
-        AudioPlayer::new(asset_server.load("audio.ogg")),
+        // `RaytracedAudioPlayer` makes muffling and reverb audible; `AudioPlayer` also works,
+        // with volume-only muffling.
+        RaytracedAudioPlayer::new(asset_server.load("audio.ogg")),
         PlaybackSettings::LOOP.with_spatial(true),
         RaytracedAudioEmitter2d,
         Transform::from_xyz(4.0, 0.0, 0.0),
@@ -50,11 +65,14 @@ fn spawn_audio(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 ```
 
-Default materials transmit zero amplitude, so the default plugin silences an
-emitter behind an opaque surface. Set a fallback linear gain for paths whose
-three accumulated band gains are zero with
-`RaytracedAudio2dPlugin::default().with_occluded_gain(0.15)?`. Other paths scale
-the sink by the arithmetic mean of their three accumulated amplitude gains.
+Default materials transmit zero amplitude. A source behind an opaque wall is still
+heard when bounced rays find it (around a corner or through a doorway); a source
+in a sealed room with opaque walls is silent. Give walls nonzero transmission to
+let sound leak through them. For plain `AudioPlayer` emitters, set a fallback
+linear gain for fully silent paths with
+`RaytracedAudio2dPlugin::default().with_occluded_gain(0.15)?`. Tune ray counts and
+bounces with `with_ray_tracing(RayTraceSettings)`, or call `without_ray_tracing()`
+to use only the straight-line direct transmission.
 
 Create a partially transmitting 2D surface like this:
 
@@ -72,10 +90,19 @@ Each amplitude transmission must be in `[0, 1]`. For each band, absorption
 energy plus squared transmission amplitude must be at most `1`. The remaining
 energy contributes to first-order reflections. Direct-path transmission
 multiplies the gains of crossed surface primitives. The Bevy sink accepts one
-linear volume value, so the adapter uses the arithmetic mean of the low, mid,
-and high gains; it does not apply a frequency filter. A surface crossed by a
+linear volume value: direct-only playback uses the mean of the three bands,
+while traced scalar playback uses the mean low/high muffle gains.
+`RaytracedAudioPlayer` applies the frequency filter to the audio samples. A surface crossed by a
 reflection leg still blocks that reflection, even when its direct transmission
 is nonzero.
+
+For headphone elevation cues, opt a 3D player into measured binaural rendering:
+`RaytracedAudioPlayer::new(audio).with_binaural(0.22)`. The scale controls distance
+rolloff and replaces Bevy's spatial scale for that voice. The adapter follows
+the listener's world rotation and handles stereo output without double panning.
+Materials can override diffuse reflection with `try_with_scattering`; their
+band absorption drives bass/treble reverb decay. Furniture must have acoustic
+surfaces to affect the trace.
 
 Surface setup, error handling, and the corresponding 3D version are shown in
 the [tutorial examples](docs/EXAMPLES.md).
@@ -93,16 +120,25 @@ has no stable 0.20 release as of 2026-10-06.
 ## Browser examples
 
 The [live gallery](https://sagan-software.github.io/bevy-raytraced-audio/)
-builds each example as a separate WebAssembly page and follows Bevy's category index and image-led example catalogue. Open the featured [forest sound paths](https://sagan-software.github.io/bevy-raytraced-audio/examples/forest-3d/), [minimal 2D](https://sagan-software.github.io/bevy-raytraced-audio/examples/minimal-2d/),
-[stress 2D](https://sagan-software.github.io/bevy-raytraced-audio/examples/stress-2d/),
-[minimal 3D](https://sagan-software.github.io/bevy-raytraced-audio/examples/minimal-3d/),
-or [stress 3D](https://sagan-software.github.io/bevy-raytraced-audio/examples/stress-3d/).
+builds nine separate WebAssembly pages, each with a description, controls, and
+full Rust source. The featured sandbox is a CC0 modular village with operable doors/windows,
+speech, basement/upstairs NPC footsteps, removable walls, and a stream/bridge.
+Focused examples demonstrate door occlusion in 2D and 3D, room reverb, outdoor
+ambience, and wall permeation; the forest and stress scenes remain available.
+See the [example guide](docs/EXAMPLES.md) for every scene and its controls.
 Each page checks WebGL2, canvas sizing, and successive WebGL draw activity before it reports the scene as ready. Bevy focuses its canvas during startup; the page prevents that focus from scrolling the sound control out of view. Click `Enable sound` once when the browser requires a user gesture. The button changes to `Mute sound` after a Bevy source connects to a running Web Audio output.
 
 When Firefox cannot create a WebGL2 context, the example shows Firefox-specific hardware-acceleration recovery steps. Local headless Firefox could not create WebGL2, so regular Firefox with hardware acceleration remains unverified here.
 
-The [forest example](https://sagan-software.github.io/bevy-raytraced-audio/examples/forest-3d/) is the interactive showcase. Walk with WASD or the arrow keys, hold the left mouse button to orbit, use the wheel to zoom, press B to toggle acoustic paths, and press F1 to show frame timing.
+In the sandbox, WASD walks, the humanoid faces the mouse, F switches to first
+person, and E operates openings. Use 0–8 for isolated listening scenarios, X to
+remove/restore a marked wall, V for rays, Tab for processing bypass, and H for
+the guide. [The audit](docs/SANDBOX-AUDIT.md) describes confirmed fixes and the
+limits of the acoustic model. **B** compares measured HRTF headphone cues with
+stereo panning, **T** cycles tile/carpet/furnished rooms, and **J/K** plays a
+clap/gunshot. See the [elevation and material research](docs/research/vertical-audio-and-materials.md).
 
+The captures below predate the new ray tracer and show the earlier examples.
 The forest walkthrough records the direct-path gain change as the listener moves across the brush screen:
 
 ![Forest sound paths changing as the listener walks through the scene](website/assets/gifs/forest-walk.gif)
@@ -121,8 +157,12 @@ See the [example guide](docs/EXAMPLES.md) for controls and workload sizes.
 Run the native examples with:
 
 ```sh
+nix run .#showcase
 nix run .#demo-2d
 nix run .#demo-3d
+nix run .#reverb-2d
+nix run .#ambience-2d
+nix run .#permeation-2d
 nix run .#stress-2d
 nix run .#stress-3d
 nix run .#forest-3d
@@ -130,12 +170,12 @@ nix run .#forest-3d
 
 ## Supported versions
 
-| Bevy adapter | Bevy version | Status |
-| --- | --- | --- |
-| `bevy_0_17` | 0.17.3 | Feature and integration tested |
-| `bevy_0_18` | 0.18.1 | Feature and integration tested |
-| `bevy_0_19` | 0.19.1 | Default feature; examples use this version |
-| `bevy_0_20` | 0.20.0-rc.2 | Release-candidate compatibility only |
+| Bevy adapter | Bevy version | Status                                     |
+| ------------ | ------------ | ------------------------------------------ |
+| `bevy_0_17`  | 0.17.3       | Feature and integration tested             |
+| `bevy_0_18`  | 0.18.1       | Feature and integration tested             |
+| `bevy_0_19`  | 0.19.1       | Default feature; examples use this version |
+| `bevy_0_20`  | 0.20.0-rc.2  | Release-candidate compatibility only       |
 
 The workspace MSRV is Rust 1.96.1. CI tests Rust 1.96.1, 1.97.1, 1.98.1, and
 1.99.0. The local verification host uses Rust 1.99.0. See the
@@ -206,12 +246,12 @@ one-second samples at a 1,215 × 700 canvas size. The run used ANGLE Vulkan with
 frame limiting and GPU VSync disabled.
 
 | Browser route | Callback range per second |
-| --- | ---: |
-| Forest 3D | 222–225 |
-| Minimal 2D | 267–272 |
-| Minimal 3D | 196–200 |
-| Stress 2D | 256–277 |
-| Stress 3D | 242–248 |
+| ------------- | ------------------------: |
+| Forest 3D     |                   222–225 |
+| Minimal 2D    |                   267–272 |
+| Minimal 3D    |                   196–200 |
+| Stress 2D     |                   256–277 |
+| Stress 3D     |                   242–248 |
 
 These samples measure browser animation-frame callbacks, not physical display
 presentation. Normal headless synchronization caps callbacks near 60 FPS on the

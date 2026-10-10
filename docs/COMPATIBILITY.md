@@ -4,11 +4,11 @@ Research snapshot: 2026-10-06.
 
 ## Bevy versions
 
-| Bevy | Release state | Audio API family | Project support path |
-| --- | --- | --- | --- |
-| 0.17.3 | Stable | `Decodable` with `DecoderItem` | `bevy-raytraced-audio-compat-0-17` |
-| 0.18.1 | Stable | `Decodable` with `DecoderItem` | `bevy-raytraced-audio-compat-0-18` |
-| 0.19.1 | Stable | `Decodable` uses rodio `Sample` | `bevy-raytraced-audio-compat-0-19` |
+| Bevy        | Release state     | Audio API family                | Project support path               |
+| ----------- | ----------------- | ------------------------------- | ---------------------------------- |
+| 0.17.3      | Stable            | `Decodable` with `DecoderItem`  | `bevy-raytraced-audio-compat-0-17` |
+| 0.18.1      | Stable            | `Decodable` with `DecoderItem`  | `bevy-raytraced-audio-compat-0-18` |
+| 0.19.1      | Stable            | `Decodable` uses rodio `Sample` | `bevy-raytraced-audio-compat-0-19` |
 | 0.20.0-rc.2 | Release candidate | `Decodable` uses rodio `Sample` | `bevy-raytraced-audio-compat-0-20` |
 
 The Bevy 0.20 row is provisional because the pinned release is not stable. The
@@ -30,6 +30,18 @@ manifests. See the versioned Bevy audio sources in
 [0.19.1](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_audio/src/audio_source.rs), and
 [0.20.0-rc.2](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_audio/src/audio_source.rs).
 
+## Spatial audio correction
+
+The workspace patches rodio 0.22.2 with the two-line
+[upstream stereo correction](https://github.com/RustAudio/rodio/commit/d6eea94f4ac374efd2f8066c9799066077dc2016).
+It fixes reversed left/right distance-difference gains in the Bevy 0.19/0.20
+backend without taking unreleased audio-stack changes. The vendored crate keeps
+the published version, dependencies, and licenses; see `vendor/README.md`.
+Cargo patches apply only from the workspace root. Applications consuming these
+crates separately need the same correction in their own audio dependency; the
+patch does not propagate through a published library dependency. The Bevy
+0.17/0.18 backend still uses its separately pinned rodio version.
+
 ## Rust versions
 
 The manifest `rust-version` and Clippy `msrv` are `1.96.1`. The compatibility
@@ -38,7 +50,7 @@ matches the Bevy 0.20 release candidate's declared minimum.
 
 ## Test matrix
 
-The compatibility workflow runs the core and adapter workspace tests with each Rust version, then checks all four Bevy feature selections. This defines 16 Rust and Bevy combinations. The matrix excludes the Bevy 0.19.1 example package. That package and the five browser builds are tested separately on the locked workspace toolchain.
+The compatibility workflow runs the core and adapter workspace tests with each Rust version, then checks all four Bevy feature selections. This defines 16 Rust and Bevy combinations. The matrix excludes the Bevy 0.19.1 example package. That package and the nine browser builds are tested separately on the locked workspace toolchain.
 
 Run the same checks locally with:
 
@@ -54,3 +66,13 @@ adapters use Bevy's existing audio plugin. Native examples require Bevy's
 platform libraries and an available render device. Browser examples use Bevy
 0.19.1, WebAssembly, WebGL2, and Web Audio. The browser examples require a
 browser that supports those APIs and a user gesture to start playback.
+
+## Village audio audit
+
+The rodio 0.22.2 vendor patch additionally corrects channel averaging in
+`ChannelVolume`, whose discarded return value could double stereo-source level.
+This is covered by actual sample tests for one, two and six input channels.
+The 2D/3D adapter update interval now governs both listener ray tracing and
+image-source response queries while tracing is enabled; sink/DSP controls still
+run every frame. Direct-only mode remains per-frame. See the
+[village audit](SANDBOX-AUDIT.md) for seam fixes and browser limitations.

@@ -2,17 +2,23 @@
 
 use super::emitter::RaytracedAudioEmitter2d;
 use super::listener::RaytracedAudioListener2d;
+use super::ray_tracing::{
+    RaytracedAudioListenerTrace2d, RaytracedAudioRayResponse2d, RaytracedAudioTracing2d,
+};
 use super::reflection_paths::RaytracedAudioReflectionPaths2d;
 use super::response::RaytracedAudioResponse2d;
 use super::settings::RaytracedAudioSettings;
 use super::surface::RaytracedAudioSurface2d;
 use super::volume::RaytracedAudioBaseVolume;
+use crate::processed_audio::RaytracedAudioPlayer;
 use bevy::audio::Volume;
+use bevy::ecs::entity::EntityHashMap;
 use bevy::ecs::query::QueryItem;
 use bevy::prelude::*;
 use bevy::tasks::ComputeTaskPool;
 use bevy_raytraced_audio::{
-    AcousticResponse, AcousticScene2d, BandGain, Emitter2d, Listener2d, Point2, Segment2d,
+    AcousticResponse, AcousticScene2d, BandGain, Emitter2d, Listener2d, MuffleFilter, Point2,
+    ReverbEstimate, Segment2d, SourceRayResponse,
 };
 
 /// Source count at and above which tracing uses the compute task pool.
@@ -27,6 +33,8 @@ type EmitterQueryData = (
     Option<&'static mut RaytracedAudioBaseVolume>,
     Option<&'static mut RaytracedAudioResponse2d>,
     Option<&'static mut RaytracedAudioReflectionPaths2d>,
+    Option<&'static mut RaytracedAudioRayResponse2d>,
+    Option<&'static RaytracedAudioPlayer>,
 );
 
 /// Selects entities marked as 2D emitters and their adapter state.
@@ -56,10 +64,14 @@ pub(super) fn update_raytraced_audio(
     mut removed_surfaces: RemovedComponents<'_, '_, RaytracedAudioSurface2d>,
     mut scene: Local<'_, AcousticScene2d>,
     mut scene_is_cached: Local<'_, bool>,
+    tracing: Res<'_, RaytracedAudioTracing2d>,
+    mut listener_trace: ResMut<'_, RaytracedAudioListenerTrace2d>,
+    mut trace_scratch: Local<'_, TraceScratch>,
+    real_time: Option<Res<'_, Time<Real>>>,
     emitters: EmitterQuery<'_, '_>,
 ) {
     let listener = unique_listener(&listeners);
-    refresh_scene(
+    let scene_changed = refresh_scene(
         listener.is_some(),
         &surfaces,
         &changed_surfaces,
@@ -68,7 +80,113 @@ pub(super) fn update_raytraced_audio(
         &mut scene,
         &mut scene_is_cached,
     );
-    process_emitters(commands, &scene, listener, settings.occluded_gain, emitters);
+    let delta_s = real_time.map_or(f32::INFINITY, |time| time.delta_secs());
+    trace_scratch.since_trace_s += delta_s;
+    let due = tracing.is_changed()
+        || scene_changed
+        || trace_scratch.since_trace_s >= tracing.interval_s
+        || has_untraced_emitter(&emitters, &trace_scratch.indices)
+        || listener_trace.valid != listener.is_some();
+    if due {
+        trace_scratch.since_trace_s = 0.0;
+        trace_listener(
+            &scene,
+            listener.filter(|_| tracing.enabled),
+            *tracing,
+            &emitters,
+            &mut listener_trace,
+            &mut trace_scratch,
+        );
+    }
+    let traced = TracedResponses {
+        refresh_legacy: due || !tracing.enabled,
+        indices: &trace_scratch.indices,
+        trace: listener_trace.trace(),
+    };
+    process_emitters(
+        commands,
+        &scene,
+        listener,
+        settings.occluded_gain,
+        &traced,
+        emitters,
+    );
+}
+
+/// Reused emitter positions and entity-to-trace-index lookup.
+#[derive(Default)]
+pub(super) struct TraceScratch {
+    /// Positions of emitters passed to the listener trace.
+    sources: Vec<Emitter2d>,
+    /// Trace source index for each traced emitter entity.
+    indices: EntityHashMap<usize>,
+    /// Real seconds since the last trace.
+    since_trace_s: f32,
+}
+
+/// Returns whether any emitter with a finite position is missing from the last trace.
+fn has_untraced_emitter(emitters: &EmitterQuery<'_, '_>, indices: &EntityHashMap<usize>) -> bool {
+    emitters.iter().any(|(entity, transform, ..)| {
+        let translation = transform.translation();
+        translation.x.is_finite() && translation.y.is_finite() && !indices.contains_key(&entity)
+    })
+}
+
+/// Read-only view of the latest listener trace used while updating emitters.
+struct TracedResponses<'a> {
+    /// Keep image-source queries on the same update cadence as the listener trace.
+    refresh_legacy: bool,
+    /// Trace source index for each traced emitter entity.
+    indices: &'a EntityHashMap<usize>,
+    /// Latest valid trace.
+    trace: Option<&'a bevy_raytraced_audio::ListenerTrace2d>,
+}
+
+impl TracedResponses<'_> {
+    /// Returns the traced response for one emitter.
+    fn response(&self, entity: Entity) -> Option<SourceRayResponse> {
+        let index = *self.indices.get(&entity)?;
+        self.trace?.sources().get(index).copied()
+    }
+
+    /// Returns the latest listener reverb estimate.
+    fn reverb(&self) -> ReverbEstimate {
+        self.trace.map_or(
+            ReverbEstimate::DRY,
+            bevy_raytraced_audio::ListenerTrace2d::reverb,
+        )
+    }
+}
+
+/// Runs one listener ray trace over every emitter with a finite position.
+fn trace_listener(
+    scene: &AcousticScene2d,
+    listener: Option<Listener2d>,
+    tracing: RaytracedAudioTracing2d,
+    emitters: &EmitterQuery<'_, '_>,
+    listener_trace: &mut RaytracedAudioListenerTrace2d,
+    scratch: &mut TraceScratch,
+) {
+    scratch.sources.clear();
+    scratch.indices.clear();
+    let Some(listener) = listener else {
+        listener_trace.valid = false;
+        return;
+    };
+    for (entity, transform, ..) in emitters {
+        let translation = transform.translation();
+        if let Ok(position) = Point2::try_new(translation.x, translation.y) {
+            scratch.indices.insert(entity, scratch.sources.len());
+            scratch.sources.push(Emitter2d::new(position));
+        }
+    }
+    scene.trace_listener(
+        listener,
+        &scratch.sources,
+        tracing.settings,
+        &mut listener_trace.trace,
+    );
+    listener_trace.valid = true;
 }
 
 /// Returns the unique finite 2D listener, disabling tracing for missing or ambiguous listeners.
@@ -108,7 +226,7 @@ fn refresh_scene(
     removed_surfaces: &mut RemovedComponents<'_, '_, RaytracedAudioSurface2d>,
     scene: &mut Local<'_, AcousticScene2d>,
     scene_is_cached: &mut Local<'_, bool>,
-) {
+) -> bool {
     // Removed surfaces are absent from the changed query, so read their event cursor separately.
     let surface_was_removed = removed_surfaces.read().count() != 0;
     let surface_changed = !changed_surfaces.is_empty()
@@ -120,6 +238,7 @@ fn refresh_scene(
             scene.clear();
         }
         **scene_is_cached = false;
+        false
     } else if !**scene_is_cached || surface_changed {
         scene.clear();
         for (surface, transform) in surfaces {
@@ -128,6 +247,9 @@ fn refresh_scene(
             }
         }
         **scene_is_cached = true;
+        true
+    } else {
+        false
     }
 }
 
@@ -137,13 +259,21 @@ fn process_emitters(
     scene: &AcousticScene2d,
     listener: Option<Listener2d>,
     occluded_gain: f32,
+    traced: &TracedResponses<'_>,
     mut emitters: EmitterQuery<'_, '_>,
 ) {
     // This upper bound avoids a second full source traversal before dispatch.
     let emitter_count_upper_bound = emitters.iter().size_hint().1.unwrap_or(usize::MAX);
     let compute_pool_available = ComputeTaskPool::try_get().is_some();
     let update_one = |emitter| {
-        update_emitter(&commands, scene, listener.as_ref(), occluded_gain, emitter);
+        update_emitter(
+            &commands,
+            scene,
+            listener.as_ref(),
+            occluded_gain,
+            traced,
+            emitter,
+        );
     };
 
     if compute_pool_available && emitter_count_upper_bound >= PARALLEL_EMITTER_THRESHOLD {
@@ -159,6 +289,7 @@ fn update_emitter(
     scene: &AcousticScene2d,
     listener: Option<&Listener2d>,
     occluded_gain: f32,
+    traced: &TracedResponses<'_>,
     (
         entity,
         transform,
@@ -167,6 +298,8 @@ fn update_emitter(
         base_volume,
         response_state,
         mut reflection_paths,
+        ray_response_state,
+        player,
     ): QueryItem<'_, '_, EmitterQueryData>,
 ) {
     let translation = transform.translation();
@@ -174,6 +307,11 @@ fn update_emitter(
         .ok()
         .zip(listener)
         .map(|(position, listener)| {
+            if !traced.refresh_legacy
+                && let Some(cached) = response_state.as_deref()
+            {
+                return cached.response;
+            }
             let emitter = Emitter2d::new(position);
             if let Some(paths) = reflection_paths.as_deref_mut() {
                 scene.trace_with_reflection_paths(emitter, *listener, &mut paths.paths)
@@ -189,24 +327,85 @@ fn update_emitter(
         paths.paths.clear();
     }
 
+    let ray_response = response.and_then(|_| traced.response(entity));
+    if let Some(player) = player {
+        let filter = ray_response.map_or(MuffleFilter::CLEAR, SourceRayResponse::filter);
+        let reverb = ray_response.map_or(ReverbEstimate::DRY, |_| traced.reverb());
+        player.params().set_filter(filter);
+        player.params().set_reverb(reverb, player.reverb_send());
+    }
+    // Processed players apply muffling to samples, so their sink volume stays untouched.
+    let visibility_gain = if player.is_some() && ray_response.is_some() {
+        Some(1.0)
+    } else {
+        response.map(|response| visibility_gain(response, ray_response, occluded_gain))
+    };
     update_sink_volume(
         commands,
         entity,
-        response,
-        occluded_gain,
+        visibility_gain,
         audio_sink,
         spatial_sink,
         base_volume,
     );
     update_response_component(commands, entity, response, response_state);
+    update_ray_response_component(commands, entity, ray_response, ray_response_state);
+}
+
+/// Chooses the sink-volume scale for an emitter played through Bevy's unprocessed sink.
+///
+/// Traced emitters use the mean of the filter's low and high gains; untraced emitters use the
+/// mean direct transmission. Fully silent paths fall back to the configured occluded gain.
+fn visibility_gain(
+    response: AcousticResponse,
+    ray_response: Option<SourceRayResponse>,
+    occluded_gain: f32,
+) -> f32 {
+    if let Some(ray_response) = ray_response {
+        let filter = ray_response.filter();
+        let gain = f32::midpoint(filter.gain_lf(), filter.gain_hf());
+        return if gain <= 0.0 { occluded_gain } else { gain };
+    }
+    let direct = response.direct;
+    let transmission = direct.gain();
+    if direct.is_occluded() && transmission == BandGain::ZERO {
+        occluded_gain
+    } else {
+        (transmission.low() + transmission.mid() + transmission.high()) / 3.0
+    }
+}
+
+/// Publishes a fresh traced response or removes stale traced state for one emitter.
+fn update_ray_response_component(
+    commands: &ParallelCommands<'_, '_>,
+    entity: Entity,
+    response: Option<SourceRayResponse>,
+    mut response_state: Option<Mut<'_, RaytracedAudioRayResponse2d>>,
+) {
+    if let Some(response) = response {
+        if let Some(existing) = response_state.as_deref_mut() {
+            existing.response = response;
+        } else {
+            commands.command_scope(|mut commands| {
+                commands
+                    .entity(entity)
+                    .insert(RaytracedAudioRayResponse2d { response });
+            });
+        }
+    } else if response_state.is_some() {
+        commands.command_scope(|mut commands| {
+            commands
+                .entity(entity)
+                .remove::<RaytracedAudioRayResponse2d>();
+        });
+    }
 }
 
 /// Applies direct-path gain while preserving the sink's requested base volume.
 fn update_sink_volume(
     commands: &ParallelCommands<'_, '_>,
     entity: Entity,
-    response: Option<AcousticResponse>,
-    occluded_gain: f32,
+    visibility_gain: Option<f32>,
     mut audio_sink: Option<Mut<'_, AudioSink>>,
     mut spatial_sink: Option<Mut<'_, SpatialAudioSink>>,
     base_volume: Option<Mut<'_, RaytracedAudioBaseVolume>>,
@@ -223,16 +422,7 @@ fn update_sink_volume(
             }
             _ => current_linear,
         };
-        let visibility_gain = response.map_or(1.0, |response| {
-            let direct = response.direct;
-            let transmission = direct.gain();
-            if direct.is_occluded() && transmission == BandGain::ZERO {
-                occluded_gain
-            } else {
-                (transmission.low() + transmission.mid() + transmission.high()) / 3.0
-            }
-        });
-        let output_linear = base_linear * visibility_gain;
+        let output_linear = base_linear * visibility_gain.unwrap_or(1.0);
         let output_volume = Volume::Linear(output_linear);
         if let Some(sink) = audio_sink.as_deref_mut() {
             sink.set_volume(output_volume);
@@ -243,7 +433,7 @@ fn update_sink_volume(
         update_base_volume(
             commands,
             entity,
-            response.is_some(),
+            visibility_gain.is_some(),
             base_volume,
             base_linear,
             output_linear,

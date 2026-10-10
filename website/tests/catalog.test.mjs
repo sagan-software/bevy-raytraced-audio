@@ -18,7 +18,9 @@ function installDocument(reducedMotion = false) {
     value: "",
     tagName: "INPUT",
     addEventListener: (name, listener) => listeners.set(`search:${name}`, listener),
-    focus() { document.activeElement = search; },
+    focus() {
+      document.activeElement = search;
+    },
   };
   const count = { textContent: "" };
   const emptyState = { hidden: true };
@@ -31,7 +33,9 @@ function installDocument(reducedMotion = false) {
       this.playCalls += 1;
       return Promise.resolve();
     },
-    pause() { this.pauseCalls += 1; },
+    pause() {
+      this.pauseCalls += 1;
+    },
   };
   const motionListeners = new Map();
   const launchListeners = new Map();
@@ -40,13 +44,17 @@ function installDocument(reducedMotion = false) {
     children: [],
     classes: [],
     querySelector: () => forestPreview,
-    replaceChildren(...children) { this.children = children; },
+    replaceChildren(...children) {
+      this.children = children;
+    },
     classList: { add: (name) => featuredArt.classes.push(name) },
   };
   const launchButton = {
     dataset: {
-      demoSrc: "./examples/forest-3d/embed.html",
-      demoTitle: "Interactive forest audio demo",
+      demoSrc: "./examples/showcase/embed.html",
+      demoTitle: "Interactive demo: Ray-traced audio sandbox",
+      runningDescription: "Rays leave the listener, bounce off walls, and look for sound.",
+      runningMeta: "W A S D move the listener · Space fire a gunshot",
     },
     addEventListener: (name, listener) => launchListeners.set(name, listener),
   };
@@ -57,14 +65,21 @@ function installDocument(reducedMotion = false) {
   const document = {
     activeElement: { tagName: "BODY" },
     querySelector(selector) {
-      return selector === "#example-search" ? search
-        : selector === "#example-count" ? count
-          : selector === "[data-motion-preview]" ? forestPreview
-            : selector === "#launch-forest-demo" ? launchButton
-              : selector === "#featured-art" ? featuredArt
-                : selector === "#featured-description" ? featuredDescription
-                  : selector === "#featured-meta" ? featuredMeta
-          : emptyState;
+      return selector === "#example-search"
+        ? search
+        : selector === "#example-count"
+        ? count
+        : selector === "[data-motion-preview]"
+        ? forestPreview
+        : selector === "#launch-featured-demo"
+        ? launchButton
+        : selector === "#featured-art"
+        ? featuredArt
+        : selector === "#featured-description"
+        ? featuredDescription
+        : selector === "#featured-meta"
+        ? featuredMeta
+        : emptyState;
     },
     querySelectorAll(selector) {
       return selector === "[data-example-section]" ? sections : cards;
@@ -137,7 +152,7 @@ test("shows an empty message when no card matches", async () => {
   }
 });
 
-test("replaces the muted preview with the interactive forest demo on request", async () => {
+test("replaces the preview with the interactive featured demo on request", async () => {
   const harness = installDocument();
   try {
     await loadCatalog();
@@ -146,15 +161,15 @@ test("replaces the muted preview with the interactive forest demo on request", a
     assert.equal(harness.forestPreview.pauseCalls, 1);
     assert.equal(harness.createdFrames.length, 1);
     assert.deepEqual(harness.featuredArt.children, [harness.createdFrames[0]]);
-    assert.equal(harness.createdFrames[0].src, "./examples/forest-3d/embed.html");
-    assert.equal(harness.createdFrames[0].title, "Interactive forest audio demo");
+    assert.equal(harness.createdFrames[0].src, "./examples/showcase/embed.html");
+    assert.equal(harness.createdFrames[0].title, "Interactive demo: Ray-traced audio sandbox");
     assert.equal(harness.createdFrames[0].loading, "eager");
     assert.equal(harness.createdFrames[0].allow, "autoplay; fullscreen; gamepad");
     assert.deepEqual(harness.featuredArt.classes, ["demo-loaded"]);
     assert.doesNotMatch(harness.featuredDescription.textContent, /preview/u);
-    assert.match(harness.featuredDescription.textContent, /direct path clears/u);
+    assert.match(harness.featuredDescription.textContent, /bounce off walls/u);
     assert.doesNotMatch(harness.featuredMeta.textContent, /Enable sound/u);
-    assert.match(harness.featuredMeta.textContent, /arrow keys/u);
+    assert.match(harness.featuredMeta.textContent, /gunshot/u);
   } finally {
     delete globalThis.document;
     delete globalThis.window;
@@ -171,7 +186,9 @@ test("slash focuses search unless the user is typing in a field", async () => {
       ctrlKey: false,
       metaKey: false,
       altKey: false,
-      preventDefault: () => { prevented = true; },
+      preventDefault: () => {
+        prevented = true;
+      },
     });
     assert.equal(prevented, true);
     assert.equal(globalThis.document.activeElement, harness.search);
@@ -183,7 +200,9 @@ test("slash focuses search unless the user is typing in a field", async () => {
       ctrlKey: false,
       metaKey: false,
       altKey: false,
-      preventDefault: () => { prevented = true; },
+      preventDefault: () => {
+        prevented = true;
+      },
     });
     assert.equal(prevented, false);
   } finally {
@@ -192,7 +211,7 @@ test("slash focuses search unless the user is typing in a field", async () => {
   }
 });
 
-test("keeps the forest preview paused when reduced motion is enabled", async () => {
+test("keeps the featured preview paused when reduced motion is enabled", async () => {
   const harness = installDocument(true);
   try {
     await loadCatalog();
@@ -204,7 +223,7 @@ test("keeps the forest preview paused when reduced motion is enabled", async () 
   }
 });
 
-test("stops and resumes the forest preview when the motion preference changes", async () => {
+test("stops and resumes the featured preview when the motion preference changes", async () => {
   const harness = installDocument();
   try {
     await loadCatalog();

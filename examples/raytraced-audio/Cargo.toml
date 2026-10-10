@@ -1,21 +1,37 @@
 [package]
 name = "bevy-raytraced-audio-examples"
 version.workspace = true
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
-publish = false
-autobins = false
 autobenches = false
+autobins = false
 autoexamples = false
 autotests = false
+edition.workspace = true
+license.workspace = true
+publish = false
+rust-version.workspace = true
 
 [features]
 webgl2 = ["bevy/webgl2", "bevy/web"]
 
 [[example]]
+name = "showcase"
+path = "examples/showcase.rs"
+
+[[example]]
 name = "minimal_2d"
 path = "examples/minimal_2d.rs"
+
+[[example]]
+name = "reverb_2d"
+path = "examples/reverb_2d.rs"
+
+[[example]]
+name = "ambience_2d"
+path = "examples/ambience_2d.rs"
+
+[[example]]
+name = "permeation_2d"
+path = "examples/permeation_2d.rs"
 
 [[example]]
 name = "minimal_3d"
@@ -38,10 +54,13 @@ name = "audio_fixture"
 path = "tests/audio_fixture.rs"
 
 [dependencies]
-bevy = { version = "0.19.1", features = ["wav"] }
+bevy = { version = "0.19.1", features = ["vorbis", "wav"] }
 bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
-bevy-raytraced-audio-2d = { path = "../../crates/bevy-raytraced-audio-2d", version = "0.1.0", features = ["bevy_0_19"] }
-bevy-raytraced-audio-3d = { path = "../../crates/bevy-raytraced-audio-3d", version = "0.1.0", features = ["bevy_0_19"] }
+bevy-raytraced-audio-2d = { path = "../../crates/bevy-raytraced-audio-2d", version = "0.1.0", features = ["bevy_0_19", "debug_draw"] }
+bevy-raytraced-audio-3d = { path = "../../crates/bevy-raytraced-audio-3d", version = "0.1.0", features = ["bevy_0_19", "debug_draw"] }
+
+[dev-dependencies]
+rodio = { version = "0.22.2", default-features = false }
 
 [lints]
 workspace = true

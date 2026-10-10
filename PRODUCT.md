@@ -18,7 +18,8 @@ guidance.
 - The public site uses static HTML, CSS, and JavaScript so GitHub Pages can host
   it without a server runtime.
 - The site follows Bevy's example catalogue pattern, with category navigation
-  and direct example cards. A procedural forest scene leads the catalogue.
+  and direct example cards. The ray-traced audio sandbox leads the catalogue.
+- Each example page shows the example's full Rust source below the scene.
 - Each browser example has its own route and WebAssembly build output.
 - Each browser demo asks for a user click before resuming audio playback.
 - The site checks for WebGL2 before loading a Bevy renderer and reports a

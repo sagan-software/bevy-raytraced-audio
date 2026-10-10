@@ -1,7 +1,8 @@
 import {
-  canvasHasBeenResized,
   audioControlState,
+  canvasHasBeenResized,
   installAudioGestureResume,
+  installPointerLockFallback,
   installWebGLDrawMonitor,
   probeWebGL2,
   restoreScrollPosition,
@@ -16,6 +17,7 @@ const canvas = document.querySelector("#bevy-canvas");
 const canvasState = document.querySelector("#canvas-state");
 const bevyAudioContexts = new Set();
 const bevyAudioGraph = { startedSources: 0, outputConnections: 0 };
+let pointerLockUnavailable = false;
 
 window.__bevyAudioContexts = bevyAudioContexts;
 window.__bevyAudioGraph = bevyAudioGraph;
@@ -105,8 +107,16 @@ function updateAudioControls() {
   );
   startButton.disabled = state.disabled;
   startButton.textContent = state.buttonText;
-  statusLine.textContent = state.statusText;
+  statusLine.textContent = pointerLockUnavailable
+    ? `${state.statusText} Mouse capture is unavailable here: use Q/R to turn and PgUp/PgDn to tilt; F or Esc returns overhead.`
+    : state.statusText;
 }
+
+const removePointerLockFallback = installPointerLockFallback(canvas, () => {
+  pointerLockUnavailable = true;
+  updateAudioControls();
+});
+window.addEventListener("pagehide", removePointerLockFallback, { once: true });
 
 const removeAudioGestureResume = installAudioGestureResume(
   canvas,

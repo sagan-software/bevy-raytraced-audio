@@ -5,6 +5,7 @@ import {
   audioControlState,
   canvasHasBeenResized,
   installAudioGestureResume,
+  installPointerLockFallback,
   installWebGLDrawMonitor,
   probeWebGL2,
   restoreScrollPosition,
@@ -52,8 +53,12 @@ test("waits for successive WebGL draw calls after the first frame", async () => 
   let now = 0;
   const scheduledChecks = [];
   const monitor = {
-    get available() { return true; },
-    get drawCallCount() { return drawCallCount; },
+    get available() {
+      return true;
+    },
+    get drawCallCount() {
+      return drawCallCount;
+    },
   };
   const ready = waitForCanvasDrawActivity(monitor, 1_000, {
     now: () => now,
@@ -129,7 +134,9 @@ test("reports when the browser cannot create a WebGL2 context", () => {
 test("reports when WebGL2 probing throws", () => {
   const document = {
     createElement: () => ({
-      getContext: () => { throw new Error("WebGL2 is blocked"); },
+      getContext: () => {
+        throw new Error("WebGL2 is blocked");
+      },
     }),
   };
 
@@ -146,7 +153,11 @@ test("releases a WebGL2 probe context after a successful check", () => {
         return {
           getExtension: (name) => {
             assert.equal(name, "WEBGL_lose_context");
-            return { loseContext: () => { contextReleased = true; } };
+            return {
+              loseContext: () => {
+                contextReleased = true;
+              },
+            };
           },
         };
       },
@@ -281,7 +292,9 @@ test("resumes suspended audio from a canvas pointer gesture", async () => {
       return Promise.resolve();
     },
   };
-  const uninstall = installAudioGestureResume(canvas, () => [context], () => { stateUpdates += 1; });
+  const uninstall = installAudioGestureResume(canvas, () => [context], () => {
+    stateUpdates += 1;
+  });
 
   listeners.get("pointerdown")();
   await new Promise((resolve) => setTimeout(resolve, 0));
@@ -299,7 +312,13 @@ test("resumes suspended audio from a canvas keyboard gesture", async () => {
     removeEventListener: (name) => listeners.delete(name),
   };
   let resumeCalls = 0;
-  const context = { state: "suspended", resume: () => { resumeCalls += 1; return Promise.resolve(); } };
+  const context = {
+    state: "suspended",
+    resume: () => {
+      resumeCalls += 1;
+      return Promise.resolve();
+    },
+  };
   const uninstall = installAudioGestureResume(canvas, () => [context], () => {});
 
   listeners.get("keydown")();
@@ -317,8 +336,16 @@ test("does not resume already-running audio contexts", async () => {
   };
   let resumeCalls = 0;
   let stateUpdates = 0;
-  const context = { state: "running", resume: () => { resumeCalls += 1; return Promise.resolve(); } };
-  const uninstall = installAudioGestureResume(canvas, () => [context], () => { stateUpdates += 1; });
+  const context = {
+    state: "running",
+    resume: () => {
+      resumeCalls += 1;
+      return Promise.resolve();
+    },
+  };
+  const uninstall = installAudioGestureResume(canvas, () => [context], () => {
+    stateUpdates += 1;
+  });
 
   listeners.get("pointerdown")();
   await Promise.resolve();
@@ -332,7 +359,8 @@ test("does not claim sound is audible while no Bevy source reaches the output", 
   assert.deepEqual(audioControlState(["running"], { startedSources: 0, outputConnections: 0 }), {
     disabled: true,
     buttonText: "Audio output unavailable",
-    statusText: "The browser audio context is running, but no Bevy sound reached its output. Reload the example to retry.",
+    statusText:
+      "The browser audio context is running, but no Bevy sound reached its output. Reload the example to retry.",
   });
 });
 
@@ -340,7 +368,7 @@ test("offers mute after a Bevy source connects to a running browser output", () 
   assert.deepEqual(audioControlState(["running", "running"], { startedSources: 1, outputConnections: 1 }), {
     disabled: false,
     buttonText: "Mute sound",
-    statusText: "Spatial sound is on. Use WASD to move through the scene.",
+    statusText: "Spatial sound is on. Click the scene to give it keyboard focus.",
   });
 });
 
@@ -348,7 +376,7 @@ test("labels the audio control when browser outputs await a user gesture", () =>
   assert.deepEqual(audioControlState(["suspended"]), {
     disabled: false,
     buttonText: "Enable sound",
-    statusText: "The scene is running. Enable sound to hear the spatial chime.",
+    statusText: "The scene is running. Enable sound to hear it.",
   });
 });
 
@@ -358,4 +386,61 @@ test("offers a retry when browser audio outputs have mixed states", () => {
     buttonText: "Retry sound",
     statusText: "The browser did not enable every audio output. Select Retry sound.",
   });
+});
+
+test("pointer-lock rejection is handled without disabling keyboard controls", async () => {
+  const document = new EventTarget();
+  let failures = 0;
+  const original = () => Promise.reject(new Error("Pointer lock unavailable"));
+  const canvas = { ownerDocument: document, style: { cursor: "none" }, requestPointerLock: original };
+  const uninstall = installPointerLockFallback(canvas, () => {
+    failures += 1;
+  });
+  await assert.doesNotReject(canvas.requestPointerLock());
+  assert.equal(failures, 1);
+  assert.equal(canvas.style.cursor, "auto");
+  document.dispatchEvent(new Event("pointerlockerror"));
+  assert.equal(failures, 2);
+  uninstall();
+  assert.equal(canvas.requestPointerLock, original);
+  document.dispatchEvent(new Event("pointerlockerror"));
+  assert.equal(failures, 2);
+});
+
+test("successful pointer lock preserves the receiver and request options", async () => {
+  let received;
+  const canvas = {
+    ownerDocument: new EventTarget(),
+    style: {},
+    requestPointerLock(options) {
+      received = { receiver: this, options };
+      return Promise.resolve();
+    },
+  };
+  let failures = 0;
+  const uninstall = installPointerLockFallback(canvas, () => {
+    failures += 1;
+  });
+  await canvas.requestPointerLock({ unadjustedMovement: true });
+  assert.equal(received.receiver, canvas);
+  assert.deepEqual(received.options, { unadjustedMovement: true });
+  assert.equal(failures, 0);
+  uninstall();
+});
+
+test("legacy pointer lock throwing synchronously also keeps the scene available", async () => {
+  let failures = 0;
+  const canvas = {
+    ownerDocument: new EventTarget(),
+    style: {},
+    requestPointerLock() {
+      throw new Error("Not supported");
+    },
+  };
+  const uninstall = installPointerLockFallback(canvas, () => {
+    failures += 1;
+  });
+  await assert.doesNotReject(canvas.requestPointerLock());
+  assert.equal(failures, 1);
+  uninstall();
 });

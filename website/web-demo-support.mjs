@@ -55,6 +55,35 @@ export function installAudioGestureResume(canvas, getContexts, updateControls) {
   };
 }
 
+/** Handles browsers that reject pointer lock while leaving keyboard camera controls usable. */
+export function installPointerLockFallback(canvas, onUnavailable) {
+  const original = canvas.requestPointerLock;
+  if (typeof original !== "function") return () => {};
+  const descriptor = Object.getOwnPropertyDescriptor(canvas, "requestPointerLock");
+  const unavailable = () => {
+    canvas.style.cursor = "auto";
+    onUnavailable();
+  };
+  // Winit calls the legacy void API, so catch the Promise returned by newer browsers here.
+  Object.defineProperty(canvas, "requestPointerLock", {
+    configurable: true,
+    value: function requestPointerLock(...arguments_) {
+      try {
+        return Promise.resolve(Reflect.apply(original, this, arguments_)).catch(unavailable);
+      } catch {
+        unavailable();
+        return Promise.resolve();
+      }
+    },
+  });
+  canvas.ownerDocument.addEventListener("pointerlockerror", unavailable);
+  return () => {
+    canvas.ownerDocument.removeEventListener("pointerlockerror", unavailable);
+    if (descriptor) Object.defineProperty(canvas, "requestPointerLock", descriptor);
+    else delete canvas.requestPointerLock;
+  };
+}
+
 export function canvasHasBeenResized(canvas, devicePixelRatio = 1) {
   if (
     canvas.clientWidth <= 0
@@ -248,14 +277,15 @@ export function audioControlState(states, audioGraph = {}) {
       return {
         disabled: true,
         buttonText: "Audio output unavailable",
-        statusText: "The browser audio context is running, but no Bevy sound reached its output. Reload the example to retry.",
+        statusText:
+          "The browser audio context is running, but no Bevy sound reached its output. Reload the example to retry.",
       };
     }
 
     return {
       disabled: false,
       buttonText: "Mute sound",
-      statusText: "Spatial sound is on. Use WASD to move through the scene.",
+      statusText: "Spatial sound is on. Click the scene to give it keyboard focus.",
     };
   }
 
@@ -263,7 +293,7 @@ export function audioControlState(states, audioGraph = {}) {
     return {
       disabled: false,
       buttonText: "Enable sound",
-      statusText: "The scene is running. Enable sound to hear the spatial chime.",
+      statusText: "The scene is running. Enable sound to hear it.",
     };
   }
 

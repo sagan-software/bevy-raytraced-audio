@@ -19,6 +19,7 @@ documentation, benchmarks, coverage, and the WebAssembly example compilation.
 Run the named native scenes with:
 
 ```sh
+nix run .#showcase
 nix run .#demo-2d
 nix run .#demo-3d
 nix run .#stress-2d
@@ -33,7 +34,7 @@ nix run .#web-serve
 ```
 
 The build writes a unique generated site directory under `target/` and copies
-the book, each example's WebAssembly output, and its audio asset. The server
+the book, each example's WebAssembly output, its source listing, and the bundled audio recordings. The server
 listens on `http://127.0.0.1:8000`.
 
 ## Build dependencies

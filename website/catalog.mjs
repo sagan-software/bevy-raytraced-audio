@@ -37,37 +37,40 @@ document.addEventListener("keydown", (event) => {
 
 updateExamples();
 
-const launchForestDemo = document.querySelector("#launch-forest-demo");
+const launchFeaturedDemo = document.querySelector("#launch-featured-demo");
 const featuredArt = document.querySelector("#featured-art");
 const featuredDescription = document.querySelector("#featured-description");
 const featuredMeta = document.querySelector("#featured-meta");
-if (launchForestDemo && featuredArt) {
-  launchForestDemo.addEventListener("click", () => {
+if (launchFeaturedDemo && featuredArt) {
+  launchFeaturedDemo.addEventListener("click", () => {
     createInteractiveDemoFrame(
       document,
       featuredArt,
-      launchForestDemo.dataset.demoSrc,
-      launchForestDemo.dataset.demoTitle,
+      launchFeaturedDemo.dataset.demoSrc,
+      launchFeaturedDemo.dataset.demoTitle,
     );
-    if (featuredDescription) {
-      featuredDescription.textContent = "Move the listener around the stone arch. Watch direct and reflected paths update; hear the chime change when the direct path clears.";
+    if (featuredDescription && launchFeaturedDemo.dataset.runningDescription) {
+      featuredDescription.textContent = launchFeaturedDemo.dataset.runningDescription;
     }
-    if (featuredMeta) {
-      featuredMeta.textContent = "WASD or arrow keys move the listener · hold mouse to orbit · wheel to zoom";
+    if (featuredMeta && launchFeaturedDemo.dataset.runningMeta) {
+      featuredMeta.textContent = launchFeaturedDemo.dataset.runningMeta;
     }
   });
 }
 
-const forestPreview = document.querySelector("[data-motion-preview]");
-if (forestPreview && typeof window !== "undefined" && typeof window.matchMedia === "function") {
+const featuredPreview = document.querySelector("[data-motion-preview]");
+if (
+  typeof featuredPreview?.play === "function" && typeof window !== "undefined"
+  && typeof window.matchMedia === "function"
+) {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const updatePreviewMotion = () => {
     if (reducedMotion.matches) {
-      forestPreview.pause();
+      featuredPreview.pause();
       return;
     }
 
-    void forestPreview.play().catch(() => {});
+    void featuredPreview.play().catch(() => {});
   };
 
   updatePreviewMotion();

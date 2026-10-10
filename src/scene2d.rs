@@ -91,30 +91,7 @@ impl AcousticScene2d {
         let receiver = Vector2::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
 
-        // If source and listener coincide, the path has no interior where a surface can attenuate it.
-        let mut direct_occluded = false;
-        let mut direct_gain = BandGain::UNITY;
-        if direct_distance > 0.0 {
-            let _traversal_completed = self.acceleration().visit_candidates_until(
-                Bounds::path_2d((source.x, source.y), (receiver.x, receiver.y)),
-                None,
-                |index| {
-                    if let Some(segment) = self.segments.get(index)
-                        && path_intersects_segment(
-                            source,
-                            receiver,
-                            Vector2::from_point(segment.start()),
-                            Vector2::from_point(segment.end()),
-                        )
-                    {
-                        let transmission = segment.material().transmission();
-                        direct_occluded |= transmission != BandGain::UNITY;
-                        direct_gain = direct_gain.multiply(transmission);
-                    }
-                    direct_gain != BandGain::ZERO
-                },
-            );
-        }
+        let (direct_gain, direct_occluded) = self.direct_transmission(source, receiver);
         let direct = PathResponse::new(direct_distance, direct_gain, direct_occluded);
 
         // Fused accumulation preserves the existing aggregate result for every visible path.
@@ -139,6 +116,64 @@ impl AcousticScene2d {
             direct,
             BandEnergy::from_solver(reflected_low, reflected_mid, reflected_high),
         )
+    }
+
+    /// Multiplies transmission once per distinct surface crossing, including collinear mesh seams.
+    ///
+    /// Returns the accumulated band gain and whether any crossed surface attenuates a band.
+    pub(crate) fn direct_transmission(
+        &self,
+        source: Vector2,
+        receiver: Vector2,
+    ) -> (BandGain, bool) {
+        // If source and listener coincide, the path has no interior where a surface can attenuate it.
+        let mut direct_occluded = false;
+        let mut direct_gain = BandGain::UNITY;
+        let mut crossings: Vec<(f64, Vector2, BandGain)> = Vec::new();
+        if receiver.subtract(source).length() > 0.0 {
+            let _traversal_completed = self.acceleration().visit_candidates_until(
+                Bounds::path_2d((source.x, source.y), (receiver.x, receiver.y)),
+                None,
+                |index| {
+                    if let Some(segment) = self.segments.get(index)
+                        && path_intersects_segment(
+                            source,
+                            receiver,
+                            Vector2::from_point(segment.start()),
+                            Vector2::from_point(segment.end()),
+                        )
+                    {
+                        let transmission = segment.material().transmission();
+                        let start = Vector2::from_point(segment.start());
+                        let edge = Vector2::from_point(segment.end()).subtract(start);
+                        let parameter = start.subtract(source).cross(edge)
+                            / receiver.subtract(source).cross(edge);
+                        let direction = edge.scale(1.0 / edge.length());
+                        if crossings
+                            .iter()
+                            .any(|&(previous, previous_direction, gain)| {
+                                (previous - parameter).abs() <= PARAMETER_EPSILON
+                                    && previous_direction.dot(direction).abs()
+                                        >= 1.0 - PARALLEL_EPSILON
+                                    && gain == transmission
+                            })
+                        {
+                            return true;
+                        }
+                        crossings.push((parameter, direction, transmission));
+                        direct_occluded |= transmission != BandGain::UNITY;
+                        direct_gain = direct_gain.multiply(transmission);
+                    }
+                    direct_gain != BandGain::ZERO
+                },
+            );
+        }
+        (direct_gain, direct_occluded)
+    }
+
+    /// Returns the registered segments in insertion order.
+    pub(crate) fn segments(&self) -> &[Segment2d] {
+        &self.segments
     }
 
     /// Builds a lazy path iterator from the query's already-converted endpoints and distance.
@@ -182,7 +217,7 @@ impl AcousticScene2d {
     }
 
     /// Checks whether another registered segment crosses an open reflection leg.
-    fn segment_is_occluded(
+    pub(crate) fn segment_is_occluded(
         &self,
         start: Vector2,
         end: Vector2,
@@ -205,7 +240,7 @@ impl AcousticScene2d {
     }
 
     /// Builds one deterministic hierarchy and reuses it until a surface mutation.
-    fn acceleration(&self) -> &BoundingVolumeHierarchy {
+    pub(crate) fn acceleration(&self) -> &BoundingVolumeHierarchy {
         self.acceleration.get_or_init(|| {
             BoundingVolumeHierarchy::build(
                 self.segments.iter().enumerate().map(|(index, segment)| {
@@ -340,6 +375,33 @@ mod tests {
         AcousticScene2d, PARAMETER_EPSILON, Vector2, first_reflection, path_intersects_segment,
     };
     use crate::{AcousticMaterial, Emitter2d, Listener2d, Point2, Segment2d};
+
+    /// Splitting a straight wall into adjoining segments cannot double attenuation at the join.
+    #[test]
+    fn transmission_is_continuous_at_segment_seams() {
+        use crate::{AcousticMaterial, BandGain, Point2, Segment2d};
+        let gain = BandGain::try_new(0.5, 0.3, 0.1).unwrap();
+        let material = AcousticMaterial::default()
+            .try_with_transmission(gain)
+            .unwrap();
+        let mut scene = AcousticScene2d::default();
+        for x in [0.0, 0.2] {
+            for (a, b) in [(-1.0, 0.0), (0.0, 1.0)] {
+                scene.add_segment(
+                    Segment2d::try_new(
+                        Point2::try_new(x, a).unwrap(),
+                        Point2::try_new(x, b).unwrap(),
+                        material,
+                    )
+                    .unwrap(),
+                );
+            }
+        }
+        for y in [-0.01, 0.0, 0.01] {
+            let (actual, _) = scene.direct_transmission(point(-1.0, y), point(1.0, y));
+            assert_eq!(actual, gain.multiply(gain));
+        }
+    }
 
     /// Makes a double-precision test point.
     fn point(x: f64, y: f64) -> Vector2 {

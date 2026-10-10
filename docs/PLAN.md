@@ -2,7 +2,33 @@
 
 ## Local implementation
 
-The workspace contains a CPU acoustic propagation core, separate Bevy 2D and 3D adapters, four compatibility crates, native and browser examples, a Markdown book, and Nix workflows. The adapters preserve Bevy's audio plugin and player model. They use explicit acoustic surfaces, multiply per-band direct amplitude transmission, and apply the arithmetic mean to existing sink volume. Callers can attach an optional per-emitter component to read first-order reflection paths. The minimal examples draw those paths; the adapter does not apply them to audio samples.
+The 2026-10-10 goal replaces the flat sandbox with the [acoustic village](SANDBOX-AUDIT.md):
+CC0 modular houses, working openings, full XYZ floors and stairs, speech, NPC
+footsteps, stream/bridge comparisons, and quieter independent sound controls.
+The older verification counts below describe earlier checkpoints.
+
+The workspace now includes listener ray tracing, a Bevy processed-audio source,
+animated 2D/3D debug rays, an editable sandbox, and focused door, reverb,
+ambience, and permeation demos. Nine browser routes are generated with
+highlighted source from a single catalogue. CC0 recordings replace the demo
+chime. Direct transmission and optional image-source paths remain available.
+
+The 2026-10-09 local run passed 214 Nextest entries (180 tests and 34 benchmark
+cases), eight doctests, strict Clippy and private rustdoc, and 52 website tests.
+Regression checks cover processed-audio resets, delayed reverb tails, absorbing
+rooms, all 18 recordings, and sandbox movement after browser inactivity. These
+checks do not replace new coverage or physical audio/performance measurements.
+The complete nine-example browser build and all nine route startup/audio-graph
+checks also passed, including the embedded sandbox and its compact mobile HUD.
+
+The sandbox now has an F-key first-person view, a directional humanoid,
+camera-relative controls, and an explicit speaker-bearing readout. A pinned
+rodio 0.22.2 backport fixes inverted panning. Follow-up tests and browser PCM
+checks confirm that source screen-side and channel dominance agree; see
+[the verification details](TESTING-AND-BENCHMARKS.md).
+
+The following measurements predate that update and describe the earlier
+volume-only implementation:
 
 The 2026-10-06 `nix run .#check` passes 108 workspace tests. Coverage reports 99.07% line coverage (2,445 of 2,468), 98.43% region coverage (3,447 of 3,502), and 99.57% function coverage (233 of 234). The quick Criterion run completed all 34 named workloads. At the stress workload of 16 emitters and 32 surfaces, task-pool updates measured 73.98 microseconds in 2D and 78.62 microseconds in 3D; serial updates measured 77.20 microseconds and 81.42 microseconds. At 128/256, the schedule measured 0.445 ms in 2D and 0.621 ms in 3D.
 
@@ -18,7 +44,8 @@ On Intel UHD Graphics 620 through ANGLE Vulkan, uncapped headless browser animat
 
 ## Audio and performance gates
 
-- Add a processed-audio path that can apply material filtering, early reflections, and late reverb without blocking or allocating in the real-time audio callback.
+- Validate the new processed path under real audio-device load. The DSP sample processor is allocation-free; encoded loop restarts are not. Individual delayed reflection taps remain future work.
+- Repeat frame-time and coverage measurements for the nine updated examples; do not reuse the older five-scene results as current evidence. Browser startup and audio-graph checks passed on 2026-10-09.
 - Prototype optional GPU compute against the CPU reference. Add adapter absence, device failure, device loss, CPU fallback, and parity tests.
 - Add incremental scene updates and a measured acceleration structure for large dynamic scenes.
 - Measure rendered frames on a physical display and confirm that both stress scenes sustain 90 FPS at its refresh rate.
