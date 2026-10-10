@@ -109,6 +109,8 @@ class FrameComparisonTests(unittest.TestCase):
                     '--cache', 'off', '--repetitions', '2']
             with mock.patch('sys.argv', argv), mock.patch.object(DRIVER.subprocess, 'run', run), \
                     mock.patch.object(DRIVER.subprocess, 'check_output', metadata), \
+                    mock.patch.object(DRIVER.platform, 'platform', return_value='test platform'), \
+                    mock.patch.object(DRIVER, 'cpu_identity', return_value='test CPU'), \
                     contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
                 DRIVER.main()
                 with self.assertRaises(SystemExit):

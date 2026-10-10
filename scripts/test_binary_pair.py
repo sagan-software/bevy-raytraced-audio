@@ -36,6 +36,7 @@ class BinaryPairTests(unittest.TestCase):
 
             with mock.patch('sys.argv', argv), mock.patch.object(MODULE, 'measure', measure), \
                     mock.patch.object(MODULE.subprocess, 'check_output', return_value='metadata'), \
+                    mock.patch.object(MODULE.platform, 'platform', return_value='test platform'), \
                     contextlib.redirect_stdout(io.StringIO()):
                 MODULE.main()
             report = json.loads(output.read_text())
@@ -60,7 +61,8 @@ class BinaryPairTests(unittest.TestCase):
                 return 100., float(binary.name == 'after')
 
             with mock.patch('sys.argv', argv), mock.patch.object(MODULE, 'measure', measure), \
-                    mock.patch.object(MODULE.subprocess, 'check_output', return_value='metadata'):
+                    mock.patch.object(MODULE.subprocess, 'check_output', return_value='metadata'), \
+                    mock.patch.object(MODULE.platform, 'platform', return_value='test platform'):
                 with self.assertRaisesRegex(ValueError, 'Acoustic output changed'):
                     MODULE.main()
             self.assertFalse(output.exists())
