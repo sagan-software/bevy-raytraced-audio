@@ -1,0 +1,152 @@
+{
+  "listener3d-stacks": {
+    "samples": 15289,
+    "leaf_samples": [
+      {
+        "symbol": "<bevy_raytraced_audio::bvh::Bounds>::ray_entry",
+        "samples": 7558,
+        "percent": 49.43423376283602
+      },
+      {
+        "symbol": "bevy_raytraced_audio::ray_tracer3d::unfused_cross",
+        "samples": 1861,
+        "percent": 12.172149911701224
+      },
+      {
+        "symbol": "<bevy_raytraced_audio::scene3d::AcousticScene3d>::segment_is_blocked::{closure#0}",
+        "samples": 1797,
+        "percent": 11.753548302701288
+      },
+      {
+        "symbol": "bevy_raytraced_audio::ray_tracer3d::ray_triangle_distance",
+        "samples": 1671,
+        "percent": 10.929426384982667
+      },
+      {
+        "symbol": "<f64>::recip",
+        "samples": 598,
+        "percent": 3.911308784093139
+      },
+      {
+        "symbol": "<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get",
+        "samples": 577,
+        "percent": 3.7739551311400352
+      },
+      {
+        "symbol": "<alloc::raw_vec::RawVecInner>::non_null::<bevy_raytraced_audio::ray_trace::SourceAccumulator>",
+        "samples": 483,
+        "percent": 3.1591340179213816
+      },
+      {
+        "symbol": "<bevy_raytraced_audio::math3d::Vector3>::subtract",
+        "samples": 142,
+        "percent": 0.9287723199686049
+      },
+      {
+        "symbol": "fma",
+        "samples": 88,
+        "percent": 0.5755772123749101
+      },
+      {
+        "symbol": "<bevy_raytraced_audio::scene3d::AcousticScene3d>::direct_transmission::{closure#0}",
+        "samples": 85,
+        "percent": 0.5559552619530381
+      },
+      {
+        "symbol": "compiler_builtins::math::libm_math::arch::x86::fma::fma::{closure#0}",
+        "samples": 67,
+        "percent": 0.4382235594218065
+      },
+      {
+        "symbol": "core::f64::math::mul_add",
+        "samples": 61,
+        "percent": 0.39897965857806267
+      },
+      {
+        "symbol": "<usize as core::slice::index::SliceIndex<[bevy_raytraced_audio::scene3d::TriangleGeometry]>>::get",
+        "samples": 60,
+        "percent": 0.3924390084374387
+      },
+      {
+        "symbol": "<bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::visit_candidate_node::<<bevy_raytraced_audio::scene3d::AcousticScene3d>::direct_transmission::{closure#0}>",
+        "samples": 54,
+        "percent": 0.3531951075936948
+      },
+      {
+        "symbol": "bevy_raytraced_audio::scene3d::path_triangle_parameter",
+        "samples": 51,
+        "percent": 0.3335731571718229
+      }
+    ]
+  },
+  "dsp-stacks": {
+    "samples": 2006,
+    "leaf_samples": [
+      {
+        "symbol": "<bevy_raytraced_audio::dsp::AcousticDspProcessor>::process_sample_split",
+        "samples": 1355,
+        "percent": 67.54735792622134
+      },
+      {
+        "symbol": "compiler_builtins::math::libm_math::arch::x86::fma::fmaf::{closure#0}",
+        "samples": 379,
+        "percent": 18.893320039880358
+      },
+      {
+        "symbol": "compiler_builtins::math::libm_math::arch::x86::fma::fmaf_with_fma",
+        "samples": 116,
+        "percent": 5.782652043868395
+      },
+      {
+        "symbol": "<bevy_raytraced_audio::dsp::AcousticDspProcessor>::process_sample",
+        "samples": 82,
+        "percent": 4.087736789631107
+      },
+      {
+        "symbol": "core::f32::math::mul_add",
+        "samples": 74,
+        "percent": 3.688933200398804
+      }
+    ]
+  },
+  "hrtf-stacks": {
+    "samples": 1794,
+    "leaf_samples": [
+      {
+        "symbol": "<bevy_raytraced_audio::binaural::BinauralProcessor>::process_frame",
+        "samples": 1312,
+        "percent": 73.13266443701227
+      },
+      {
+        "symbol": "<f32 as core::convert::From<i16>>::from",
+        "samples": 296,
+        "percent": 16.49944258639911
+      },
+      {
+        "symbol": "core::sync::atomic::atomic_load::<*mut ()>",
+        "samples": 56,
+        "percent": 3.121516164994426
+      },
+      {
+        "symbol": "compiler_builtins::math::libm_math::arch::x86::fma::fmaf_with_fma",
+        "samples": 44,
+        "percent": 2.4526198439241917
+      },
+      {
+        "symbol": "<acoustic_performance::Workload>::new::{closure#7}",
+        "samples": 40,
+        "percent": 2.229654403567447
+      },
+      {
+        "symbol": "compiler_builtins::math::libm_math::arch::x86::fma::fmaf::{closure#0}",
+        "samples": 40,
+        "percent": 2.229654403567447
+      },
+      {
+        "symbol": "core::f32::math::mul_add",
+        "samples": 6,
+        "percent": 0.33444816053511706
+      }
+    ]
+  }
+}

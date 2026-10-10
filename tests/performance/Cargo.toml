@@ -2,9 +2,9 @@
 name = "acoustic-performance"
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 publish = false
+rust-version.workspace = true
 
 [features]
 sampling = ["dep:pprof"]

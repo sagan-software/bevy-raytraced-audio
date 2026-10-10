@@ -101,6 +101,8 @@ pub struct ListenerTrace2d {
     accumulators: Vec<SourceAccumulator>,
     /// Scratch per-source index of the last primary ray that discovered the source.
     discovered_by_ray: Vec<u32>,
+    /// Reused solver-space source positions; retained across changing emitter counts.
+    source_points: Vec<Vector2>,
 }
 
 impl ListenerTrace2d {
@@ -208,10 +210,13 @@ impl AcousticScene2d {
         output.reset(sources.len());
         let record = settings.records_rays();
         let origin = Vector2::from_point(listener.position());
-        let source_points: Vec<Vector2> = sources
-            .iter()
-            .map(|source| Vector2::from_point(source.position()))
-            .collect();
+        let mut source_points = core::mem::take(&mut output.source_points);
+        source_points.clear();
+        source_points.extend(
+            sources
+                .iter()
+                .map(|source| Vector2::from_point(source.position())),
+        );
 
         // Straight lines from the listener decide direct visibility and seed permeation.
         for (index, source) in source_points.iter().copied().enumerate() {
@@ -283,6 +288,7 @@ impl AcousticScene2d {
                 .map(|accumulator| accumulator.finish(ray_count)),
         );
         output.accumulators = accumulators;
+        output.source_points = source_points;
     }
 
     /// Follows one primary ray and returns its ambience direction if it escaped.

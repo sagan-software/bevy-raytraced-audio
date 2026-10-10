@@ -882,3 +882,131 @@ fn gpu_direct_gain_preserves_cpu_distance_and_reflections() -> Result<(), Geomet
     assert!(!unobstructed.direct.is_occluded());
     Ok(())
 }
+
+/// Settings preserve legal boundaries and reject nonfinite scattering independently of geometry.
+#[test]
+fn listener_settings_and_material_scattering_contracts() -> Result<(), GeometryError> {
+    use bevy_raytraced_audio::RayTraceSettings;
+    let settings = RayTraceSettings::default()
+        .try_with_ray_count(1)?
+        .with_max_bounces(0)
+        .try_with_escape_distance(0.001)?
+        .try_with_scattering(1.)?
+        .with_permeation_ray_count(0)
+        .with_seed(7);
+    assert_eq!(settings.ray_count(), 1);
+    assert_eq!(settings.max_bounces(), 0);
+    assert_eq!(settings.permeation_ray_count(), 0);
+    assert_eq!(settings.seed(), 7);
+    assert_eq!(settings.escape_distance_m(), 0.001);
+    assert_eq!(settings.scattering(), 1.);
+    assert!(settings.try_with_scattering(f32::NAN).is_err());
+    assert!(settings.try_with_scattering(-0.1).is_err());
+    for scattering in [0., 0.5, 1.] {
+        assert_eq!(
+            AcousticMaterial::default()
+                .try_with_scattering(scattering)?
+                .scattering(),
+            Some(scattering)
+        );
+    }
+    assert!(
+        AcousticMaterial::default()
+            .try_with_scattering(f32::INFINITY)
+            .is_err()
+    );
+    assert!(
+        AcousticMaterial::default()
+            .try_with_scattering(-0.1)
+            .is_err()
+    );
+    Ok(())
+}
+
+/// Reused trace storage remains correct when voices and geometry disappear together.
+#[test]
+fn recorded_listener_traces_survive_bulk_removal() -> Result<(), GeometryError> {
+    use bevy_raytraced_audio::{ListenerTrace2d, ListenerTrace3d, RayTraceSettings};
+    let settings = RayTraceSettings::default()
+        .with_recorded_rays(true)
+        .try_with_ray_count(8)?;
+    let mut scene2 = AcousticScene2d::default();
+    let mut scene3 = AcousticScene3d::default();
+    scene2.add_segment(Segment2d::try_new(
+        Point2::try_new(1., -2.)?,
+        Point2::try_new(1., 2.)?,
+        AcousticMaterial::default(),
+    )?);
+    scene3.add_triangle(Triangle3d::try_new(
+        [
+            Point3::try_new(1., -2., -2.)?,
+            Point3::try_new(1., 2., -2.)?,
+            Point3::try_new(1., 0., 2.)?,
+        ],
+        AcousticMaterial::default(),
+    )?);
+    let l2 = Listener2d::new(Point2::try_new(0., 0.)?);
+    let l3 = Listener3d::new(Point3::try_new(0., 0., 0.)?);
+    let sources2 = vec![Emitter2d::new(Point2::try_new(2., 0.)?); 1024];
+    let sources3 = vec![Emitter3d::new(Point3::try_new(2., 0., 0.)?); 1024];
+    let mut out2 = ListenerTrace2d::default();
+    let mut out3 = ListenerTrace3d::default();
+    scene2.trace_listener(l2, &sources2, settings, &mut out2);
+    scene3.trace_listener(l3, &sources3, settings, &mut out3);
+    for segment in out2.segments() {
+        assert!(segment.start().x_m().is_finite() && segment.end().y_m().is_finite());
+        assert!(segment.start_distance_m() >= 0. && segment.length_m().is_finite());
+        assert!((0. ..=1.).contains(&segment.energy()));
+        assert!(
+            segment
+                .source_index()
+                .is_none_or(|index| index < sources2.len())
+        );
+    }
+    for segment in out3.segments() {
+        assert!(segment.start().x_m().is_finite() && segment.end().z_m().is_finite());
+        assert!(segment.start_distance_m() >= 0. && segment.length_m().is_finite());
+        assert!((0. ..=1.).contains(&segment.energy()));
+        assert!(
+            segment
+                .source_index()
+                .is_none_or(|index| index < sources3.len())
+        );
+    }
+    for response in out2.sources().iter().chain(out3.sources()) {
+        assert!((0. ..=1.).contains(&response.muffle_strength()));
+    }
+    for reverb in [out2.reverb(), out3.reverb()] {
+        assert!(reverb.mean_return_distance_m().is_finite());
+        assert!(reverb.mean_free_path_m().is_finite());
+    }
+    scene2.clear();
+    scene3.clear();
+    scene2.trace_listener(l2, &[], settings, &mut out2);
+    scene3.trace_listener(l3, &[], settings, &mut out3);
+    assert!(out2.sources().is_empty() && out3.sources().is_empty());
+    assert!(out2.segments().iter().all(|s| s.source_index().is_none()));
+    assert!(out3.segments().iter().all(|s| s.source_index().is_none()));
+    assert_eq!(out2.reverb().outdoor_fraction(), 1.);
+    assert_eq!(out3.reverb().outdoor_fraction(), 1.);
+    Ok(())
+}
+
+/// Shared DSP readback tracks updates and bypass without changing the stored target filter.
+#[test]
+fn dsp_control_readback_and_bounds() -> Result<(), GeometryError> {
+    use bevy_raytraced_audio::{AcousticDspParams, MuffleFilter, ReverbEstimate};
+    let params = AcousticDspParams::default();
+    assert!(params.is_enabled());
+    let filter = MuffleFilter::try_new(0.6, 0.2)?;
+    params.set_filter(filter);
+    assert_eq!(params.filter(), filter);
+    params.set_reverb(ReverbEstimate::from_parameters(0.8, 2., 0.1), 0.5);
+    assert!((params.wet_gain() - 0.4).abs() < 1.0e-6);
+    params.set_enabled(false);
+    assert!(!params.is_enabled());
+    assert_eq!(params.filter(), filter);
+    params.set_reverb(ReverbEstimate::DRY, f32::NAN);
+    assert_eq!(params.wet_gain(), 0.);
+    Ok(())
+}

@@ -1,0 +1,31 @@
+name: Performance harness
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable-kernels:
+    name: Acoustic kernels (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.0
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Correctness and simultaneous-change stress
+        run: cargo test --locked -p bevy-raytraced-audio -p acoustic-performance
+      - name: Compile native benchmarks
+        run: cargo bench --locked -p bevy-raytraced-audio -p acoustic-performance --no-run
+      - name: Check actual browser target
+        run: cargo check --locked -p acoustic-performance --lib --target wasm32-unknown-unknown
+      - name: Smoke every shared workload (no timing claim on hosted CI)
+        run: cargo bench --locked -p acoustic-performance --bench workloads -- --test

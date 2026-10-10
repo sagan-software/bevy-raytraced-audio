@@ -225,3 +225,19 @@ fn invalid_node_index_is_not_an_intersection() {
         ),)
     );
 }
+
+/// A visibility hit stops even when the ray origin lies inside every node bound.
+#[test]
+fn negative_ray_hit_stops_all_remaining_primitives() {
+    use super::Ray;
+    let hierarchy = BoundingVolumeHierarchy::build(
+        (0..64).map(|i| (i, planar_bounds(0.))),
+        SceneDimensions::Two,
+    );
+    let mut calls = 0;
+    hierarchy.visit_ray(Ray::new((0., 0., 0.), (1., 0., 0.)), 100., |_| {
+        calls += 1;
+        Some(-1.)
+    });
+    assert_eq!(calls, 1);
+}

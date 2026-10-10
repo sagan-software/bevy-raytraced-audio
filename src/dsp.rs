@@ -11,6 +11,11 @@
 //! parallel followed by two series all-pass stages, as in Freeverb. Low/high comb feedback
 //! follows material-dependent decay times, and a separate early return survives outdoors.
 
+#![expect(
+    clippy::suboptimal_flops,
+    reason = "audio tolerance permits separate arithmetic; generic native and wasm FMA otherwise dispatch to software per sample"
+)]
+
 use crate::{MuffleFilter, ReverbEstimate};
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 
@@ -257,12 +262,10 @@ impl Comb {
             return 0.0;
         };
         let output = *slot;
-        self.filter_state = crossover.mul_add(output - self.filter_state, self.filter_state);
+        self.filter_state += crossover * (output - self.filter_state);
         let [low_gain, high_gain] = feedback;
         let high = output - self.filter_state;
-        *slot = self
-            .filter_state
-            .mul_add(low_gain, high.mul_add(high_gain, input));
+        *slot = self.filter_state * low_gain + high * high_gain + input;
         self.position += 1;
         if self.position >= self.buffer.len() {
             self.position = 0;
@@ -293,7 +296,7 @@ impl AllPass {
         };
         let delayed = *slot;
         let output = delayed - input;
-        *slot = delayed.mul_add(ALLPASS_FEEDBACK, input);
+        *slot = delayed * ALLPASS_FEEDBACK + input;
         self.position += 1;
         if self.position >= self.buffer.len() {
             self.position = 0;
@@ -420,15 +423,15 @@ impl AcousticDspProcessor {
         let Some(first) = self.low_first.get_mut(channel) else {
             return (input, 0.0);
         };
-        *first = self.crossover.mul_add(input - *first, *first);
+        *first += self.crossover * (input - *first);
         let first_output = *first;
         let Some(second) = self.low_second.get_mut(channel) else {
             return (input, 0.0);
         };
-        *second = self.crossover.mul_add(first_output - *second, *second);
+        *second += self.crossover * (first_output - *second);
         let low = *second;
         let high = input - low;
-        let dry = low.mul_add(self.current.gain_lf, high * self.current.gain_hf);
+        let dry = low * self.current.gain_lf + high * self.current.gain_hf;
 
         self.reverb_input += dry;
         (dry, self.reverb_output)
@@ -447,27 +450,14 @@ impl AcousticDspProcessor {
         let rate = self.smoothing;
         let current = &mut self.current;
         let targets = self.targets;
-        current.gain_lf = rate.mul_add(targets.gain_lf - current.gain_lf, current.gain_lf);
-        current.gain_hf = rate.mul_add(targets.gain_hf - current.gain_hf, current.gain_hf);
-        current.wet_gain = rate.mul_add(targets.wet_gain - current.wet_gain, current.wet_gain);
-        current.decay_time_s = rate.mul_add(
-            targets.decay_time_s - current.decay_time_s,
-            current.decay_time_s,
-        );
-        current.pre_delay_s = rate.mul_add(
-            targets.pre_delay_s - current.pre_delay_s,
-            current.pre_delay_s,
-        );
-        current.decay_low_s = rate.mul_add(
-            targets.decay_low_s - current.decay_low_s,
-            current.decay_low_s,
-        );
-        current.decay_high_s = rate.mul_add(
-            targets.decay_high_s - current.decay_high_s,
-            current.decay_high_s,
-        );
-        current.early_gain =
-            rate.mul_add(targets.early_gain - current.early_gain, current.early_gain);
+        current.gain_lf += rate * (targets.gain_lf - current.gain_lf);
+        current.gain_hf += rate * (targets.gain_hf - current.gain_hf);
+        current.wet_gain += rate * (targets.wet_gain - current.wet_gain);
+        current.decay_time_s += rate * (targets.decay_time_s - current.decay_time_s);
+        current.pre_delay_s += rate * (targets.pre_delay_s - current.pre_delay_s);
+        current.decay_low_s += rate * (targets.decay_low_s - current.decay_low_s);
+        current.decay_high_s += rate * (targets.decay_high_s - current.decay_high_s);
+        current.early_gain += rate * (targets.early_gain - current.early_gain);
         let [low, high] = self.feedback_decay_s;
         if (current.decay_low_s - low).abs() > 0.01 || (current.decay_high_s - high).abs() > 0.01 {
             self.update_feedback();
@@ -502,8 +492,7 @@ impl AcousticDspProcessor {
             output = allpass.process(output);
         }
         // The early return remains audible near outdoor walls even when the diffuse tail is dry.
-        (output * REVERB_OUTPUT_SCALE)
-            .mul_add(self.current.wet_gain, delayed * self.current.early_gain)
+        output * REVERB_OUTPUT_SCALE * self.current.wet_gain + delayed * self.current.early_gain
     }
 
     /// Recomputes comb feedback so each comb decays by 60 dB over the smoothed decay time.
@@ -528,6 +517,7 @@ mod tests {
     //! Signal checks for the muffle filter and reverb tail.
 
     use super::{AcousticDspParams, AcousticDspProcessor};
+
     use crate::{MuffleFilter, ReverbEstimate};
     use std::sync::Arc;
 

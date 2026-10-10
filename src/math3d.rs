@@ -51,22 +51,56 @@ impl Vector3 {
     }
 
     /// Returns the dot product with another vector.
+    #[expect(
+        clippy::suboptimal_flops,
+        reason = "avoids software FMA dispatch on generic native and WebAssembly targets"
+    )]
     pub(crate) fn dot(self, other: Self) -> f64 {
-        self.z
-            .mul_add(other.z, self.y.mul_add(other.y, self.x * other.x))
+        self.x * other.x + self.y * other.y + self.z * other.z
     }
 
     /// Returns the vector cross product with another vector.
+    #[expect(
+        clippy::suboptimal_flops,
+        reason = "intersection tolerances exceed rounding error; avoid software FMA dispatch"
+    )]
     pub(crate) fn cross(self, other: Self) -> Self {
         Self {
-            x: self.z.mul_add(-other.y, self.y * other.z),
-            y: self.x.mul_add(-other.z, self.z * other.x),
-            z: self.y.mul_add(-other.x, self.x * other.y),
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x,
         }
     }
 
     /// Returns Euclidean vector length in meters.
     pub(crate) fn length(self) -> f64 {
-        self.x.hypot(self.y).hypot(self.z)
+        let squared = self.dot(self);
+        if squared.is_normal() {
+            squared.sqrt()
+        } else {
+            self.x.hypot(self.y).hypot(self.z)
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! Reference-norm regressions for extreme finite vectors.
+
+    use super::Vector3;
+    /// Finite large and tiny vectors retain the range guarantees of the reference norm.
+    #[test]
+    fn norm_preserves_extreme_ranges() {
+        for scale in [
+            0., 1.0e-300, 1.0e-160, 1.0e-30, 1., 1.0e30, 1.0e160, 1.0e300,
+        ] {
+            let v = Vector3 {
+                x: 2. * scale,
+                y: -3. * scale,
+                z: 6. * scale,
+            };
+            let reference = v.x.hypot(v.y).hypot(v.z);
+            assert!((v.length() - reference).abs() <= reference * 4. * f64::EPSILON);
+        }
     }
 }

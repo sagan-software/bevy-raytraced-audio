@@ -18,10 +18,11 @@ mkdir -p "$result_dir"
   printenv RUSTFLAGS CARGO_ENCODED_RUSTFLAGS BEVY_TASK_THREADS || true
   if command -v lscpu >/dev/null; then lscpu; fi
 } > "$result_dir/environment.txt"
+git diff HEAD -- src crates benches tests Cargo.toml Cargo.lock > "$result_dir/source.patch"
 # Compile every executable before measuring the first one.
 cargo bench --locked -p bevy-raytraced-audio -p acoustic-performance -p bevy-raytraced-audio-public-tests --no-run --message-format=json > "$result_dir/build.jsonl"
 python3 - "$result_dir" <<'PY'
-import json, pathlib, shutil, sys
+import hashlib, json, pathlib, shutil, sys
 root = pathlib.Path(sys.argv[1])
 (root / 'bin').mkdir(exist_ok=True)
 names = {'propagation', 'workloads', 'adapter_schedule'}
@@ -33,6 +34,7 @@ for line in (root / 'build.jsonl').read_text().splitlines():
         name = target['name']
         shutil.copy2(row['executable'], root / 'bin' / name)
         found.add(name)
+        (root / 'bin' / f'{name}.sha256').write_text(hashlib.sha256((root / 'bin' / name).read_bytes()).hexdigest() + '\n')
 if found != names:
     raise SystemExit(f'Missing executables: {names - found}')
 PY

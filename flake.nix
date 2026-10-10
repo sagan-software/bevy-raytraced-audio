@@ -772,7 +772,12 @@
 
         # Avoid rebuilding the editor/Bevy CLI to run standalone profiling tools.
         devShells.performance = pkgs.mkShell {
-          packages = [ rustToolchain pkgs.python3 pkgs.pkg-config ] ++ performanceTools;
+          packages = [
+            rustToolchain
+            pkgs.python3
+            pkgs.pkg-config
+          ]
+          ++ performanceTools;
           buildInputs = bevyBuildInputs;
           shellHook = ''
             export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"

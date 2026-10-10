@@ -110,6 +110,8 @@ pub struct ListenerTrace3d {
     accumulators: Vec<SourceAccumulator>,
     /// Scratch per-source index of the last primary ray that discovered the source.
     discovered_by_ray: Vec<u32>,
+    /// Reused solver-space source positions; retained across changing emitter counts.
+    source_points: Vec<Vector3>,
 }
 
 impl ListenerTrace3d {
@@ -217,10 +219,13 @@ impl AcousticScene3d {
         output.reset(sources.len());
         let record = settings.records_rays();
         let origin = Vector3::from_point(listener.position());
-        let source_points: Vec<Vector3> = sources
-            .iter()
-            .map(|source| Vector3::from_point(source.position()))
-            .collect();
+        let mut source_points = core::mem::take(&mut output.source_points);
+        source_points.clear();
+        source_points.extend(
+            sources
+                .iter()
+                .map(|source| Vector3::from_point(source.position())),
+        );
 
         // Straight lines from the listener decide direct visibility and seed permeation.
         for (index, source) in source_points.iter().copied().enumerate() {
@@ -287,6 +292,7 @@ impl AcousticScene3d {
                 .map(|accumulator| accumulator.finish(ray_count)),
         );
         output.accumulators = accumulators;
+        output.source_points = source_points;
     }
 
     /// Follows one primary ray and returns its ambience direction if it escaped.
@@ -588,9 +594,9 @@ impl AcousticScene3d {
                 }
                 let triangle = acceleration.triangles.get(index)?;
                 let distance = ray_triangle_distance(start, direction, triangle)?;
-                // Reporting a zero hit parameter prunes every node ahead of the segment start.
+                // A negative parameter also prunes nodes containing the segment start.
                 blocked = distance < limit;
-                blocked.then_some(0.0)
+                blocked.then_some(-1.0)
             },
         );
         blocked

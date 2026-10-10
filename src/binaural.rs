@@ -255,6 +255,8 @@ pub struct BinauralProcessor {
     frames: u32,
     /// Per-frame smoothing coefficient.
     smoothing: f32,
+    /// Whether a changed direction requires per-sample coefficient interpolation.
+    smoothing_active: bool,
     /// Smoothed common gain, also applied to the diffuse reverb.
     gain: f32,
 }
@@ -310,6 +312,7 @@ impl BinauralProcessor {
             frames: 0,
             smoothing: 1.0 - (-1.0 / (0.015 * rate)).exp(),
             gain: position.gain,
+            smoothing_active: false,
         };
         result.update_response();
         result.current.clone_from(&result.target);
@@ -317,6 +320,9 @@ impl BinauralProcessor {
     }
 
     /// Renders one filtered mono sample and an unlocalized diffuse reverb sample to stereo.
+    ///
+    /// # Panics
+    /// The internal history window must match the constructor-allocated filter length.
     #[expect(
         clippy::suboptimal_flops,
         reason = "explicit multiply/add avoids software fmaf calls in the per-tap WebAssembly loop"
@@ -331,6 +337,7 @@ impl BinauralProcessor {
                     || position.enabled != self.position.enabled;
                 self.position = position;
                 if changed {
+                    self.smoothing_active = true;
                     self.update_response();
                 }
             }
@@ -349,18 +356,16 @@ impl BinauralProcessor {
         if let Some(slot) = self.history.get_mut(self.cursor + length) {
             *slot = direct;
         }
-        let mut stereo = [diffuse * core::f32::consts::FRAC_1_SQRT_2; 2];
-        for ((current, target), input) in self
-            .current
-            .iter_mut()
-            .zip(&self.target)
-            .zip(self.history.iter().skip(self.cursor).take(length))
-        {
-            for ((coefficient, goal), output) in current.iter_mut().zip(target).zip(&mut stereo) {
-                *coefficient += self.smoothing * (*goal - *coefficient);
-                *output += *coefficient * *input;
-            }
-        }
+        let history = self
+            .history
+            .get(self.cursor..self.cursor + length)
+            .expect("doubled history window");
+        let filtered = if self.smoothing_active {
+            convolve::<true>(&mut self.current, &self.target, history, self.smoothing)
+        } else {
+            convolve::<false>(&mut self.current, &self.target, history, self.smoothing)
+        };
+        let stereo = filtered.map(|sample| sample + diffuse * core::f32::consts::FRAC_1_SQRT_2);
         stereo.map(|sample| sample * self.gain)
     }
 
@@ -389,6 +394,55 @@ impl BinauralProcessor {
             }
         }
     }
+}
+
+/// Four independent accumulation lanes expose SIMD without changing FIR length or smoothing.
+///
+/// Only the summation order changes. A scalar reference test bounds the rounding difference.
+#[expect(
+    clippy::suboptimal_flops,
+    reason = "portable multiply/add avoids software FMA in the audio callback"
+)]
+fn convolve<const SMOOTH: bool>(
+    current: &mut [[f32; 2]],
+    target: &[[f32; 2]],
+    input: &[f32],
+    smoothing: f32,
+) -> [f32; 2] {
+    let (current, tail) = current.as_chunks_mut::<4>();
+    let (target, target_tail) = target.as_chunks::<4>();
+    let (input, input_tail) = input.as_chunks::<4>();
+    let mut sums = [[0.0; 2]; 4];
+    for ((coefficients, goals), samples) in current.iter_mut().zip(target).zip(input) {
+        for (((coefficient, goal), sample), sum) in coefficients
+            .iter_mut()
+            .zip(goals)
+            .zip(samples)
+            .zip(&mut sums)
+        {
+            for ((value, desired), output) in coefficient.iter_mut().zip(goal).zip(sum) {
+                if SMOOTH {
+                    *value += smoothing * (*desired - *value);
+                }
+                *output += *value * *sample;
+            }
+        }
+    }
+    let mut output = [0.0; 2];
+    for sum in sums {
+        for (output, value) in output.iter_mut().zip(sum) {
+            *output += value;
+        }
+    }
+    for ((coefficient, goal), sample) in tail.iter_mut().zip(target_tail).zip(input_tail) {
+        for ((value, desired), output) in coefficient.iter_mut().zip(goal).zip(&mut output) {
+            if SMOOTH {
+                *value += smoothing * (*desired - *value);
+            }
+            *output += *value * *sample;
+        }
+    }
+    output
 }
 
 #[cfg(test)]
@@ -525,6 +579,50 @@ mod tests {
                     .iter()
                     .all(|s| s.abs() < 1.0e-5)
             );
+        }
+    }
+
+    /// Chunked accumulation matches the scalar FIR for tails and changing coefficients.
+    #[test]
+    #[expect(
+        clippy::suboptimal_flops,
+        reason = "reference intentionally matches the original separate arithmetic"
+    )]
+    fn convolution_matches_scalar_reference() {
+        for length in [1_usize, 3, 4, 5, 127, 128, 140, 279, 558] {
+            let number = |i: usize| f32::from(u16::try_from(i).expect("bounded fixture"));
+            let initial: Vec<_> = (0..length)
+                .map(|i| [number(i % 13) * 0.001, -number(i % 19) * 0.002])
+                .collect();
+            let goals: Vec<_> = initial.iter().map(|&[l, r]| [r, l]).collect();
+            let input: Vec<_> = (0..length).map(|i| (number(i % 31) - 15.) * 0.02).collect();
+            for smooth in [false, true] {
+                let mut actual = initial.clone();
+                let mut expected = initial.clone();
+                for _ in 0..32 {
+                    let result = if smooth {
+                        super::convolve::<true>(&mut actual, &goals, &input, 0.03)
+                    } else {
+                        super::convolve::<false>(&mut actual, &goals, &input, 0.03)
+                    };
+                    let mut reference = [0.; 2];
+                    for ((coefficient, goal), sample) in expected.iter_mut().zip(&goals).zip(&input)
+                    {
+                        for ((value, target), output) in
+                            coefficient.iter_mut().zip(goal).zip(&mut reference)
+                        {
+                            if smooth {
+                                *value += 0.03 * (*target - *value);
+                            }
+                            *output += *value * *sample;
+                        }
+                    }
+                    assert_eq!(actual, expected);
+                    for (a, b) in result.into_iter().zip(reference) {
+                        assert!((a - b).abs() < 1.0e-6, "length={length}: {a} vs {b}");
+                    }
+                }
+            }
         }
     }
 }

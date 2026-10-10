@@ -329,6 +329,11 @@ impl BoundingVolumeHierarchy {
         maximum_parameter: &mut f64,
         hit_parameter: &mut impl FnMut(usize) -> Option<f64>,
     ) {
+        // A negative callback distance is the visibility-query termination sentinel.
+        // No forward ray can reach another node, including one containing its origin.
+        if *maximum_parameter < 0.0 {
+            return;
+        }
         let Some(node) = self.nodes.get(node_index) else {
             return;
         };
@@ -345,6 +350,9 @@ impl BoundingVolumeHierarchy {
                 if let Some(surface_indices) = self.surface_indices.get(indices.clone()) {
                     for surface_index in surface_indices {
                         record(*surface_index, maximum_parameter);
+                        if *maximum_parameter < 0.0 {
+                            return;
+                        }
                     }
                 }
             }
@@ -354,6 +362,9 @@ impl BoundingVolumeHierarchy {
                 right,
             } => {
                 record(*surface_index, maximum_parameter);
+                if *maximum_parameter < 0.0 {
+                    return;
+                }
                 let left_entry = self
                     .nodes
                     .get(*left)

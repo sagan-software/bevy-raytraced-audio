@@ -93,6 +93,16 @@ inherits = "release"
 debug = 2
 strip = "none"
 
+# Instrument the full Bevy matrix without duplicating large optimized debug artifacts.
+[profile.coverage]
+inherits = "dev"
+opt-level = 0
+debug = 0
+incremental = false
+
+[profile.coverage.package."*"]
+opt-level = 0
+
 # https://doc.rust-lang.org/rustc/lints/listing/index.html
 [workspace.lints.rust]
 absolute_paths_not_starting_with_crate = "warn"
