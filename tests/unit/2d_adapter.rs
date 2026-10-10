@@ -555,6 +555,7 @@ fn simultaneous_sink_recovery_and_invalid_transform_invalidation() {
         .x = f32::NAN;
     app.update();
     assert!(app.world().get::<RaytracedAudioResponse2d>(first).is_none());
+    app.update(); // An already-invalid source is absent from the previous trace.
     app.world_mut()
         .get_mut::<Transform>(first)
         .unwrap()
@@ -598,4 +599,55 @@ fn simultaneous_sink_recovery_and_invalid_transform_invalidation() {
                 < f32::EPSILON
         );
     }
+}
+
+/// Spatial sink volume follows occlusion and restores the user's base volume.
+#[test]
+fn spatial_sink_volume_tracks_occlusion() {
+    crate::test_support::with_spatial_audio_sink(|mut sink| {
+        let mut app = App::new();
+        app.add_plugins((TransformPlugin, RaytracedAudio2dPlugin::default()));
+        app.world_mut()
+            .spawn((RaytracedAudioListener2d, Transform::from_xyz(1.0, 0.0, 0.0)));
+        sink.set_volume(Volume::Linear(0.4));
+        let emitter = app
+            .world_mut()
+            .spawn((
+                RaytracedAudioEmitter2d,
+                Transform::from_xyz(-1.0, 0.0, 0.0),
+                sink,
+            ))
+            .id();
+        let wall = app
+            .world_mut()
+            .spawn((
+                RaytracedAudioSurface2d::new(
+                    Vec2::new(0.0, -1.0),
+                    Vec2::new(0.0, 1.0),
+                    AcousticMaterial::default(),
+                )
+                .unwrap(),
+                Transform::default(),
+            ))
+            .id();
+        app.update();
+        assert_eq!(
+            app.world()
+                .get::<bevy::audio::SpatialAudioSink>(emitter)
+                .unwrap()
+                .volume()
+                .to_linear(),
+            0.0
+        );
+        assert!(app.world_mut().despawn(wall));
+        app.update();
+        assert_eq!(
+            app.world()
+                .get::<bevy::audio::SpatialAudioSink>(emitter)
+                .unwrap()
+                .volume()
+                .to_linear(),
+            0.4
+        );
+    });
 }

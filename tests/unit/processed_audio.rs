@@ -252,3 +252,15 @@ fn binaural_stream_downmixes_and_preserves_stereo_tail() {
         assert!(samples.next_sample().is_none());
     }
 }
+
+/// A standalone 3D plugin must install processing without a preceding 2D plugin.
+#[test]
+fn three_dimensional_plugin_registers_processing_independently() {
+    use bevy::app::TaskPoolPlugin;
+    use bevy::asset::{AssetApp, AssetPlugin};
+    let mut app = bevy::prelude::App::new();
+    app.add_plugins((TaskPoolPlugin::default(), AssetPlugin::default()));
+    app.init_asset::<AudioSource>();
+    app.add_plugins(crate::audio_3d::RaytracedAudio3dPlugin::default());
+    assert!(app.is_plugin_added::<super::RaytracedAudioProcessingPlugin>());
+}

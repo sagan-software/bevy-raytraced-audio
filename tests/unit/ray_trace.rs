@@ -46,6 +46,13 @@ fn settings_validate_inputs() {
             .is_err()
     );
     assert!(MuffleFilter::try_new(0.5, 1.5).is_err());
+    assert_eq!(
+        RayTraceSettings::default()
+            .try_with_escape_distance(42.0)
+            .unwrap()
+            .escape_distance_m,
+        42.0
+    );
 }
 
 /// The generator stays in the unit interval and is deterministic.
@@ -59,4 +66,28 @@ fn rng_is_deterministic_and_bounded() {
         assert_eq!(value.to_bits(), second.next_unit().to_bits());
     }
     assert!(TraceRng::new(0).next_unit() > 0.0);
+}
+
+/// Manual decay sanitization and an accumulator with no observations remain finite and silent.
+#[test]
+fn missing_observations_and_nonfinite_decay_have_defined_defaults() {
+    let reverb = super::ReverbEstimate::from_parameters(0.5, 2., 0.)
+        .with_band_decay(f32::NAN, f32::INFINITY);
+    assert_eq!(reverb.decay_low_s(), 2.);
+    assert_eq!(reverb.decay_high_s(), 2.);
+    let response = super::SourceAccumulator::default().finish(0);
+    assert_eq!(response.filter(), MuffleFilter::SILENT);
+}
+
+/// Manual estimates sanitize each nonfinite input to its documented dry default.
+#[test]
+fn manual_estimate_sanitizes_nonfinite_inputs() {
+    let estimate =
+        super::ReverbEstimate::from_parameters(f32::NAN, f32::INFINITY, f32::NEG_INFINITY);
+    assert_eq!(estimate.wet_gain(), 0.0);
+    assert_eq!(estimate.decay_time_s(), 0.05);
+    assert_eq!(estimate.reflections_delay_s(), 0.0);
+    assert_eq!(estimate.decay_low_s(), 0.05);
+    assert_eq!(estimate.decay_high_s(), 0.05);
+    assert_eq!(estimate.early_gain(), 0.0);
 }

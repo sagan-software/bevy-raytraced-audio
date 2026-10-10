@@ -245,10 +245,16 @@ pub(crate) struct BoundingVolumeHierarchy {
     surface_indices: Vec<usize>,
     /// Root node index, or `None` for an empty scene.
     root: Option<usize>,
+    /// Common plane normal for parallel axis-aligned surfaces, if the scene has one.
+    parallel_axis: Option<Axis>,
 }
 
 impl BoundingVolumeHierarchy {
     /// Builds a balanced tree while preserving original surface indices in every node.
+    #[expect(
+        clippy::float_cmp,
+        reason = "reflection rejection requires exactly planar bounds; a tolerance would admit tilted walls"
+    )]
     pub(crate) fn build(
         surfaces: impl IntoIterator<Item = (usize, Bounds)>,
         dimensions: SceneDimensions,
@@ -260,27 +266,78 @@ impl BoundingVolumeHierarchy {
                 bounds,
             })
             .collect();
-        let mut hierarchy = Self::default();
+        let parallel_axis = primitives.first().and_then(|first| {
+            let bounds = first.bounds;
+            let axis = if bounds.min_x == bounds.max_x {
+                Axis::X
+            } else if bounds.min_y == bounds.max_y {
+                Axis::Y
+            } else if matches!(dimensions, SceneDimensions::Three) && bounds.min_z == bounds.max_z {
+                Axis::Z
+            } else {
+                return None;
+            };
+            primitives
+                .iter()
+                .all(|primitive| primitive.bounds.extent(axis) == 0.0)
+                .then_some(axis)
+        });
+        let mut hierarchy = Self {
+            parallel_axis,
+            ..Self::default()
+        };
+        if primitives.is_empty() {
+            return hierarchy;
+        }
         let root = Self::build_node(
             &mut primitives,
             dimensions,
             &mut hierarchy.nodes,
             &mut hierarchy.surface_indices,
         );
-        hierarchy.root = root;
+        hierarchy.root = Some(root);
         hierarchy
     }
 
-    /// Checks overlapping leaves with the exact geometry predicate and an optional skipped surface.
-    pub(crate) fn any_intersection(
-        &self,
-        path_bounds: Bounds,
-        skipped_surface: Option<usize>,
-        mut intersects_surface: impl FnMut(usize) -> bool,
-    ) -> bool {
-        self.root.is_some_and(|root| {
-            self.intersects_node(root, path_bounds, skipped_surface, &mut intersects_surface)
-        })
+    /// Rejects parallel wall groups whose tangential bounds cannot contain an image reflection.
+    /// A valid image ray is a convex combination of the two tangential endpoint coordinates.
+    /// Other orientations keep the exact per-surface path; padding permits arithmetic rounding.
+    pub(crate) fn may_have_reflections(&self, path: Bounds) -> bool {
+        let Some(root) = self.root.and_then(|index| self.nodes.get(index)) else {
+            return false;
+        };
+        // A few exact candidates cost less than a separate projected-bounds query.
+        if self.surface_indices.len() <= MAX_LEAF_SURFACES {
+            return true;
+        }
+        let Some(axis) = self.parallel_axis else {
+            return true;
+        };
+        let bounds = root.bounds;
+        let overlaps = |minimum: f64, maximum: f64, low: f64, high: f64| {
+            let padding = 64.0
+                * f64::EPSILON
+                * minimum
+                    .abs()
+                    .max(maximum.abs())
+                    .max(low.abs())
+                    .max(high.abs());
+            minimum - padding <= high && low <= maximum + padding
+        };
+        match axis {
+            Axis::X => {
+                overlaps(path.min_y, path.max_y, bounds.min_y, bounds.max_y)
+                    && overlaps(path.min_z, path.max_z, bounds.min_z, bounds.max_z)
+            }
+            Axis::Y => {
+                overlaps(path.min_x, path.max_x, bounds.min_x, bounds.max_x)
+                    && overlaps(path.min_z, path.max_z, bounds.min_z, bounds.max_z)
+            }
+            Axis::Z => {
+                overlaps(path.min_x, path.max_x, bounds.min_x, bounds.max_x)
+                    && overlaps(path.min_y, path.max_y, bounds.min_y, bounds.max_y)
+            }
+        }
     }
 
     /// Visits candidates until the callback returns false and reports whether traversal completed.
@@ -294,6 +351,30 @@ impl BoundingVolumeHierarchy {
             return true;
         };
         self.visit_candidate_node(root, path_bounds, skipped_surface, &mut visit_surface)
+    }
+
+    /// Visits an open path's conservative candidates, pruning by the line rather than its box.
+    /// Small leaves use the cheaper box test; larger trees reject off-line subtrees with slabs.
+    pub(crate) fn visit_segment_candidates(
+        &self,
+        ray: Ray,
+        bounds: Bounds,
+        skipped_surface: Option<usize>,
+        mut visit_surface: impl FnMut(usize) -> bool,
+    ) -> bool {
+        if self.surface_indices.len() <= MAX_LEAF_SURFACES {
+            return self.visit_candidates_until(bounds, skipped_surface, visit_surface);
+        }
+        let mut completed = true;
+        self.visit_ray(ray, 1.0, |index| {
+            if skipped_surface != Some(index) && !visit_surface(index) {
+                completed = false;
+                Some(-1.0)
+            } else {
+                None
+            }
+        });
+        completed
     }
 
     /// Visits surfaces whose node bounds a ray reaches before the callback's current closest hit.
@@ -389,8 +470,11 @@ impl BoundingVolumeHierarchy {
         dimensions: SceneDimensions,
         nodes: &mut Vec<Node>,
         surface_indices: &mut Vec<usize>,
-    ) -> Option<usize> {
-        let first = primitives.first().copied()?;
+    ) -> usize {
+        let first = primitives
+            .first()
+            .copied()
+            .expect("only nonempty BVH partitions are built");
         let bounds = primitives
             .iter()
             .skip(1)
@@ -410,7 +494,7 @@ impl BoundingVolumeHierarchy {
                     indices: start..end,
                 },
             });
-            return Some(node_index);
+            return node_index;
         }
 
         // Split by centroid spread, not surface extent: tall/long walls must not force
@@ -436,8 +520,8 @@ impl BoundingVolumeHierarchy {
                 .then_with(|| left.surface_index.cmp(&right.surface_index))
         });
         let (left_primitives, right_primitives) = primitives.split_at_mut(midpoint);
-        let left_node = Self::build_node(left_primitives, dimensions, nodes, surface_indices)?;
-        let right_node = Self::build_node(right_primitives, dimensions, nodes, surface_indices)?;
+        let left_node = Self::build_node(left_primitives, dimensions, nodes, surface_indices);
+        let right_node = Self::build_node(right_primitives, dimensions, nodes, surface_indices);
         let node_index = nodes.len();
         nodes.push(Node {
             bounds,
@@ -446,48 +530,7 @@ impl BoundingVolumeHierarchy {
                 right: right_node,
             },
         });
-        Some(node_index)
-    }
-
-    /// Tests one node and visits only children whose bounds overlap the path.
-    fn intersects_node(
-        &self,
-        node_index: usize,
-        path_bounds: Bounds,
-        skipped_surface: Option<usize>,
-        intersects_surface: &mut impl FnMut(usize) -> bool,
-    ) -> bool {
-        let Some(node) = self.nodes.get(node_index) else {
-            return false;
-        };
-        if !node.bounds.overlaps(path_bounds) {
-            return false;
-        }
-
-        match &node.kind {
-            NodeKind::Leaf { indices } => {
-                self.surface_indices
-                    .get(indices.clone())
-                    .is_some_and(|surface_indices| {
-                        surface_indices.iter().copied().any(|surface_index| {
-                            Self::surface_intersects(
-                                surface_index,
-                                skipped_surface,
-                                intersects_surface,
-                            )
-                        })
-                    })
-            }
-            NodeKind::Branch { left, right } => {
-                self.intersects_node(*left, path_bounds, skipped_surface, intersects_surface)
-                    || self.intersects_node(
-                        *right,
-                        path_bounds,
-                        skipped_surface,
-                        intersects_surface,
-                    )
-            }
-        }
+        node_index
     }
 
     /// Visits overlapping branch and leaf candidates without allocating traversal storage.
@@ -524,15 +567,6 @@ impl BoundingVolumeHierarchy {
                 self.visit_candidate_node(*right, path_bounds, skipped_surface, visit_surface)
             }
         }
-    }
-
-    /// Excludes the reflector itself before invoking the exact intersection predicate.
-    fn surface_intersects(
-        surface_index: usize,
-        skipped_surface: Option<usize>,
-        intersects_surface: &mut impl FnMut(usize) -> bool,
-    ) -> bool {
-        skipped_surface != Some(surface_index) && intersects_surface(surface_index)
     }
 }
 

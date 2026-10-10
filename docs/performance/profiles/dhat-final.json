@@ -1,0 +1,540 @@
+{"dhatFileVersion":2
+,"mode":"heap","verb":"Allocated"
+,"bklt":true,"bkacc":true
+,"tu":"instrs","Mtu":"Minstr"
+,"tuth":500
+,"cmd":"target/performance/profile-final churn/3d/128 5"
+,"pid":337942
+,"te":359341571
+,"tg":299916743
+,"pps":
+ [{"tb":472,"tbk":1
+  ,"tl":203822
+  ,"mb":472,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":3502,"wb":1595
+  ,"acc":[212,172,-2,156,-4,0,-8,221,-8,107,-8,16,-8,24,-8,17,-8,16,-8,29,-8,10,-8,3,-8,10,-8,1,-8,10,-8,3,-4,18,15,-2,5,2,-8,0,-2,1,-6,0,-8,7,-8,10,-8,0,-16,1,-8,0,-8,2,-4,12,-4,0,-8,1,-8,0,-8,22,-4,4,-4,3,-8,5,-88,1,-136,0,-8,1]
+  ,"fs":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":360,"tbk":2
+  ,"tl":202670
+  ,"mb":240,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":8494,"wb":7108
+  ,"fs":[1,17,18,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":1024,"tbk":1
+  ,"tl":202867
+  ,"mb":1024,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":13875,"wb":7168
+  ,"acc":[28,-789,21,-234,19]
+  ,"fs":[1,19,20,21,22,18,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":32,"tbk":1
+  ,"tl":392
+  ,"mb":0,"mbk":0
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":32,"wb":56
+  ,"acc":[-8,2,-24,3]
+  ,"fs":[23,24,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":152,"tbk":1
+  ,"tl":339
+  ,"mb":0,"mbk":0
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":24,"wb":16
+  ,"acc":[-8,3,-8,2,-136,0]
+  ,"fs":[25,26,27,28,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":32,"tbk":1
+  ,"tl":241
+  ,"mb":0,"mbk":0
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":0,"wb":32
+  ,"acc":[-32,1]
+  ,"fs":[23,29,28,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":4,"tbk":1
+  ,"tl":358677402
+  ,"mb":0,"mbk":0
+  ,"gb":4,"gbk":1
+  ,"eb":4,"ebk":1
+  ,"rb":0,"wb":4
+  ,"acc":[-4,1]
+  ,"fs":[1,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,16]
+  }
+ ,{"tb":544,"tbk":1
+  ,"tl":358677325
+  ,"mb":0,"mbk":0
+  ,"gb":544,"gbk":1
+  ,"eb":544,"ebk":1
+  ,"rb":0,"wb":58
+  ,"acc":[-16,1,-80,0,-40,1,-402,0,-2,1,-4,0]
+  ,"fs":[1,55,56,57,58,59,60,61,62,63,64,65,66,67,68,47,48,49,50,51,52,53,54,16]
+  }
+ ,{"tb":72,"tbk":1
+  ,"tl":358670664
+  ,"mb":0,"mbk":0
+  ,"gb":72,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":72,"wb":72
+  ,"acc":[-72,2]
+  ,"fs":[1,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":45,"tbk":3
+  ,"tl":358671256
+  ,"mb":0,"mbk":0
+  ,"gb":12,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":99,"wb":45
+  ,"fs":[1,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,82,83,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":34544,"tbk":7
+  ,"tl":358668602
+  ,"mb":17408,"mbk":1
+  ,"gb":17408,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":116688,"wb":83776
+  ,"fs":[1,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":1536,"tbk":1
+  ,"tl":358648552
+  ,"mb":1536,"mbk":1
+  ,"gb":1536,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":9216,"wb":10752
+  ,"fs":[1,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,126,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":496,"tbk":1
+  ,"tl":358644078
+  ,"mb":496,"mbk":1
+  ,"gb":496,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":28890475,"wb":9998
+  ,"acc":[-8,7,-24,1,-8,10,-8,16,-8,26,-8,2,-8,1,-8,7,-8,34,-8,55331,-8,55335,-8,10,-16,65535,-8,26,-8,20,-8,13,-8,19,-40,7,-4,13,-4,7,26,-7,7,-12,13,-4,19,-24,13,-4,7,-4,1,-8,842,-8,2384,-8,3229,-4,58776,-4,12,-8,58771,-8,13,-16,65535,-8,13,-16,65535,-8,7,-8,13,-16,65535,-4,59659,-4,1,-8,30,-4,901,-4,1,-8,2,-8,8,-48,7,-4,13,-13,7,-7,1]
+  ,"fs":[1,143,144,145,146,147,148,149,150,151,126,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":16,"tbk":1
+  ,"tl":59945971
+  ,"mb":16,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":64,"wb":48
+  ,"acc":[-8,10,-8,4]
+  ,"fs":[1,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,126,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":5120,"tbk":1
+  ,"tl":358619085
+  ,"mb":5120,"mbk":1
+  ,"gb":5120,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":449336,"wb":440120
+  ,"fs":[1,111,112,113,114,115,116,117,175,176,177,178,179,180,181,182,183,172,173,174,126,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":512,"tbk":1
+  ,"tl":358618528
+  ,"mb":512,"mbk":1
+  ,"gb":512,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":786432,"wb":196636
+  ,"acc":[-4,1920,-12,1914,-8,1920,-4,1914,-20,1920,-4,1914,-8,1920,-36,1914,-4,1915,-16,1920,-44,1914,-4,1920,-8,1921,-4,1922,-4,1923,-4,1924,-12,1926,-48,1920,-12,1914,-4,1917,-4,1918,-8,1919,-4,1926,-4,1920,-56,1926,-40,1920,-8,1914,-32,1920,-56,1926,-4,1923,-28,1920,-4,1919,-4,1914]
+  ,"fs":[1,111,112,113,114,115,116,117,175,176,184,185,186,187,188,189,190,172,173,174,126,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":3072,"tbk":1
+  ,"tl":358618233
+  ,"mb":3072,"mbk":1
+  ,"gb":3072,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":4884480,"wb":18432
+  ,"fs":[1,111,112,113,114,115,116,117,175,176,191,192,193,194,195,196,197,172,173,174,126,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":34720,"tbk":1
+  ,"tl":59919359
+  ,"mb":34720,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":10526720,"wb":34160
+  ,"fs":[1,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,165,217,218,219,220,221,222,223,172,173,174,126,84,85,86,87,88,89,90,91,92,93,94,95]
+  }
+ ,{"tb":7840,"tbk":1
+  ,"tl":211858
+  ,"mb":7840,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":266080,"wb":134904
+  ,"fs":[1,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,165,217,218,219,220,221,222,223,172,173,174,126,84,85,86,87,88,89,90,91,92,93,94,95]
+  }
+ ,{"tb":24384,"tbk":42
+  ,"tl":357772360
+  ,"mb":2048,"mbk":1
+  ,"gb":2048,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":6227368,"wb":18816
+  ,"fs":[1,111,112,113,114,115,116,117,175,176,244,245,246,247,248,249,250,251,251,251,251,251,252,253,254,255,256,165,217,218]
+  }
+ ,{"tb":108864,"tbk":36
+  ,"tl":357771245
+  ,"mb":9216,"mbk":1
+  ,"gb":9216,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":111278839,"wb":91152
+  ,"fs":[1,111,112,113,114,115,116,117,257,258,259,260,261,262,251,251,251,251,251,252,253,254,255,256,165,217,218]
+  }
+ ,{"tb":4096,"tbk":1
+  ,"tl":298721080
+  ,"mb":0,"mbk":0
+  ,"gb":4096,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":3072,"wb":24576
+  ,"fs":[1,111,112,113,114,115,116,117,175,176,263,264,265,266,267,268,269,172,173,174,126,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":80,"tbk":5
+  ,"tl":298673716
+  ,"mb":0,"mbk":0
+  ,"gb":16,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":320,"wb":240
+  ,"acc":[-8,50,-8,20]
+  ,"fs":[1,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,270,271,272,273,274,275,276,277,278,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":173600,"tbk":5
+  ,"tl":298566380
+  ,"mb":0,"mbk":0
+  ,"gb":34720,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":52453640,"wb":170800
+  ,"fs":[1,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,165,217,218,219,220,221,222,223,172,270,271,272,273,274,275,276,277,278,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":39200,"tbk":5
+  ,"tl":1059290
+  ,"mb":0,"mbk":0
+  ,"gb":7840,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":1330400,"wb":674520
+  ,"fs":[1,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,165,217,218,219,220,221,222,223,172,270,271,272,273,274,275,276,277,278,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":1024,"tbk":1
+  ,"tl":2001
+  ,"mb":0,"mbk":0
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":5,"wb":4
+  ,"acc":[2,3,-2,2,-1020,0]
+  ,"fs":[1,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,165,297,298,299,300,301,302,303,304,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ]
+,"ftbl":
+ ["[root]"
+ ,"0x48EB810: malloc (in /nix/store/l8kvr38dk84afq0bffmsdybfix0wdvci-valgrind-3.26.0/libexec/valgrind/vgpreload_dhat-amd64-linux.so)"
+ ,"0x4AB0AE7: __fopen_internal (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC93C6: pthread_getattr_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4093753: get_stack_start (stack_overflow.rs:366)"
+ ,"0x4093753: stack_start_aligned (stack_overflow.rs:383)"
+ ,"0x4093753: install_main_guard_linux (stack_overflow.rs:441)"
+ ,"0x4093753: install_main_guard (stack_overflow.rs:407)"
+ ,"0x4093753: init (stack_overflow.rs:161)"
+ ,"0x4093753: init (mod.rs:38)"
+ ,"0x4093753: init (rt.rs:118)"
+ ,"0x4093753: {closure#0} (rt.rs:173)"
+ ,"0x4093753: do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (panicking.rs:576)"
+ ,"0x4093753: catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (panicking.rs:544)"
+ ,"0x4093753: catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (panic.rs:359)"
+ ,"0x4093753: std::rt::lang_start_internal (rt.rs:171)"
+ ,"0x4049A9B: main (in /home/leona/Code/github.com/sagan-software/bevy-raytraced-audio/target/performance/profile-final)"
+ ,"0x4AB1C4C: getdelim (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC9525: pthread_getattr_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AAFE5F: _IO_file_doallocate (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC0E05: _IO_doallocbuf (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4ABE79D: _IO_file_underflow@@GLIBC_2.2.5 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AB1C78: getdelim (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x48F3761: realloc (in /nix/store/l8kvr38dk84afq0bffmsdybfix0wdvci-valgrind-3.26.0/libexec/valgrind/vgpreload_dhat-amd64-linux.so)"
+ ,"0x4AC9279: pthread_getattr_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x48F3549: calloc (in /nix/store/l8kvr38dk84afq0bffmsdybfix0wdvci-valgrind-3.26.0/libexec/valgrind/vgpreload_dhat-amd64-linux.so)"
+ ,"0x4AC5A42: __pthread_attr_extension (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC5E1C: pthread_attr_setaffinity_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC9307: pthread_getattr_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC5E3A: pthread_attr_setaffinity_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x409615B: alloc (unix.rs:31)"
+ ,"0x409615B: __rdl_alloc (alloc.rs:472)"
+ ,"0x409615B: alloc (alloc.rs:130)"
+ ,"0x409615B: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x409615B: alloc_impl (alloc.rs:424)"
+ ,"0x409615B: allocate (alloc.rs:541)"
+ ,"0x409615B: try_clone_from_ref_in<str, alloc::alloc::Global> (boxed.rs:886)"
+ ,"0x409615B: clone_from_ref_in<str, alloc::alloc::Global> (boxed.rs:845)"
+ ,"0x409615B: clone_from_ref<str> (boxed.rs:798)"
+ ,"0x409615B: from (convert.rs:138)"
+ ,"0x409615B: call_once<fn(&str) -> alloc::boxed::Box<str, alloc::alloc::Global>, (&str)> (function.rs:250)"
+ ,"0x409615B: map<&str, alloc::boxed::Box<str, alloc::alloc::Global>, fn(&str) -> alloc::boxed::Box<str, alloc::alloc::Global>> (option.rs:1163)"
+ ,"0x409615B: {closure#0} (thread_info.rs:114)"
+ ,"0x409615B: {closure#0}<std::sys::pal::unix::stack_overflow::thread_info::set_current_info::{closure_env#0}, core::option::Option<alloc::boxed::Box<str, alloc::alloc::Global>>> (current.rs:234)"
+ ,"0x409615B: try_with_current<std::thread::current::with_current_name::{closure_env#0}<std::sys::pal::unix::stack_overflow::thread_info::set_current_info::{closure_env#0}, core::option::Option<alloc::boxed::Box<str, alloc::alloc::Global>>>, core::option::Option<alloc::boxed::Box<str, alloc::alloc::Global>>> (current.rs:204)"
+ ,"0x409615B: with_current_name<std::sys::pal::unix::stack_overflow::thread_info::set_current_info::{closure_env#0}, core::option::Option<alloc::boxed::Box<str, alloc::alloc::Global>>> (current.rs:216)"
+ ,"0x409615B: std::sys::pal::unix::stack_overflow::thread_info::set_current_info (thread_info.rs:114)"
+ ,"0x40938EF: init (stack_overflow.rs:185)"
+ ,"0x40938EF: init (mod.rs:38)"
+ ,"0x40938EF: init (rt.rs:118)"
+ ,"0x40938EF: {closure#0} (rt.rs:173)"
+ ,"0x40938EF: do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (panicking.rs:576)"
+ ,"0x40938EF: catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (panicking.rs:544)"
+ ,"0x40938EF: catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (panic.rs:359)"
+ ,"0x40938EF: std::rt::lang_start_internal (rt.rs:171)"
+ ,"0x409635D: alloc (unix.rs:31)"
+ ,"0x409635D: __rdl_alloc (alloc.rs:472)"
+ ,"0x409635D: alloc (alloc.rs:130)"
+ ,"0x409635D: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x409635D: alloc_impl (alloc.rs:424)"
+ ,"0x409635D: allocate (alloc.rs:541)"
+ ,"0x409635D: try_new_uninit_in<alloc::collections::btree::node::LeafNode<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo>, alloc::alloc::Global> (boxed.rs:619)"
+ ,"0x409635D: new_uninit_in<alloc::collections::btree::node::LeafNode<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo>, alloc::alloc::Global> (boxed.rs:586)"
+ ,"0x409635D: new<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (node.rs:87)"
+ ,"0x409635D: new_leaf<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (node.rs:225)"
+ ,"0x409635D: insert_entry<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (entry.rs:452)"
+ ,"0x409635D: insert<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (entry.rs:426)"
+ ,"0x409635D: insert<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (map.rs:1052)"
+ ,"0x409635D: std::sys::pal::unix::stack_overflow::thread_info::set_current_info (thread_info.rs:122)"
+ ,"0x4094010: alloc (unix.rs:31)"
+ ,"0x4094010: __rdl_alloc (alloc.rs:472)"
+ ,"0x4094010: alloc (alloc.rs:130)"
+ ,"0x4094010: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4094010: alloc_impl (alloc.rs:424)"
+ ,"0x4094010: allocate (alloc.rs:541)"
+ ,"0x4094010: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4094010: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4094010: with_capacity_in<std::ffi::os_str::OsString, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4094010: with_capacity_in<std::ffi::os_str::OsString, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4094010: with_capacity<std::ffi::os_str::OsString> (mod.rs:522)"
+ ,"0x4094010: args (unix.rs:24)"
+ ,"0x4094010: std::env::args_os (env.rs:864)"
+ ,"0x4049318: args (library/std/src/env.rs:829)"
+ ,"0x4049318: acoustic_performance::main (main.rs:5)"
+ ,"0x40492D2: call_once<fn(), ()> (function.rs:250)"
+ ,"0x40492D2: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()> (backtrace.rs:166)"
+ ,"0x40492E8: std::rt::lang_start::<()>::{closure#0} (rt.rs:206)"
+ ,"0x40939AF: call_once<(), (dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)> (function.rs:287)"
+ ,"0x40939AF: do_call<&(dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32> (panicking.rs:576)"
+ ,"0x40939AF: catch_unwind<i32, &(dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)> (panicking.rs:544)"
+ ,"0x40939AF: catch_unwind<&(dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32> (panic.rs:359)"
+ ,"0x40939AF: {closure#0} (rt.rs:175)"
+ ,"0x40939AF: do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (panicking.rs:576)"
+ ,"0x40939AF: catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (panicking.rs:544)"
+ ,"0x40939AF: catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (panic.rs:359)"
+ ,"0x40939AF: std::rt::lang_start_internal (rt.rs:171)"
+ ,"0x40940AC: alloc (unix.rs:31)"
+ ,"0x40940AC: __rdl_alloc (alloc.rs:472)"
+ ,"0x40940AC: alloc (alloc.rs:130)"
+ ,"0x40940AC: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x40940AC: alloc_impl (alloc.rs:424)"
+ ,"0x40940AC: allocate (alloc.rs:541)"
+ ,"0x40940AC: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x40940AC: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x40940AC: with_capacity_in<u8, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x40940AC: with_capacity_in<u8, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x40940AC: to_vec<u8, alloc::alloc::Global> (slice.rs:448)"
+ ,"0x40940AC: to_vec_in<u8, alloc::alloc::Global> (slice.rs:400)"
+ ,"0x40940AC: to_vec<u8> (slice.rs:376)"
+ ,"0x40940AC: args (unix.rs:58)"
+ ,"0x40940AC: std::env::args_os (env.rs:864)"
+ ,"0x405A0F7: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x405A0F7: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x405A0F7: alloc (alloc.rs:130)"
+ ,"0x405A0F7: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x405A0F7: alloc_impl (alloc.rs:424)"
+ ,"0x405A0F7: allocate (alloc.rs:541)"
+ ,"0x405A0F7: <alloc::raw_vec::RawVecInner>::finish_grow (mod.rs:560)"
+ ,"0x4059B09: grow_amortized<alloc::alloc::Global> (mod.rs:529)"
+ ,"0x4059B09: grow_one<alloc::alloc::Global> (mod.rs:493)"
+ ,"0x4059B09: <alloc::raw_vec::RawVec<bevy_raytraced_audio::triangle3d::Triangle3d>>::grow_one (mod.rs:188)"
+ ,"0x405250C: push_mut<bevy_raytraced_audio::triangle3d::Triangle3d, alloc::alloc::Global> (mod.rs:1033)"
+ ,"0x405250C: push<bevy_raytraced_audio::triangle3d::Triangle3d, alloc::alloc::Global> (mod.rs:996)"
+ ,"0x405250C: <bevy_raytraced_audio::scene3d::AcousticScene3d>::add_triangle (scene3d.rs:36)"
+ ,"0x4046EB4: acoustic_performance::scene3 (lib.rs:121)"
+ ,"0x40484C5: <acoustic_performance::Workload>::new (lib.rs:217)"
+ ,"0x404962C: acoustic_performance::main (main.rs:12)"
+ ,"0x4048502: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x4048502: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x4048502: alloc (alloc.rs:130)"
+ ,"0x4048502: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4048502: alloc_impl (alloc.rs:424)"
+ ,"0x4048502: allocate (alloc.rs:541)"
+ ,"0x4048502: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4048502: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4048502: with_capacity_in<bevy_raytraced_audio::emitter3d::Emitter3d, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4048502: with_capacity_in<bevy_raytraced_audio::emitter3d::Emitter3d, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4048502: with_capacity<bevy_raytraced_audio::emitter3d::Emitter3d> (mod.rs:522)"
+ ,"0x4048502: from_iter<bevy_raytraced_audio::emitter3d::Emitter3d, core::iter::adapters::map::Map<core::ops::range::Range<usize>, acoustic_performance::{impl#1}::new::{closure_env#2}>> (spec_from_iter_nested.rs:52)"
+ ,"0x4048502: from_iter<bevy_raytraced_audio::emitter3d::Emitter3d, core::iter::adapters::map::Map<core::ops::range::Range<usize>, acoustic_performance::{impl#1}::new::{closure_env#2}>> (spec_from_iter.rs:33)"
+ ,"0x4048502: from_iter<bevy_raytraced_audio::emitter3d::Emitter3d, core::iter::adapters::map::Map<core::ops::range::Range<usize>, acoustic_performance::{impl#1}::new::{closure_env#2}>> (mod.rs:3996)"
+ ,"0x4048502: collect<core::iter::adapters::map::Map<core::ops::range::Range<usize>, acoustic_performance::{impl#1}::new::{closure_env#2}>, alloc::vec::Vec<bevy_raytraced_audio::emitter3d::Emitter3d, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4048502: <acoustic_performance::Workload>::new (lib.rs:226)"
+ ,"0x40487CC: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x40487CC: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x40487CC: alloc (alloc.rs:130)"
+ ,"0x40487CC: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x40487CC: alloc_impl (alloc.rs:424)"
+ ,"0x40487CC: allocate (alloc.rs:541)"
+ ,"0x40487CC: box_new_uninit (boxed.rs:251)"
+ ,"0x40487CC: new<acoustic_performance::{impl#1}::new::{closure_env#3}> (boxed.rs:290)"
+ ,"0x40487CC: <acoustic_performance::Workload>::new (lib.rs:228)"
+ ,"0x404FCFD: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x404FCFD: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x404FCFD: alloc (alloc.rs:130)"
+ ,"0x404FCFD: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x404FCFD: alloc_impl (alloc.rs:424)"
+ ,"0x404FCFD: allocate (alloc.rs:541)"
+ ,"0x404FCFD: box_new_uninit (boxed.rs:251)"
+ ,"0x404FCFD: new<alloc::sync::ArcInner<()>> (boxed.rs:290)"
+ ,"0x404FCFD: new<()> (sync.rs:440)"
+ ,"0x404FCFD: {closure#0} (scene2d.rs:31)"
+ ,"0x404FCFD: {closure#0}<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene2d::{impl#0}::revision::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x404FCFD: {closure#0}<alloc::sync::Arc<(), alloc::alloc::Global>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene2d::{impl#0}::revision::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x404FCFD: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<alloc::sync::Arc<()>>>::initialize<<std::sync::once_lock::OnceLock<alloc::sync::Arc<()>>>::get_or_init<<bevy_raytraced_audio::scene2d::AcousticScene2d>::revision::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x4084A48: <std::sys::sync::once::futex::Once>::call (futex.rs:183)"
+ ,"0x404A918: call_once_force<std::sync::once_lock::{impl#0}::initialize::{closure_env#0}<alloc::sync::Arc<(), alloc::alloc::Global>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene3d::{impl#0}::revision::{closure_env#0}>, !>> (once.rs:226)"
+ ,"0x404A918: <std::sync::once_lock::OnceLock<alloc::sync::Arc<()>>>::initialize::<<std::sync::once_lock::OnceLock<alloc::sync::Arc<()>>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::revision::{closure#0}>::{closure#0}, !> (once_lock.rs:571)"
+ ,"0x4055669: get_or_try_init<alloc::sync::Arc<(), alloc::alloc::Global>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene3d::{impl#0}::revision::{closure_env#0}>, !> (once_lock.rs:439)"
+ ,"0x4055669: get_or_init<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene3d::{impl#0}::revision::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4055669: revision (scene3d.rs:31)"
+ ,"0x4055669: <bevy_raytraced_audio::scene3d::AcousticScene3d>::trace_listener (ray_tracer3d.rs:223)"
+ ,"0x4045AE8: <acoustic_performance::Workload>::new::{closure#3} (lib.rs:241)"
+ ,"0x4047E70: call_mut<(), dyn core::ops::function::FnMut<(), Output=f64>, alloc::alloc::Global> (boxed.rs:2327)"
+ ,"0x4047E70: <acoustic_performance::Workload>::new (lib.rs:322)"
+ ,"0x404FCA2: grow_amortized<alloc::alloc::Global> (mod.rs:529)"
+ ,"0x404FCA2: <alloc::raw_vec::RawVecInner<_>>::reserve::do_reserve_and_handle::<alloc::alloc::Global> (mod.rs:665)"
+ ,"0x4057C9D: reserve<alloc::alloc::Global> (mod.rs:672)"
+ ,"0x4057C9D: reserve<bevy_raytraced_audio::ray_trace::SourceAccumulator, alloc::alloc::Global> (mod.rs:341)"
+ ,"0x4057C9D: reserve<bevy_raytraced_audio::ray_trace::SourceAccumulator, alloc::alloc::Global> (mod.rs:1461)"
+ ,"0x4057C9D: extend_with<bevy_raytraced_audio::ray_trace::SourceAccumulator, alloc::alloc::Global> (mod.rs:3714)"
+ ,"0x4057C9D: resize<bevy_raytraced_audio::ray_trace::SourceAccumulator, alloc::alloc::Global> (mod.rs:3575)"
+ ,"0x4057C9D: reset (ray_tracer3d.rs:156)"
+ ,"0x4057C9D: <bevy_raytraced_audio::scene3d::AcousticScene3d>::trace_listener (ray_tracer3d.rs:242)"
+ ,"0x4057CBF: reserve<alloc::alloc::Global> (mod.rs:672)"
+ ,"0x4057CBF: reserve<u32, alloc::alloc::Global> (mod.rs:341)"
+ ,"0x4057CBF: reserve<u32, alloc::alloc::Global> (mod.rs:1461)"
+ ,"0x4057CBF: extend_with<u32, alloc::alloc::Global> (mod.rs:3714)"
+ ,"0x4057CBF: resize<u32, alloc::alloc::Global> (mod.rs:3575)"
+ ,"0x4057CBF: reset (ray_tracer3d.rs:158)"
+ ,"0x4057CBF: <bevy_raytraced_audio::scene3d::AcousticScene3d>::trace_listener (ray_tracer3d.rs:242)"
+ ,"0x405569E: reserve<alloc::alloc::Global> (mod.rs:672)"
+ ,"0x405569E: reserve<bevy_raytraced_audio::math3d::Vector3, alloc::alloc::Global> (mod.rs:341)"
+ ,"0x405569E: reserve<bevy_raytraced_audio::math3d::Vector3, alloc::alloc::Global> (mod.rs:1461)"
+ ,"0x405569E: extend_trusted<bevy_raytraced_audio::math3d::Vector3, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::emitter3d::Emitter3d>, bevy_raytraced_audio::ray_tracer3d::{impl#2}::trace_listener::{closure_env#2}>> (mod.rs:4128)"
+ ,"0x405569E: spec_extend<bevy_raytraced_audio::math3d::Vector3, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::emitter3d::Emitter3d>, bevy_raytraced_audio::ray_tracer3d::{impl#2}::trace_listener::{closure_env#2}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x405569E: extend<bevy_raytraced_audio::math3d::Vector3, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::emitter3d::Emitter3d>, bevy_raytraced_audio::ray_tracer3d::{impl#2}::trace_listener::{closure_env#2}>> (mod.rs:4064)"
+ ,"0x405569E: <bevy_raytraced_audio::scene3d::AcousticScene3d>::trace_listener (ray_tracer3d.rs:247)"
+ ,"0x405043C: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x405043C: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x405043C: alloc (alloc.rs:130)"
+ ,"0x405043C: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x405043C: alloc_impl (alloc.rs:424)"
+ ,"0x405043C: allocate (alloc.rs:541)"
+ ,"0x405043C: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x405043C: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x405043C: with_capacity_in<bevy_raytraced_audio::scene3d::TriangleGeometry, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x405043C: with_capacity_in<bevy_raytraced_audio::scene3d::TriangleGeometry, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x405043C: with_capacity<bevy_raytraced_audio::scene3d::TriangleGeometry> (mod.rs:522)"
+ ,"0x405043C: from_iter<bevy_raytraced_audio::scene3d::TriangleGeometry, core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<bevy_raytraced_audio::triangle3d::Triangle3d>>, fn(bevy_raytraced_audio::triangle3d::Triangle3d) -> bevy_raytraced_audio::scene3d::TriangleGeometry>> (spec_from_iter_nested.rs:52)"
+ ,"0x405043C: from_iter<bevy_raytraced_audio::scene3d::TriangleGeometry, core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<bevy_raytraced_audio::triangle3d::Triangle3d>>, fn(bevy_raytraced_audio::triangle3d::Triangle3d) -> bevy_raytraced_audio::scene3d::TriangleGeometry>> (spec_from_iter.rs:33)"
+ ,"0x405043C: from_iter<bevy_raytraced_audio::scene3d::TriangleGeometry, core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<bevy_raytraced_audio::triangle3d::Triangle3d>>, fn(bevy_raytraced_audio::triangle3d::Triangle3d) -> bevy_raytraced_audio::scene3d::TriangleGeometry>> (mod.rs:3996)"
+ ,"0x405043C: collect<core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<bevy_raytraced_audio::triangle3d::Triangle3d>>, fn(bevy_raytraced_audio::triangle3d::Triangle3d) -> bevy_raytraced_audio::scene3d::TriangleGeometry>, alloc::vec::Vec<bevy_raytraced_audio::scene3d::TriangleGeometry, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x405043C: {closure#0} (scene3d.rs:268)"
+ ,"0x405043C: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x405043C: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x405043C: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x404A9AA: call_once_force<std::sync::once_lock::{impl#0}::initialize::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !>> (once.rs:226)"
+ ,"0x404A9AA: <std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !> (once_lock.rs:571)"
+ ,"0x4052A2E: get_or_try_init<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !> (once_lock.rs:439)"
+ ,"0x4052A2E: get_or_init<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4052A2E: acceleration (scene3d.rs:262)"
+ ,"0x4052A2E: <bevy_raytraced_audio::scene3d::AcousticScene3d>::direct_transmission (scene3d.rs:147)"
+ ,"0x405588E: <bevy_raytraced_audio::scene3d::AcousticScene3d>::trace_listener (ray_tracer3d.rs:255)"
+ ,"0x4050B51: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x4050B51: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x4050B51: alloc (alloc.rs:130)"
+ ,"0x4050B51: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4050B51: alloc_impl (alloc.rs:424)"
+ ,"0x4050B51: allocate (alloc.rs:541)"
+ ,"0x4050B51: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4050B51: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4050B51: with_capacity_in<bevy_raytraced_audio::bvh::PrimitiveBounds, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4050B51: with_capacity_in<bevy_raytraced_audio::bvh::PrimitiveBounds, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4050B51: with_capacity<bevy_raytraced_audio::bvh::PrimitiveBounds> (mod.rs:522)"
+ ,"0x4050B51: from_iter<bevy_raytraced_audio::bvh::PrimitiveBounds, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>, bevy_raytraced_audio::bvh::{impl#1}::build::{closure_env#0}<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>>>> (spec_from_iter_nested.rs:52)"
+ ,"0x4050B51: from_iter<bevy_raytraced_audio::bvh::PrimitiveBounds, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>, bevy_raytraced_audio::bvh::{impl#1}::build::{closure_env#0}<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>>>> (spec_from_iter.rs:33)"
+ ,"0x4050B51: from_iter<bevy_raytraced_audio::bvh::PrimitiveBounds, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>, bevy_raytraced_audio::bvh::{impl#1}::build::{closure_env#0}<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>>>> (mod.rs:3996)"
+ ,"0x4050B51: collect<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>, bevy_raytraced_audio::bvh::{impl#1}::build::{closure_env#0}<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>>>, alloc::vec::Vec<bevy_raytraced_audio::bvh::PrimitiveBounds, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4050B51: build<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>> (bvh.rs:268)"
+ ,"0x4050B51: {closure#0} (scene3d.rs:269)"
+ ,"0x4050B51: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4050B51: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x4050B51: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x405BBA2: reserve<alloc::alloc::Global> (mod.rs:672)"
+ ,"0x405BBA2: reserve<usize, alloc::alloc::Global> (mod.rs:341)"
+ ,"0x405BBA2: reserve<usize, alloc::alloc::Global> (mod.rs:1461)"
+ ,"0x405BBA2: extend_trusted<usize, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::bvh::PrimitiveBounds>, bevy_raytraced_audio::bvh::{impl#1}::build_node::{closure_env#1}>> (mod.rs:4128)"
+ ,"0x405BBA2: spec_extend<usize, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::bvh::PrimitiveBounds>, bevy_raytraced_audio::bvh::{impl#1}::build_node::{closure_env#1}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x405BBA2: extend<usize, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::bvh::PrimitiveBounds>, bevy_raytraced_audio::bvh::{impl#1}::build_node::{closure_env#1}>> (mod.rs:4064)"
+ ,"0x405BBA2: <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node (bvh.rs:488)"
+ ,"0x405BAAB: <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node (bvh.rs:523)"
+ ,"0x4050D7D: build<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>> (bvh.rs:292)"
+ ,"0x4050D7D: {closure#0} (scene3d.rs:269)"
+ ,"0x4050D7D: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4050D7D: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x4050D7D: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x4059C59: grow_amortized<alloc::alloc::Global> (mod.rs:529)"
+ ,"0x4059C59: grow_one<alloc::alloc::Global> (mod.rs:493)"
+ ,"0x4059C59: <alloc::raw_vec::RawVec<bevy_raytraced_audio::bvh::Node>>::grow_one (mod.rs:188)"
+ ,"0x405BA35: push_mut<bevy_raytraced_audio::bvh::Node, alloc::alloc::Global> (mod.rs:1033)"
+ ,"0x405BA35: push<bevy_raytraced_audio::bvh::Node, alloc::alloc::Global> (mod.rs:996)"
+ ,"0x405BA35: <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node (bvh.rs:491)"
+ ,"0x4057C76: reserve<alloc::alloc::Global> (mod.rs:672)"
+ ,"0x4057C76: reserve<bevy_raytraced_audio::ray_trace::SourceRayResponse, alloc::alloc::Global> (mod.rs:341)"
+ ,"0x4057C76: reserve<bevy_raytraced_audio::ray_trace::SourceRayResponse, alloc::alloc::Global> (mod.rs:1461)"
+ ,"0x4057C76: extend_trusted<bevy_raytraced_audio::ray_trace::SourceRayResponse, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::ray_trace::SourceAccumulator>, bevy_raytraced_audio::ray_tracer3d::{impl#2}::trace_listener::{closure_env#4}>> (mod.rs:4128)"
+ ,"0x4057C76: spec_extend<bevy_raytraced_audio::ray_trace::SourceRayResponse, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::ray_trace::SourceAccumulator>, bevy_raytraced_audio::ray_tracer3d::{impl#2}::trace_listener::{closure_env#4}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x4057C76: extend<bevy_raytraced_audio::ray_trace::SourceRayResponse, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::ray_trace::SourceAccumulator>, bevy_raytraced_audio::ray_tracer3d::{impl#2}::trace_listener::{closure_env#4}>> (mod.rs:4064)"
+ ,"0x4057C76: <bevy_raytraced_audio::scene3d::AcousticScene3d>::trace_listener (ray_tracer3d.rs:312)"
+ ,"0x4049665: call_mut<(), dyn core::ops::function::FnMut<(), Output=f64>, alloc::alloc::Global> (boxed.rs:2327)"
+ ,"0x4049665: {closure#0} (lib.rs:327)"
+ ,"0x4049665: {closure#0}<u32, f64, f64, acoustic_performance::{impl#1}::run::{closure_env#0}, core::iter::traits::accum::{impl#132}::sum::{closure_env#0}<core::iter::adapters::map::Map<core::ops::range::Range<u32>, acoustic_performance::{impl#1}::run::{closure_env#0}>>> (map.rs:88)"
+ ,"0x4049665: fold<core::ops::range::Range<u32>, f64, core::iter::adapters::map::map_fold::{closure_env#0}<u32, f64, f64, acoustic_performance::{impl#1}::run::{closure_env#0}, core::iter::traits::accum::{impl#132}::sum::{closure_env#0}<core::iter::adapters::map::Map<core::ops::range::Range<u32>, acoustic_performance::{impl#1}::run::{closure_env#0}>>>> (iterator.rs:2667)"
+ ,"0x4049665: fold<f64, core::ops::range::Range<u32>, acoustic_performance::{impl#1}::run::{closure_env#0}, f64, core::iter::traits::accum::{impl#132}::sum::{closure_env#0}<core::iter::adapters::map::Map<core::ops::range::Range<u32>, acoustic_performance::{impl#1}::run::{closure_env#0}>>> (map.rs:128)"
+ ,"0x4049665: sum<core::iter::adapters::map::Map<core::ops::range::Range<u32>, acoustic_performance::{impl#1}::run::{closure_env#0}>> (accum.rs:163)"
+ ,"0x4049665: sum<core::iter::adapters::map::Map<core::ops::range::Range<u32>, acoustic_performance::{impl#1}::run::{closure_env#0}>, f64> (iterator.rs:3670)"
+ ,"0x4049665: run (lib.rs:327)"
+ ,"0x4049665: acoustic_performance::main (main.rs:19)"
+ ,"0x4081622: alloc (unix.rs:31)"
+ ,"0x4081622: __rdl_alloc (alloc.rs:472)"
+ ,"0x4081622: alloc (alloc.rs:130)"
+ ,"0x4081622: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4081622: alloc_impl (alloc.rs:424)"
+ ,"0x4081622: allocate (alloc.rs:541)"
+ ,"0x4081622: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4081622: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4081622: with_capacity_in<u8, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4081622: with_capacity_in<u8, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4081622: with_capacity<u8> (mod.rs:522)"
+ ,"0x4081622: with_capacity<std::io::stdio::StdoutRaw> (bufwriter.rs:132)"
+ ,"0x4081622: with_capacity<std::io::stdio::StdoutRaw> (linewriter.rs:112)"
+ ,"0x4081622: new<std::io::stdio::StdoutRaw> (linewriter.rs:91)"
+ ,"0x4081622: {closure#0} (stdio.rs:722)"
+ ,"0x4081622: {closure#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4081622: {closure#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x4081622: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::initialize<<std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::get_or_init<std::io::stdio::stdout::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x4074E35: call_once_force<std::sync::once_lock::{impl#0}::initialize::{closure_env#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}>, !>> (once.rs:226)"
+ ,"0x4074E35: <std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::initialize::<<std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::get_or_init<std::io::stdio::stdout::{closure#0}>::{closure#0}, !> (once_lock.rs:571)"
+ ,"0x4094ABC: get_or_try_init<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}>, !> (once_lock.rs:439)"
+ ,"0x4094ABC: get_or_init<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4094ABC: stdout (stdio.rs:722)"
+ ,"0x4094ABC: print_to<std::io::stdio::Stdout> (stdio.rs:1167)"
+ ,"0x4094ABC: std::io::stdio::_print (stdio.rs:1275)"
+ ,"0x40496C0: acoustic_performance::main (main.rs:19)"
+ ]
+}

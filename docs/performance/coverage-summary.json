@@ -1,0 +1,3296 @@
+{
+  "command": "nix develop .#performance --command bash scripts/coverage-strict.sh",
+  "scope": "All workspace production Rust sources, all four Bevy debug_draw features; excludes only tests, benches and examples paths. Linux ALSA null output device.",
+  "totals": {
+    "branches": {
+      "count": 0,
+      "covered": 0,
+      "notcovered": 0,
+      "percent": 0
+    },
+    "functions": {
+      "count": 934,
+      "covered": 934,
+      "percent": 100
+    },
+    "instantiations": {
+      "count": 1710,
+      "covered": 1546,
+      "percent": 90.4093567251462
+    },
+    "lines": {
+      "count": 9309,
+      "covered": 9309,
+      "percent": 100
+    },
+    "mcdc": {
+      "count": 0,
+      "covered": 0,
+      "notcovered": 0,
+      "percent": 0
+    },
+    "regions": {
+      "count": 13094,
+      "covered": 12992,
+      "notcovered": 102,
+      "percent": 99.22101725981366
+    }
+  },
+  "files": {
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-2d/src/debug_draw.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 163,
+        "covered": 163,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 232,
+        "covered": 231,
+        "notcovered": 1,
+        "percent": 99.56896551724138
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-2d/src/plugin.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 47,
+        "covered": 47,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 54,
+        "covered": 54,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-2d/src/ray_tracing.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 13,
+        "covered": 13,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 11,
+        "covered": 11,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-2d/src/reflection_paths.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-2d/src/response.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-2d/src/surface.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 22,
+        "covered": 19,
+        "notcovered": 3,
+        "percent": 86.36363636363636
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-2d/src/systems.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 32,
+        "covered": 32,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 32,
+        "covered": 32,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 412,
+        "covered": 412,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 523,
+        "covered": 518,
+        "notcovered": 5,
+        "percent": 99.04397705544933
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-3d/src/debug_draw.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 111,
+        "covered": 111,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 180,
+        "covered": 179,
+        "notcovered": 1,
+        "percent": 99.44444444444444
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-3d/src/plugin.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 47,
+        "covered": 47,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 54,
+        "covered": 54,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-3d/src/ray_tracing.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 13,
+        "covered": 13,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 11,
+        "covered": 11,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-3d/src/reflection_paths.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-3d/src/response.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-3d/src/surface.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 11,
+        "covered": 11,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 27,
+        "covered": 23,
+        "notcovered": 4,
+        "percent": 85.18518518518519
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../bevy-raytraced-audio-3d/src/systems.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 33,
+        "covered": 33,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 33,
+        "covered": 33,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 429,
+        "covered": 429,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 570,
+        "covered": 565,
+        "notcovered": 5,
+        "percent": 99.12280701754385
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../shared/processed_audio.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 25,
+        "covered": 23,
+        "percent": 92.0
+      },
+      "lines": {
+        "count": 189,
+        "covered": 189,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 241,
+        "covered": 239,
+        "notcovered": 2,
+        "percent": 99.1701244813278
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-17/src/../../shared/rodio_0_20.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 10,
+        "covered": 10,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 10,
+        "covered": 10,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 46,
+        "covered": 46,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 60,
+        "covered": 60,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-2d/src/debug_draw.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 163,
+        "covered": 163,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 232,
+        "covered": 231,
+        "notcovered": 1,
+        "percent": 99.56896551724138
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-2d/src/plugin.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 47,
+        "covered": 47,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 54,
+        "covered": 54,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-2d/src/ray_tracing.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 13,
+        "covered": 13,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 11,
+        "covered": 11,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-2d/src/reflection_paths.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-2d/src/response.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-2d/src/surface.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 22,
+        "covered": 19,
+        "notcovered": 3,
+        "percent": 86.36363636363636
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-2d/src/systems.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 32,
+        "covered": 32,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 32,
+        "covered": 32,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 412,
+        "covered": 412,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 523,
+        "covered": 518,
+        "notcovered": 5,
+        "percent": 99.04397705544933
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-3d/src/debug_draw.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 111,
+        "covered": 111,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 180,
+        "covered": 179,
+        "notcovered": 1,
+        "percent": 99.44444444444444
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-3d/src/plugin.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 47,
+        "covered": 47,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 54,
+        "covered": 54,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-3d/src/ray_tracing.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 13,
+        "covered": 13,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 11,
+        "covered": 11,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-3d/src/reflection_paths.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-3d/src/response.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-3d/src/surface.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 11,
+        "covered": 11,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 27,
+        "covered": 23,
+        "notcovered": 4,
+        "percent": 85.18518518518519
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../bevy-raytraced-audio-3d/src/systems.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 33,
+        "covered": 33,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 33,
+        "covered": 33,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 429,
+        "covered": 429,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 570,
+        "covered": 565,
+        "notcovered": 5,
+        "percent": 99.12280701754385
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../shared/processed_audio.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 25,
+        "covered": 23,
+        "percent": 92.0
+      },
+      "lines": {
+        "count": 189,
+        "covered": 189,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 241,
+        "covered": 239,
+        "notcovered": 2,
+        "percent": 99.1701244813278
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-18/src/../../shared/rodio_0_20.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 10,
+        "covered": 10,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 10,
+        "covered": 10,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 46,
+        "covered": 46,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 60,
+        "covered": 60,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-2d/src/debug_draw.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 36,
+        "covered": 18,
+        "percent": 50.0
+      },
+      "lines": {
+        "count": 163,
+        "covered": 163,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 232,
+        "covered": 231,
+        "notcovered": 1,
+        "percent": 99.56896551724138
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-2d/src/plugin.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 14,
+        "covered": 10,
+        "percent": 71.42857142857143
+      },
+      "lines": {
+        "count": 47,
+        "covered": 47,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 54,
+        "covered": 54,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-2d/src/ray_tracing.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 6,
+        "covered": 5,
+        "percent": 83.33333333333334
+      },
+      "lines": {
+        "count": 13,
+        "covered": 13,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 11,
+        "covered": 11,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-2d/src/reflection_paths.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-2d/src/response.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-2d/src/surface.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 4,
+        "covered": 4,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 22,
+        "covered": 20,
+        "notcovered": 2,
+        "percent": 90.9090909090909
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-2d/src/systems.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 32,
+        "covered": 32,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 64,
+        "covered": 58,
+        "percent": 90.625
+      },
+      "lines": {
+        "count": 412,
+        "covered": 412,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 523,
+        "covered": 519,
+        "notcovered": 4,
+        "percent": 99.23518164435946
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-3d/src/debug_draw.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 18,
+        "covered": 9,
+        "percent": 50.0
+      },
+      "lines": {
+        "count": 111,
+        "covered": 111,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 180,
+        "covered": 179,
+        "notcovered": 1,
+        "percent": 99.44444444444444
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-3d/src/plugin.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 14,
+        "covered": 11,
+        "percent": 78.57142857142857
+      },
+      "lines": {
+        "count": 47,
+        "covered": 47,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 54,
+        "covered": 54,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-3d/src/ray_tracing.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 6,
+        "covered": 5,
+        "percent": 83.33333333333334
+      },
+      "lines": {
+        "count": 13,
+        "covered": 13,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 11,
+        "covered": 11,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-3d/src/reflection_paths.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-3d/src/response.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-3d/src/surface.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 4,
+        "covered": 4,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 11,
+        "covered": 11,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 27,
+        "covered": 24,
+        "notcovered": 3,
+        "percent": 88.88888888888889
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../bevy-raytraced-audio-3d/src/systems.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 33,
+        "covered": 33,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 66,
+        "covered": 60,
+        "percent": 90.9090909090909
+      },
+      "lines": {
+        "count": 429,
+        "covered": 429,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 570,
+        "covered": 565,
+        "notcovered": 5,
+        "percent": 99.12280701754385
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../shared/processed_audio.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 43,
+        "covered": 23,
+        "percent": 53.48837209302325
+      },
+      "lines": {
+        "count": 189,
+        "covered": 189,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 241,
+        "covered": 239,
+        "notcovered": 2,
+        "percent": 99.1701244813278
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-19/src/../../shared/rodio_0_22.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 8,
+        "covered": 8,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 16,
+        "covered": 8,
+        "percent": 50.0
+      },
+      "lines": {
+        "count": 35,
+        "covered": 35,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 55,
+        "covered": 55,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-2d/src/debug_draw.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 163,
+        "covered": 163,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 232,
+        "covered": 231,
+        "notcovered": 1,
+        "percent": 99.56896551724138
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-2d/src/plugin.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 47,
+        "covered": 47,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 54,
+        "covered": 54,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-2d/src/ray_tracing.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 13,
+        "covered": 13,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 11,
+        "covered": 11,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-2d/src/reflection_paths.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-2d/src/response.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-2d/src/surface.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 22,
+        "covered": 19,
+        "notcovered": 3,
+        "percent": 86.36363636363636
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-2d/src/systems.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 32,
+        "covered": 32,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 32,
+        "covered": 32,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 412,
+        "covered": 412,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 523,
+        "covered": 518,
+        "notcovered": 5,
+        "percent": 99.04397705544933
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-3d/src/debug_draw.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 111,
+        "covered": 111,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 180,
+        "covered": 179,
+        "notcovered": 1,
+        "percent": 99.44444444444444
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-3d/src/plugin.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 47,
+        "covered": 47,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 54,
+        "covered": 54,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-3d/src/ray_tracing.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 13,
+        "covered": 13,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 11,
+        "covered": 11,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-3d/src/reflection_paths.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-3d/src/response.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 1,
+        "covered": 1,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 3,
+        "covered": 3,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-3d/src/surface.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 11,
+        "covered": 11,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 27,
+        "covered": 23,
+        "notcovered": 4,
+        "percent": 85.18518518518519
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../bevy-raytraced-audio-3d/src/systems.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 33,
+        "covered": 33,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 33,
+        "covered": 33,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 429,
+        "covered": 429,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 570,
+        "covered": 565,
+        "notcovered": 5,
+        "percent": 99.12280701754385
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../shared/processed_audio.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 25,
+        "covered": 23,
+        "percent": 92.0
+      },
+      "lines": {
+        "count": 189,
+        "covered": 189,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 241,
+        "covered": 239,
+        "notcovered": 2,
+        "percent": 99.1701244813278
+      }
+    },
+    "crates/bevy-raytraced-audio-compat-0-20/src/../../shared/rodio_0_22.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 8,
+        "covered": 8,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 8,
+        "covered": 8,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 35,
+        "covered": 35,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 55,
+        "covered": 55,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/acoustic_material.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 8,
+        "covered": 8,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 16,
+        "covered": 14,
+        "percent": 87.5
+      },
+      "lines": {
+        "count": 58,
+        "covered": 58,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 94,
+        "covered": 94,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/band_absorption.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 5,
+        "covered": 5,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 10,
+        "covered": 10,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 20,
+        "covered": 20,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 21,
+        "covered": 21,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/band_energy.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 5,
+        "covered": 5,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 10,
+        "covered": 9,
+        "percent": 90.0
+      },
+      "lines": {
+        "count": 21,
+        "covered": 21,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 27,
+        "covered": 27,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/band_gain.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 6,
+        "covered": 6,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 12,
+        "covered": 11,
+        "percent": 91.66666666666666
+      },
+      "lines": {
+        "count": 23,
+        "covered": 23,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 26,
+        "covered": 26,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/binaural.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 18,
+        "covered": 18,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 38,
+        "covered": 38,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 260,
+        "covered": 260,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 507,
+        "covered": 502,
+        "notcovered": 5,
+        "percent": 99.0138067061144
+      }
+    },
+    "src/bvh.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 34,
+        "covered": 34,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 323,
+        "covered": 291,
+        "percent": 90.09287925696596
+      },
+      "lines": {
+        "count": 430,
+        "covered": 430,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 651,
+        "covered": 651,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/dsp.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 25,
+        "covered": 25,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 50,
+        "covered": 48,
+        "percent": 96.0
+      },
+      "lines": {
+        "count": 247,
+        "covered": 247,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 409,
+        "covered": 408,
+        "notcovered": 1,
+        "percent": 99.75550122249389
+      }
+    },
+    "src/emitter2d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 4,
+        "covered": 4,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 6,
+        "covered": 6,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 6,
+        "covered": 6,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/emitter3d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 4,
+        "covered": 4,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 6,
+        "covered": 6,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 6,
+        "covered": 6,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/geometry_error.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 4,
+        "covered": 3,
+        "percent": 75.0
+      },
+      "lines": {
+        "count": 22,
+        "covered": 22,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 28,
+        "covered": 28,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/listener2d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 4,
+        "covered": 4,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 6,
+        "covered": 6,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 6,
+        "covered": 6,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/listener3d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 4,
+        "covered": 4,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 6,
+        "covered": 6,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 6,
+        "covered": 6,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/math2d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 14,
+        "covered": 14,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 36,
+        "covered": 36,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 40,
+        "covered": 40,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/math3d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 14,
+        "covered": 14,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 44,
+        "covered": 44,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 53,
+        "covered": 53,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/point2.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 6,
+        "covered": 6,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 12,
+        "covered": 12,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 13,
+        "covered": 13,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/point3.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 4,
+        "covered": 4,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 8,
+        "covered": 8,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 15,
+        "covered": 15,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 18,
+        "covered": 18,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/ray_trace.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 49,
+        "covered": 49,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 98,
+        "covered": 91,
+        "percent": 92.85714285714286
+      },
+      "lines": {
+        "count": 276,
+        "covered": 276,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 348,
+        "covered": 348,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/ray_tracer2d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 35,
+        "covered": 35,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 70,
+        "covered": 63,
+        "percent": 90.0
+      },
+      "lines": {
+        "count": 472,
+        "covered": 472,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 731,
+        "covered": 724,
+        "notcovered": 7,
+        "percent": 99.04240766073872
+      }
+    },
+    "src/ray_tracer3d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 39,
+        "covered": 39,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 78,
+        "covered": 72,
+        "percent": 92.3076923076923
+      },
+      "lines": {
+        "count": 521,
+        "covered": 521,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 819,
+        "covered": 811,
+        "notcovered": 8,
+        "percent": 99.02319902319903
+      }
+    },
+    "src/reflection_path2d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 14,
+        "covered": 9,
+        "percent": 64.28571428571429
+      },
+      "lines": {
+        "count": 38,
+        "covered": 38,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 37,
+        "covered": 37,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/reflection_path3d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 14,
+        "covered": 9,
+        "percent": 64.28571428571429
+      },
+      "lines": {
+        "count": 38,
+        "covered": 38,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 37,
+        "covered": 37,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/reflection_surface_index.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 2,
+        "covered": 2,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 4,
+        "covered": 3,
+        "percent": 75.0
+      },
+      "lines": {
+        "count": 6,
+        "covered": 6,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 6,
+        "covered": 6,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/response.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 7,
+        "covered": 7,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 14,
+        "covered": 9,
+        "percent": 64.28571428571429
+      },
+      "lines": {
+        "count": 33,
+        "covered": 33,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 26,
+        "covered": 26,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/scene2d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 25,
+        "covered": 25,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 50,
+        "covered": 47,
+        "percent": 94.0
+      },
+      "lines": {
+        "count": 297,
+        "covered": 297,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 524,
+        "covered": 524,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/scene3d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 29,
+        "covered": 29,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 57,
+        "covered": 54,
+        "percent": 94.73684210526316
+      },
+      "lines": {
+        "count": 362,
+        "covered": 362,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 608,
+        "covered": 608,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/segment2d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 4,
+        "covered": 4,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 8,
+        "covered": 8,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 23,
+        "covered": 23,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 16,
+        "covered": 16,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/solver_point2d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 6,
+        "covered": 5,
+        "percent": 83.33333333333334
+      },
+      "lines": {
+        "count": 9,
+        "covered": 9,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 9,
+        "covered": 9,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/solver_point3d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 4,
+        "covered": 4,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 8,
+        "covered": 8,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 16,
+        "covered": 16,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 13,
+        "covered": 13,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    },
+    "src/triangle3d.rs": {
+      "branches": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "mcdc": {
+        "count": 0,
+        "covered": 0,
+        "notcovered": 0,
+        "percent": 0.0
+      },
+      "functions": {
+        "count": 3,
+        "covered": 3,
+        "percent": 100.0
+      },
+      "instantiations": {
+        "count": 6,
+        "covered": 6,
+        "percent": 100.0
+      },
+      "lines": {
+        "count": 20,
+        "covered": 20,
+        "percent": 100.0
+      },
+      "regions": {
+        "count": 31,
+        "covered": 31,
+        "notcovered": 0,
+        "percent": 100.0
+      }
+    }
+  }
+}

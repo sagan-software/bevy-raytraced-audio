@@ -106,14 +106,18 @@ describes `--profile-time` for longer isolated loops. The optional
 Coverage is a separate correctness metric, not the fraction of benchmarks that
 ran. Report lines, regions and functions, with the scope and exclusions explicit.
 Do not hide production files or unreachable code just to reach a percentage.
-The existing Nix check's 91% threshold is historical, not proof of 100% coverage.
+The strict runner selects every workspace package explicitly, cleans stale custom-profile
+binaries, enables debug drawing for all four Bevy versions and requires 100% production
+line coverage. Tests, benches and examples are excluded; library production files are not.
+On Linux, old rodio spatial controls use a temporary, process-local ALSA null device.
+Other platforms do not enable that virtual device fixture and may report uncovered lines.
+Region coverage is reported separately; 100% line coverage does not imply every branch
+or every possible input was tested.
 
 ```sh
-cargo llvm-cov --workspace --locked --html --output-dir target/coverage
-cargo llvm-cov report --show-missing-lines
-# Strict requested line-coverage acceptance (fails if any production line is missed):
-cargo llvm-cov report --ignore-filename-regex '(^|/)(tests|benches|examples)/' \
-  --fail-under-lines 100
+nix develop .#performance
+scripts/coverage-strict.sh target/performance/coverage
+# The Nix coverage app/check uses the same runner and threshold.
 ```
 
 Portable generic native code, a separately paired CPU-native build, single/multi

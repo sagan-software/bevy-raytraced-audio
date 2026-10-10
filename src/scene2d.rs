@@ -1,10 +1,10 @@
 //! CPU acoustic propagation over material-bearing line segments in XY.
 
-use crate::bvh::{BoundingVolumeHierarchy, Bounds, SceneDimensions};
+use crate::bvh::{BoundingVolumeHierarchy, Bounds, Ray, SceneDimensions};
 use crate::math2d::Vector2;
 use crate::{
-    AcousticResponse, BandEnergy, BandGain, Emitter2d, Listener2d, PathResponse, ReflectionPath2d,
-    ReflectionSurfaceIndex, Segment2d, SolverPoint2d,
+    AcousticMaterial, AcousticResponse, BandEnergy, BandGain, Emitter2d, Listener2d, PathResponse,
+    ReflectionPath2d, ReflectionSurfaceIndex, Segment2d, SolverPoint2d,
 };
 use std::sync::{Arc, OnceLock};
 
@@ -20,7 +20,7 @@ pub struct AcousticScene2d {
     /// Explicitly registered line segments with absorption and transmission.
     segments: Vec<Segment2d>,
     /// Lazily rebuilt broad-phase bounds after the last surface mutation.
-    acceleration: OnceLock<BoundingVolumeHierarchy>,
+    acceleration: OnceLock<SceneAcceleration2d>,
     /// Shared identity for the current immutable geometry, created only when traced.
     revision: OnceLock<Arc<()>>,
 }
@@ -100,6 +100,13 @@ impl AcousticScene2d {
         let receiver = Vector2::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
 
+        if self.segments.is_empty() {
+            return AcousticResponse::new(
+                PathResponse::new(direct_distance, BandGain::UNITY, false),
+                BandEnergy::ZERO,
+            );
+        }
+
         let (direct_gain, direct_occluded) = self.direct_transmission(source, receiver);
         let direct = PathResponse::new(direct_distance, direct_gain, direct_occluded);
 
@@ -138,26 +145,24 @@ impl AcousticScene2d {
         // If source and listener coincide, the path has no interior where a surface can attenuate it.
         let mut direct_occluded = false;
         let mut direct_gain = BandGain::UNITY;
+        let acceleration = self.acceleration();
         let mut crossings: Vec<(f64, Vector2, BandGain)> = Vec::new();
         if receiver.subtract(source).length() > 0.0 {
-            let _traversal_completed = self.acceleration().visit_candidates_until(
+            let offset = receiver.subtract(source);
+            let _traversal_completed = acceleration.hierarchy.visit_segment_candidates(
+                Ray::new((source.x, source.y, 0.0), (offset.x, offset.y, 0.0)),
                 Bounds::path_2d((source.x, source.y), (receiver.x, receiver.y)),
                 None,
                 |index| {
-                    if let Some(segment) = self.segments.get(index)
-                        && path_intersects_segment(
-                            source,
-                            receiver,
-                            Vector2::from_point(segment.start()),
-                            Vector2::from_point(segment.end()),
-                        )
+                    if let Some(segment) = acceleration.segments.get(index)
+                        && path_intersects_geometry(source, receiver, segment)
                     {
-                        let transmission = segment.material().transmission();
-                        let start = Vector2::from_point(segment.start());
-                        let edge = Vector2::from_point(segment.end()).subtract(start);
+                        let transmission = segment.transmission;
+                        let start = segment.start;
+                        let edge = segment.edge;
                         let parameter = start.subtract(source).cross(edge)
                             / receiver.subtract(source).cross(edge);
-                        let direction = edge.scale(1.0 / edge.length());
+                        let direction = edge.scale(segment.length.recip());
                         if crossings
                             .iter()
                             .any(|&(previous, previous_direction, gain)| {
@@ -192,7 +197,16 @@ impl AcousticScene2d {
         receiver: Vector2,
         direct_distance: f64,
     ) -> impl Iterator<Item = ReflectionPath2d> + '_ {
-        self.segments
+        let acceleration = self.acceleration();
+        let candidates = if acceleration.hierarchy.may_have_reflections(Bounds::path_2d(
+            (source.x, source.y),
+            (receiver.x, receiver.y),
+        )) {
+            acceleration.segments.as_slice()
+        } else {
+            &[]
+        };
+        candidates
             .iter()
             .enumerate()
             .filter_map(move |(index, reflector)| {
@@ -201,10 +215,8 @@ impl AcousticScene2d {
                     return None;
                 }
 
-                let reflector_start = Vector2::from_point(reflector.start());
-                let reflector_end = Vector2::from_point(reflector.end());
                 let (reflection_point, reflected_distance, image_source) =
-                    first_reflection(source, receiver, reflector_start, reflector_end)?;
+                    first_reflection_geometry(source, receiver, reflector)?;
 
                 // If another surface crosses either leg, this reflected candidate is omitted.
                 if self.segment_is_occluded(source, reflection_point, Some(index))
@@ -220,7 +232,7 @@ impl AcousticScene2d {
                     SolverPoint2d::new(image_source.x, image_source.y),
                     reflected_distance,
                     distance_ratio * distance_ratio,
-                    reflector.material().reflected_fraction(),
+                    reflector.reflected_fraction,
                 ))
             })
     }
@@ -232,57 +244,118 @@ impl AcousticScene2d {
         end: Vector2,
         skipped_index: Option<usize>,
     ) -> bool {
-        self.acceleration().any_intersection(
+        let acceleration = self.acceleration();
+        let offset = end.subtract(start);
+        !acceleration.hierarchy.visit_segment_candidates(
+            Ray::new((start.x, start.y, 0.0), (offset.x, offset.y, 0.0)),
             Bounds::path_2d((start.x, start.y), (end.x, end.y)),
             skipped_index,
             |index| {
-                self.segments.get(index).is_some_and(|segment| {
-                    path_intersects_segment(
-                        start,
-                        end,
-                        Vector2::from_point(segment.start()),
-                        Vector2::from_point(segment.end()),
-                    )
-                })
+                !acceleration
+                    .segments
+                    .get(index)
+                    .is_some_and(|segment| path_intersects_geometry(start, end, segment))
             },
         )
     }
 
     /// Builds one deterministic hierarchy and reuses it until a surface mutation.
-    pub(crate) fn acceleration(&self) -> &BoundingVolumeHierarchy {
+    pub(crate) fn acceleration(&self) -> &SceneAcceleration2d {
         self.acceleration.get_or_init(|| {
-            BoundingVolumeHierarchy::build(
-                self.segments.iter().enumerate().map(|(index, segment)| {
-                    let start = Vector2::from_point(segment.start());
-                    let end = Vector2::from_point(segment.end());
-                    (
-                        index,
-                        Bounds::segment_surface_2d(
-                            (start.x, start.y),
-                            (end.x, end.y),
-                            PARAMETER_EPSILON,
-                        ),
+            let segments: Vec<_> = self
+                .segments
+                .iter()
+                .map(|segment| {
+                    SegmentGeometry::new(
+                        Vector2::from_point(segment.start()),
+                        Vector2::from_point(segment.end()),
+                        segment.material(),
                     )
-                }),
+                })
+                .collect();
+            let hierarchy = BoundingVolumeHierarchy::build(
+                segments
+                    .iter()
+                    .enumerate()
+                    .map(|(index, segment)| (index, segment.bounds)),
                 SceneDimensions::Two,
-            )
+            );
+            SceneAcceleration2d {
+                hierarchy,
+                segments,
+            }
         })
     }
 }
 
+/// Geometry and material terms reused by every query until a surface mutation.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct SegmentGeometry {
+    /// Segment origin in solver precision.
+    pub(crate) start: Vector2,
+    /// Segment end in solver precision.
+    pub(crate) end: Vector2,
+    /// Difference between endpoints.
+    pub(crate) edge: Vector2,
+    /// Perpendicular unnormalized wall normal.
+    pub(crate) normal: Vector2,
+    /// Wall length, also the normal length.
+    pub(crate) length: f64,
+    /// Squared normal length used by image-source reflection.
+    normal_squared: f64,
+    /// Bounds including the exact geometry predicate's tolerance.
+    bounds: Bounds,
+    /// Fraction of energy available to reflection.
+    reflected_fraction: BandEnergy,
+    /// Transmission applied at each distinct wall crossing.
+    transmission: BandGain,
+}
+
+impl SegmentGeometry {
+    /// Converts one wall to cached double-precision geometry and material terms.
+    fn new(start: Vector2, end: Vector2, material: AcousticMaterial) -> Self {
+        let edge = end.subtract(start);
+        let normal = Vector2 {
+            x: -edge.y,
+            y: edge.x,
+        };
+        Self {
+            start,
+            end,
+            edge,
+            normal,
+            length: edge.length(),
+            normal_squared: normal.dot(normal),
+            bounds: Bounds::segment_surface_2d(
+                (start.x, start.y),
+                (end.x, end.y),
+                PARAMETER_EPSILON,
+            ),
+            reflected_fraction: material.reflected_fraction(),
+            transmission: material.transmission(),
+        }
+    }
+}
+
+/// Lazily derived 2D geometry and its bounds hierarchy.
+#[derive(Clone, Debug)]
+pub(crate) struct SceneAcceleration2d {
+    /// Balanced hierarchy for broad-phase candidate rejection.
+    pub(crate) hierarchy: BoundingVolumeHierarchy,
+    /// Segments with cached coordinates and material properties.
+    pub(crate) segments: Vec<SegmentGeometry>,
+}
+
 /// Finds one valid image-source reflection and returns its point and path length.
-fn first_reflection(
+fn first_reflection_geometry(
     source: Vector2,
     receiver: Vector2,
-    wall_start: Vector2,
-    wall_end: Vector2,
+    geometry: &SegmentGeometry,
 ) -> Option<(Vector2, f64, Vector2)> {
-    let wall = wall_end.subtract(wall_start);
-    let normal = Vector2 {
-        x: -wall.y,
-        y: wall.x,
-    };
-    let normal_squared = normal.dot(normal);
+    let wall_start = geometry.start;
+    let wall = geometry.edge;
+    let normal = geometry.normal;
+    let normal_squared = geometry.normal_squared;
     let source_offset = source.subtract(wall_start).dot(normal);
     let receiver_offset = receiver.subtract(wall_start).dot(normal);
 
@@ -297,10 +370,6 @@ fn first_reflection(
     let image_source = source.subtract(normal.scale(2.0 * source_offset / normal_squared));
     let image_to_receiver = receiver.subtract(image_source);
     let denominator = image_to_receiver.cross(wall);
-    let scale = image_to_receiver.length() * wall.length();
-    if denominator.abs() <= PARALLEL_EPSILON * scale {
-        return None;
-    }
 
     // If the image ray misses the finite wall segment, the candidate cannot reflect from this surface.
     let image_to_wall = wall_start.subtract(image_source);
@@ -312,42 +381,32 @@ fn first_reflection(
         return None;
     }
 
-    let reflection_point = image_source.add(image_to_receiver.scale(ray_parameter));
     let reflected_distance = image_to_receiver.length();
+    if denominator.abs() <= PARALLEL_EPSILON * (reflected_distance * geometry.length) {
+        return None;
+    }
+    let reflection_point = image_source.add(image_to_receiver.scale(ray_parameter));
     (reflected_distance > 0.0).then_some((reflection_point, reflected_distance, image_source))
 }
 
 /// Tests an open path against a finite 2D segment, including wall endpoints.
-fn path_intersects_segment(
+fn path_intersects_geometry(
     path_start: Vector2,
     path_end: Vector2,
-    wall_start: Vector2,
-    wall_end: Vector2,
+    geometry: &SegmentGeometry,
 ) -> bool {
-    let path_min_x = path_start.x.min(path_end.x);
-    let path_max_x = path_start.x.max(path_end.x);
-    let path_min_y = path_start.y.min(path_end.y);
-    let path_max_y = path_start.y.max(path_end.y);
-    let surface_padding_x = PARAMETER_EPSILON * (wall_end.x - wall_start.x).abs();
-    let surface_padding_y = PARAMETER_EPSILON * (wall_end.y - wall_start.y).abs();
-    let surface_min_x = wall_start.x.min(wall_end.x) - surface_padding_x;
-    let surface_max_x = wall_start.x.max(wall_end.x) + surface_padding_x;
-    let surface_min_y = wall_start.y.min(wall_end.y) - surface_padding_y;
-    let surface_max_y = wall_start.y.max(wall_end.y) + surface_padding_y;
-
-    // If the path and tolerant surface bounds do not overlap, they cannot intersect.
-    if path_max_x < surface_min_x
-        || surface_max_x < path_min_x
-        || path_max_y < surface_min_y
-        || surface_max_y < path_min_y
-    {
+    if !geometry.bounds.overlaps(Bounds::path_2d(
+        (path_start.x, path_start.y),
+        (path_end.x, path_end.y),
+    )) {
         return false;
     }
-
+    let wall_start = geometry.start;
+    let wall_end = geometry.end;
     let path = path_end.subtract(path_start);
-    let wall = wall_end.subtract(wall_start);
+    let wall = geometry.edge;
     let path_length = path.length();
-    let wall_length = wall.length();
+    let wall_length = geometry.length;
     if path_length == 0.0 || wall_length == 0.0 {
         return false;
     }

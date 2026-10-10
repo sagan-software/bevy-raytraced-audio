@@ -101,9 +101,15 @@ fn replay_emits_finite_vertices_and_observes_controls() {
         draw_rays(draw, trace, time, local, gizmos);
         let (_, _, _, local, mut gizmos) =
             crate::test_support::test_system_param(state.get_mut(app.world_mut()));
-        assert!(gizmos.list_positions.iter().all(|point| point.is_finite()));
+        assert!(
+            gizmos
+                .buffer()
+                .list_positions
+                .iter()
+                .all(|point| point.is_finite())
+        );
         if speed.is_infinite() {
-            assert_ne!(gizmos.list_positions, Vec::new());
+            assert_ne!(gizmos.buffer().list_positions.as_slice(), []);
         }
         if !enabled {
             assert_eq!(local.segments, Vec::new());

@@ -116,3 +116,64 @@ fn absorbent_material_shortens_high_frequency_tail() {
     let bass = tail(100.0, 0.12);
     assert!(bass > soft * 4.0, "bass={bass}, treble={soft}");
 }
+
+/// The division-free delay ring matches a modulo reference at every wrap and supported delay.
+#[test]
+fn delay_ring_matches_modulo_reference() {
+    for length in [1, 2, 7, 31] {
+        for delay in 0..length {
+            let mut processor =
+                AcousticDspProcessor::new(Arc::new(AcousticDspParams::default()), 1, 8_000);
+            processor.pre_delay = vec![0.; length];
+            processor.sample_rate = 8.;
+            processor.current.pre_delay_s = f32::from(u16::try_from(delay).unwrap()) / 8.;
+            processor.current.wet_gain = 0.;
+            processor.current.early_gain = 1.;
+            let mut reference = vec![0.; length];
+            for step in 0..length * 3 {
+                let position = step % length;
+                let input = f32::from(u16::try_from(step).unwrap());
+                *reference.get_mut(position).unwrap() = input;
+                let expected = reference
+                    .get((position + length - delay) % length)
+                    .copied()
+                    .unwrap();
+                assert_eq!(processor.reverb_frame(input), expected);
+            }
+        }
+    }
+}
+
+/// Defensive scalar kernels handle unavailable storage and non-finite sample counts safely.
+#[test]
+fn defensive_buffer_boundaries_and_live_decay_change() {
+    assert_eq!(super::samples_to_count(f32::NAN), 0);
+    assert_eq!(super::samples_to_count(f32::INFINITY), 0);
+    let mut comb = super::Comb {
+        buffer: Vec::new(),
+        position: 0,
+        filter_state: 0.,
+    };
+    assert_eq!(comb.process(1., [0.5; 2], 0.1), 0.);
+    let mut allpass = super::AllPass {
+        buffer: Vec::new(),
+        position: 0,
+    };
+    assert_eq!(allpass.process(1.), 1.);
+    let params = Arc::new(AcousticDspParams::default());
+    let mut processor = AcousticDspProcessor::new(params.clone(), 1, 48_000);
+    let original = processor.feedback_decay_s;
+    params.set_reverb(
+        ReverbEstimate::from_parameters(0.5, 4., 0.).with_band_decay(6., 2.),
+        1.,
+    );
+    for _ in 0..4096 {
+        processor.process_sample(0.);
+    }
+    assert!(processor.feedback_decay_s[0] > original[0]);
+    processor.low_first.clear();
+    assert_eq!(processor.process_sample_split(0.25), (0.25, 0.));
+    processor.low_first.push(0.);
+    processor.low_second.clear();
+    assert_eq!(processor.process_sample_split(0.25), (0.25, 0.));
+}

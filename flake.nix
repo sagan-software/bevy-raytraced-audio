@@ -93,8 +93,6 @@
           name = "source-with-audio-assets";
         };
         packageName = "bevy-raytraced-audio";
-        coverageThreshold = 91;
-        coverageIgnoreRegex = "(^|/)(tests|benches|examples)/";
         supportedFeatures = [
           "bevy_0_17"
           "bevy_0_18"
@@ -438,22 +436,13 @@
             cargoArtifacts = devCargoArtifacts;
             pname = "${packageName}-coverage";
             version = "0.1.0";
-            nativeBuildInputs = commonArgs.nativeBuildInputs ++ [ pkgs.cargo-llvm-cov ];
+            nativeBuildInputs = commonArgs.nativeBuildInputs ++ [
+              pkgs.cargo-llvm-cov
+              pkgs.python3
+            ];
             buildPhaseCargoCommand = ''
               mkdir -p "$out"
-              cargo llvm-cov clean --workspace
-              cargo llvm-cov --workspace --locked --remap-path-prefix --no-report
-              cargo llvm-cov report --html --output-dir "$out" \
-                --ignore-filename-regex '${coverageIgnoreRegex}'
-              cargo llvm-cov report --lcov --output-path "$out/lcov.info" \
-                --ignore-filename-regex '${coverageIgnoreRegex}'
-              cargo llvm-cov report --json --output-path "$out/coverage.json" \
-                --ignore-filename-regex '${coverageIgnoreRegex}' \
-                --skip-functions
-              cargo llvm-cov report \
-                --fail-under-lines ${toString coverageThreshold} \
-                --ignore-filename-regex '${coverageIgnoreRegex}' \
-                --show-missing-lines
+              ${pkgs.bash}/bin/bash ${./scripts/coverage-strict.sh} "$out"
               test -s "$out/html/index.html"
               test -s "$out/lcov.info"
               test -s "$out/coverage.json"
@@ -483,6 +472,7 @@
           runtimeInputs = [
             ensureAgentLink
             pkgs.cargo-llvm-cov
+            pkgs.python3
             rustToolchain
           ]
           ++ cacheTools
@@ -497,19 +487,7 @@
               report_dir="target/llvm-cov"
               mkdir -p "$report_dir"
 
-              cargo llvm-cov clean --workspace
-              cargo llvm-cov --workspace --locked --remap-path-prefix --no-report
-              cargo llvm-cov report --html --output-dir "$report_dir" \
-                --ignore-filename-regex '${coverageIgnoreRegex}'
-              cargo llvm-cov report --lcov --output-path "$report_dir/lcov.info" \
-                --ignore-filename-regex '${coverageIgnoreRegex}'
-              cargo llvm-cov report --json --output-path "$report_dir/coverage.json" \
-                --ignore-filename-regex '${coverageIgnoreRegex}' \
-                --skip-functions
-              cargo llvm-cov report \
-                --fail-under-lines ${toString coverageThreshold} \
-                --ignore-filename-regex '${coverageIgnoreRegex}' \
-                --show-missing-lines
+              ${pkgs.bash}/bin/bash ${./scripts/coverage-strict.sh} "$report_dir"
 
               test -s "$report_dir/html/index.html"
               test -s "$report_dir/lcov.info"

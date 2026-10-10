@@ -1,0 +1,804 @@
+{"dhatFileVersion":2
+,"mode":"heap","verb":"Allocated"
+,"bklt":true,"bkacc":true
+,"tu":"instrs","Mtu":"Minstr"
+,"tuth":500
+,"cmd":"target/performance/profile-final dsp/48000/changing64 1"
+,"pid":339136
+,"te":24138677
+,"tg":12309613
+,"pps":
+ [{"tb":472,"tbk":1
+  ,"tl":203822
+  ,"mb":472,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":3502,"wb":1595
+  ,"acc":[212,172,-2,156,-4,0,-8,221,-8,107,-8,16,-8,24,-8,17,-8,16,-8,29,-8,10,-8,3,-8,10,-8,1,-8,10,-8,3,-4,18,15,-2,5,2,-8,0,-2,1,-6,0,-8,7,-8,10,-8,0,-16,1,-8,0,-8,2,-4,12,-4,0,-8,1,-8,0,-8,22,-4,4,-4,3,-8,5,-88,1,-136,0,-8,1]
+  ,"fs":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":360,"tbk":2
+  ,"tl":202670
+  ,"mb":240,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":8494,"wb":7108
+  ,"fs":[1,17,18,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":1024,"tbk":1
+  ,"tl":202867
+  ,"mb":1024,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":13875,"wb":7168
+  ,"acc":[28,-789,21,-234,19]
+  ,"fs":[1,19,20,21,22,18,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":32,"tbk":1
+  ,"tl":392
+  ,"mb":0,"mbk":0
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":32,"wb":56
+  ,"acc":[-8,2,-24,3]
+  ,"fs":[23,24,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":152,"tbk":1
+  ,"tl":339
+  ,"mb":0,"mbk":0
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":24,"wb":16
+  ,"acc":[-8,3,-8,2,-136,0]
+  ,"fs":[25,26,27,28,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":32,"tbk":1
+  ,"tl":241
+  ,"mb":0,"mbk":0
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":0,"wb":32
+  ,"acc":[-32,1]
+  ,"fs":[23,29,28,4,5,6,7,8,9,10,11,12,13,14,15,16]
+  }
+ ,{"tb":4,"tbk":1
+  ,"tl":23474536
+  ,"mb":0,"mbk":0
+  ,"gb":4,"gbk":1
+  ,"eb":4,"ebk":1
+  ,"rb":0,"wb":4
+  ,"acc":[-4,1]
+  ,"fs":[1,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,16]
+  }
+ ,{"tb":544,"tbk":1
+  ,"tl":23474459
+  ,"mb":0,"mbk":0
+  ,"gb":544,"gbk":1
+  ,"eb":544,"ebk":1
+  ,"rb":0,"wb":58
+  ,"acc":[-16,1,-80,0,-40,1,-402,0,-2,1,-4,0]
+  ,"fs":[1,55,56,57,58,59,60,61,62,63,64,65,66,67,68,47,48,49,50,51,52,53,54,16]
+  }
+ ,{"tb":72,"tbk":1
+  ,"tl":23467798
+  ,"mb":0,"mbk":0
+  ,"gb":72,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":72,"wb":72
+  ,"acc":[-72,2]
+  ,"fs":[1,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":53,"tbk":3
+  ,"tl":23468377
+  ,"mb":0,"mbk":0
+  ,"gb":20,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":175,"wb":53
+  ,"fs":[1,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,82,83,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":512,"tbk":1
+  ,"tl":23436114
+  ,"mb":0,"mbk":0
+  ,"gb":512,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":2560,"wb":512
+  ,"acc":[-512,6]
+  ,"fs":[1,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":3584,"tbk":64
+  ,"tl":1500758656
+  ,"mb":3584,"mbk":64
+  ,"gb":3584,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":23104,"wb":7936
+  ,"acc":[-8,640,-8,256,-8,768,-24,704,640,192,-6,0]
+  ,"fs":[1,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":1904,"tbk":3
+  ,"tl":11640125
+  ,"mb":1088,"mbk":1
+  ,"gb":1088,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":67072,"wb":1632
+  ,"fs":[1,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":16,"tbk":1
+  ,"tl":11638224
+  ,"mb":16,"mbk":1
+  ,"gb":16,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":64,"wb":48
+  ,"acc":[-8,10,-8,4]
+  ,"fs":[1,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":2976,"tbk":1
+  ,"tl":11637490
+  ,"mb":2976,"mbk":1
+  ,"gb":2976,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":4053568,"wb":2928
+  ,"fs":[1,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,177,204,205,206,207,208,209,210,211,184,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":672,"tbk":1
+  ,"tl":7522
+  ,"mb":672,"mbk":1
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":6320,"wb":2576
+  ,"acc":[-8,12,-8,9,-8,13,-8,12,-8,9,-8,13,-8,12,-8,18,-8,14,-16,18,-8,14,-8,18,-8,17,-8,18,-8,14,-8,17,-8,18,-8,14,-8,17,-16,15,-8,12,-16,15,-8,12,-8,15,-16,12,-8,10,-8,13,-8,12,-8,10,-8,13,-8,9,-8,11,-8,8,-8,9,-8,11,-8,8,-8,9,-8,7,-8,11,-8,8,-8,7,-8,11,-8,8,-8,7,-8,9,-8,14,-8,13,-8,10,-8,14,-8,13,-8,10,-8,13,-16,18,-8,14,-16,18,-8,14,-8,17,-16,19,-8,16,-16,19,-8,16,-8,17,-16,16,-8,14,-16,16,-8,14,-8,12,-16,11,-8,10,-16,11,-8,10,-8,6]
+  ,"fs":[1,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,177,204,205,206,207,208,209,210,211,184,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":224,"tbk":3
+  ,"tl":11628784
+  ,"mb":128,"mbk":1
+  ,"gb":128,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":393312,"wb":192
+  ,"fs":[1,149,150,151,152,153,154,155,232,233,234,235,236,237,238,239,240,241,241,242,243,244,245,246,177,204,205,206,207,208,209,210,211,184,127]
+  }
+ ,{"tb":864,"tbk":2
+  ,"tl":11628596
+  ,"mb":576,"mbk":1
+  ,"gb":576,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":1863968,"wb":792
+  ,"fs":[1,149,150,151,152,153,154,155,247,248,249,250,251,252,241,241,242,243,244,245,246,177,204,205,206,207,208,209,210,211,184,127]
+  }
+ ,{"tb":17920,"tbk":1
+  ,"tl":11963918
+  ,"mb":17920,"mbk":1
+  ,"gb":17920,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":9038848,"wb":2131456
+  ,"fs":[1,253,254,255,256,257,258,259,260,261,262,263,264,265,266,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":256,"tbk":64
+  ,"tl":760260608
+  ,"mb":256,"mbk":64
+  ,"gb":256,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":131072,"wb":131072
+  ,"acc":[-4,0]
+  ,"fs":[25,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":256,"tbk":64
+  ,"tl":760258240
+  ,"mb":256,"mbk":64
+  ,"gb":256,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":131072,"wb":131072
+  ,"acc":[-4,0]
+  ,"fs":[25,291,292,293,294,295,296,297,298,299,300,301,302,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":3686912,"tbk":64
+  ,"tl":760252352
+  ,"mb":3686912,"mbk":64
+  ,"gb":3686912,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":131072,"wb":131072
+  ,"fs":[25,303,304,305,306,307,308,309,310,311,312,313,314,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":10240,"tbk":64
+  ,"tl":760261760
+  ,"mb":10240,"mbk":64
+  ,"gb":10240,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":3676160,"wb":1582080
+  ,"acc":[-8,128,-16,32896,-12,64,-4,0,-8,128,-16,32896,-12,64,-4,0,-8,128,-16,32896,-12,64,-4,0,-8,128,-16,32896,-12,64,-4,0]
+  ,"fs":[1,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":311040,"tbk":64
+  ,"tl":760243968
+  ,"mb":311040,"mbk":64
+  ,"gb":311040,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":131072,"wb":131072
+  ,"fs":[25,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":355840,"tbk":64
+  ,"tl":760238080
+  ,"mb":355840,"mbk":64
+  ,"gb":355840,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":131072,"wb":131072
+  ,"fs":[25,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":396288,"tbk":64
+  ,"tl":760232128
+  ,"mb":396288,"mbk":64
+  ,"gb":396288,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":131072,"wb":131072
+  ,"fs":[25,377,378,379,380,381,382,383,384,385,386,387,388,389,390,391,392,393,394,395,396,397,398,399,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":450560,"tbk":64
+  ,"tl":760226176
+  ,"mb":450560,"mbk":64
+  ,"gb":450560,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":131072,"wb":131072
+  ,"fs":[25,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420,421,422,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":4096,"tbk":64
+  ,"tl":760233344
+  ,"mb":4096,"mbk":64
+  ,"gb":4096,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":1574912,"wb":528896
+  ,"acc":[-8,128,-8,32896,-8,32832,-8,64,-8,128,-8,32896,-8,32832,-8,128]
+  ,"fs":[1,423,424,425,426,427,428,429,430,431,432,433,434,435,436,437,438,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":154880,"tbk":64
+  ,"tl":760219264
+  ,"mb":154880,"mbk":64
+  ,"gb":154880,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":131072,"wb":131072
+  ,"fs":[25,439,440,441,442,443,444,445,446,447,448,449,450,451,452,453,454,455,456,457,458,459,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":94976,"tbk":64
+  ,"tl":760212288
+  ,"mb":94976,"mbk":64
+  ,"gb":94976,"gbk":64
+  ,"eb":0,"ebk":0
+  ,"rb":131072,"wb":131072
+  ,"fs":[25,460,461,462,463,464,465,466,467,468,469,470,471,472,473,474,475,476,477,478,479,480,279,280,281,282,283,284,285,286,287,288,289,290,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":64,"tbk":1
+  ,"tl":11822706
+  ,"mb":64,"mbk":1
+  ,"gb":64,"gbk":1
+  ,"eb":0,"ebk":0
+  ,"rb":128,"wb":80
+  ,"acc":[-8,2,-16,4,-8,2,-16,4,-4,5,-8,3,-4,1]
+  ,"fs":[1,481,482,483,484,485,486,487,488,489,127,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ,{"tb":1024,"tbk":1
+  ,"tl":33102
+  ,"mb":0,"mbk":0
+  ,"gb":0,"gbk":0
+  ,"eb":0,"ebk":0
+  ,"rb":21,"wb":18
+  ,"acc":[-3,3,-15,2,-1006,0]
+  ,"fs":[1,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,506,507,177,508,509,510,511,512,513,514,515,84,85,86,87,88,89,90,91,92,93,94,95,16]
+  }
+ ]
+,"ftbl":
+ ["[root]"
+ ,"0x48EB810: malloc (in /nix/store/l8kvr38dk84afq0bffmsdybfix0wdvci-valgrind-3.26.0/libexec/valgrind/vgpreload_dhat-amd64-linux.so)"
+ ,"0x4AB0AE7: __fopen_internal (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC93C6: pthread_getattr_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4093753: get_stack_start (stack_overflow.rs:366)"
+ ,"0x4093753: stack_start_aligned (stack_overflow.rs:383)"
+ ,"0x4093753: install_main_guard_linux (stack_overflow.rs:441)"
+ ,"0x4093753: install_main_guard (stack_overflow.rs:407)"
+ ,"0x4093753: init (stack_overflow.rs:161)"
+ ,"0x4093753: init (mod.rs:38)"
+ ,"0x4093753: init (rt.rs:118)"
+ ,"0x4093753: {closure#0} (rt.rs:173)"
+ ,"0x4093753: do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (panicking.rs:576)"
+ ,"0x4093753: catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (panicking.rs:544)"
+ ,"0x4093753: catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (panic.rs:359)"
+ ,"0x4093753: std::rt::lang_start_internal (rt.rs:171)"
+ ,"0x4049A9B: main (in /home/leona/Code/github.com/sagan-software/bevy-raytraced-audio/target/performance/profile-final)"
+ ,"0x4AB1C4C: getdelim (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC9525: pthread_getattr_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AAFE5F: _IO_file_doallocate (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC0E05: _IO_doallocbuf (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4ABE79D: _IO_file_underflow@@GLIBC_2.2.5 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AB1C78: getdelim (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x48F3761: realloc (in /nix/store/l8kvr38dk84afq0bffmsdybfix0wdvci-valgrind-3.26.0/libexec/valgrind/vgpreload_dhat-amd64-linux.so)"
+ ,"0x4AC9279: pthread_getattr_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x48F3549: calloc (in /nix/store/l8kvr38dk84afq0bffmsdybfix0wdvci-valgrind-3.26.0/libexec/valgrind/vgpreload_dhat-amd64-linux.so)"
+ ,"0x4AC5A42: __pthread_attr_extension (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC5E1C: pthread_attr_setaffinity_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC9307: pthread_getattr_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x4AC5E3A: pthread_attr_setaffinity_np@@GLIBC_2.32 (in /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6)"
+ ,"0x409615B: alloc (unix.rs:31)"
+ ,"0x409615B: __rdl_alloc (alloc.rs:472)"
+ ,"0x409615B: alloc (alloc.rs:130)"
+ ,"0x409615B: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x409615B: alloc_impl (alloc.rs:424)"
+ ,"0x409615B: allocate (alloc.rs:541)"
+ ,"0x409615B: try_clone_from_ref_in<str, alloc::alloc::Global> (boxed.rs:886)"
+ ,"0x409615B: clone_from_ref_in<str, alloc::alloc::Global> (boxed.rs:845)"
+ ,"0x409615B: clone_from_ref<str> (boxed.rs:798)"
+ ,"0x409615B: from (convert.rs:138)"
+ ,"0x409615B: call_once<fn(&str) -> alloc::boxed::Box<str, alloc::alloc::Global>, (&str)> (function.rs:250)"
+ ,"0x409615B: map<&str, alloc::boxed::Box<str, alloc::alloc::Global>, fn(&str) -> alloc::boxed::Box<str, alloc::alloc::Global>> (option.rs:1163)"
+ ,"0x409615B: {closure#0} (thread_info.rs:114)"
+ ,"0x409615B: {closure#0}<std::sys::pal::unix::stack_overflow::thread_info::set_current_info::{closure_env#0}, core::option::Option<alloc::boxed::Box<str, alloc::alloc::Global>>> (current.rs:234)"
+ ,"0x409615B: try_with_current<std::thread::current::with_current_name::{closure_env#0}<std::sys::pal::unix::stack_overflow::thread_info::set_current_info::{closure_env#0}, core::option::Option<alloc::boxed::Box<str, alloc::alloc::Global>>>, core::option::Option<alloc::boxed::Box<str, alloc::alloc::Global>>> (current.rs:204)"
+ ,"0x409615B: with_current_name<std::sys::pal::unix::stack_overflow::thread_info::set_current_info::{closure_env#0}, core::option::Option<alloc::boxed::Box<str, alloc::alloc::Global>>> (current.rs:216)"
+ ,"0x409615B: std::sys::pal::unix::stack_overflow::thread_info::set_current_info (thread_info.rs:114)"
+ ,"0x40938EF: init (stack_overflow.rs:185)"
+ ,"0x40938EF: init (mod.rs:38)"
+ ,"0x40938EF: init (rt.rs:118)"
+ ,"0x40938EF: {closure#0} (rt.rs:173)"
+ ,"0x40938EF: do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (panicking.rs:576)"
+ ,"0x40938EF: catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (panicking.rs:544)"
+ ,"0x40938EF: catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (panic.rs:359)"
+ ,"0x40938EF: std::rt::lang_start_internal (rt.rs:171)"
+ ,"0x409635D: alloc (unix.rs:31)"
+ ,"0x409635D: __rdl_alloc (alloc.rs:472)"
+ ,"0x409635D: alloc (alloc.rs:130)"
+ ,"0x409635D: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x409635D: alloc_impl (alloc.rs:424)"
+ ,"0x409635D: allocate (alloc.rs:541)"
+ ,"0x409635D: try_new_uninit_in<alloc::collections::btree::node::LeafNode<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo>, alloc::alloc::Global> (boxed.rs:619)"
+ ,"0x409635D: new_uninit_in<alloc::collections::btree::node::LeafNode<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo>, alloc::alloc::Global> (boxed.rs:586)"
+ ,"0x409635D: new<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (node.rs:87)"
+ ,"0x409635D: new_leaf<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (node.rs:225)"
+ ,"0x409635D: insert_entry<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (entry.rs:452)"
+ ,"0x409635D: insert<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (entry.rs:426)"
+ ,"0x409635D: insert<usize, std::sys::pal::unix::stack_overflow::thread_info::ThreadInfo, alloc::alloc::Global> (map.rs:1052)"
+ ,"0x409635D: std::sys::pal::unix::stack_overflow::thread_info::set_current_info (thread_info.rs:122)"
+ ,"0x4094010: alloc (unix.rs:31)"
+ ,"0x4094010: __rdl_alloc (alloc.rs:472)"
+ ,"0x4094010: alloc (alloc.rs:130)"
+ ,"0x4094010: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4094010: alloc_impl (alloc.rs:424)"
+ ,"0x4094010: allocate (alloc.rs:541)"
+ ,"0x4094010: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4094010: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4094010: with_capacity_in<std::ffi::os_str::OsString, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4094010: with_capacity_in<std::ffi::os_str::OsString, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4094010: with_capacity<std::ffi::os_str::OsString> (mod.rs:522)"
+ ,"0x4094010: args (unix.rs:24)"
+ ,"0x4094010: std::env::args_os (env.rs:864)"
+ ,"0x4049318: args (library/std/src/env.rs:829)"
+ ,"0x4049318: acoustic_performance::main (main.rs:5)"
+ ,"0x40492D2: call_once<fn(), ()> (function.rs:250)"
+ ,"0x40492D2: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()> (backtrace.rs:166)"
+ ,"0x40492E8: std::rt::lang_start::<()>::{closure#0} (rt.rs:206)"
+ ,"0x40939AF: call_once<(), (dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)> (function.rs:287)"
+ ,"0x40939AF: do_call<&(dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32> (panicking.rs:576)"
+ ,"0x40939AF: catch_unwind<i32, &(dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe)> (panicking.rs:544)"
+ ,"0x40939AF: catch_unwind<&(dyn core::ops::function::Fn<(), Output=i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe), i32> (panic.rs:359)"
+ ,"0x40939AF: {closure#0} (rt.rs:175)"
+ ,"0x40939AF: do_call<std::rt::lang_start_internal::{closure_env#0}, isize> (panicking.rs:576)"
+ ,"0x40939AF: catch_unwind<isize, std::rt::lang_start_internal::{closure_env#0}> (panicking.rs:544)"
+ ,"0x40939AF: catch_unwind<std::rt::lang_start_internal::{closure_env#0}, isize> (panic.rs:359)"
+ ,"0x40939AF: std::rt::lang_start_internal (rt.rs:171)"
+ ,"0x40940AC: alloc (unix.rs:31)"
+ ,"0x40940AC: __rdl_alloc (alloc.rs:472)"
+ ,"0x40940AC: alloc (alloc.rs:130)"
+ ,"0x40940AC: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x40940AC: alloc_impl (alloc.rs:424)"
+ ,"0x40940AC: allocate (alloc.rs:541)"
+ ,"0x40940AC: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x40940AC: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x40940AC: with_capacity_in<u8, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x40940AC: with_capacity_in<u8, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x40940AC: to_vec<u8, alloc::alloc::Global> (slice.rs:448)"
+ ,"0x40940AC: to_vec_in<u8, alloc::alloc::Global> (slice.rs:400)"
+ ,"0x40940AC: to_vec<u8> (slice.rs:376)"
+ ,"0x40940AC: args (unix.rs:58)"
+ ,"0x40940AC: std::env::args_os (env.rs:864)"
+ ,"0x4048100: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x4048100: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x4048100: alloc (alloc.rs:130)"
+ ,"0x4048100: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4048100: alloc_impl (alloc.rs:424)"
+ ,"0x4048100: allocate (alloc.rs:541)"
+ ,"0x4048100: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4048100: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4048100: with_capacity_in<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4048100: with_capacity_in<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4048100: with_capacity<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>> (mod.rs:522)"
+ ,"0x4048100: from_iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>> (spec_from_iter_nested.rs:52)"
+ ,"0x4048100: from_iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>> (spec_from_iter.rs:33)"
+ ,"0x4048100: from_iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>> (mod.rs:3996)"
+ ,"0x4048100: collect<core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>, alloc::vec::Vec<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4048100: <acoustic_performance::Workload>::new (lib.rs:262)"
+ ,"0x404962C: acoustic_performance::main (main.rs:12)"
+ ,"0x4048137: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x4048137: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x4048137: alloc (alloc.rs:130)"
+ ,"0x4048137: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4048137: alloc_impl (alloc.rs:424)"
+ ,"0x4048137: allocate (alloc.rs:541)"
+ ,"0x4048137: box_new_uninit (boxed.rs:251)"
+ ,"0x4048137: new<alloc::sync::ArcInner<bevy_raytraced_audio::dsp::AcousticDspParams>> (boxed.rs:290)"
+ ,"0x4048137: new<bevy_raytraced_audio::dsp::AcousticDspParams> (sync.rs:440)"
+ ,"0x4048137: {closure#4} (lib.rs:261)"
+ ,"0x4048137: {closure#0}<i32, alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, (), acoustic_performance::{impl#1}::new::{closure_env#4}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>>>> (map.rs:88)"
+ ,"0x4048137: fold<core::ops::range::Range<i32>, (), core::iter::adapters::map::map_fold::{closure_env#0}<i32, alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, (), acoustic_performance::{impl#1}::new::{closure_env#4}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>>>>> (iterator.rs:2667)"
+ ,"0x4048137: fold<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>>>> (map.rs:128)"
+ ,"0x4048137: for_each<core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>>> (iterator.rs:887)"
+ ,"0x4048137: extend_trusted<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::alloc::Global, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>> (mod.rs:4132)"
+ ,"0x4048137: spec_extend<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x4048137: from_iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>> (spec_from_iter_nested.rs:60)"
+ ,"0x4048137: from_iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>> (spec_from_iter.rs:33)"
+ ,"0x4048137: from_iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>> (mod.rs:3996)"
+ ,"0x4048137: collect<core::iter::adapters::map::Map<core::ops::range::Range<i32>, acoustic_performance::{impl#1}::new::{closure_env#4}>, alloc::vec::Vec<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4048137: <acoustic_performance::Workload>::new (lib.rs:262)"
+ ,"0x405A0F7: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x405A0F7: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x405A0F7: alloc (alloc.rs:130)"
+ ,"0x405A0F7: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x405A0F7: alloc_impl (alloc.rs:424)"
+ ,"0x405A0F7: allocate (alloc.rs:541)"
+ ,"0x405A0F7: <alloc::raw_vec::RawVecInner>::finish_grow (mod.rs:560)"
+ ,"0x4059B09: grow_amortized<alloc::alloc::Global> (mod.rs:529)"
+ ,"0x4059B09: grow_one<alloc::alloc::Global> (mod.rs:493)"
+ ,"0x4059B09: <alloc::raw_vec::RawVec<bevy_raytraced_audio::triangle3d::Triangle3d>>::grow_one (mod.rs:188)"
+ ,"0x405250C: push_mut<bevy_raytraced_audio::triangle3d::Triangle3d, alloc::alloc::Global> (mod.rs:1033)"
+ ,"0x405250C: push<bevy_raytraced_audio::triangle3d::Triangle3d, alloc::alloc::Global> (mod.rs:996)"
+ ,"0x405250C: <bevy_raytraced_audio::scene3d::AcousticScene3d>::add_triangle (scene3d.rs:36)"
+ ,"0x4046EB4: acoustic_performance::scene3 (lib.rs:121)"
+ ,"0x40481DE: <acoustic_performance::Workload>::new (lib.rs:264)"
+ ,"0x404FCFD: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x404FCFD: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x404FCFD: alloc (alloc.rs:130)"
+ ,"0x404FCFD: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x404FCFD: alloc_impl (alloc.rs:424)"
+ ,"0x404FCFD: allocate (alloc.rs:541)"
+ ,"0x404FCFD: box_new_uninit (boxed.rs:251)"
+ ,"0x404FCFD: new<alloc::sync::ArcInner<()>> (boxed.rs:290)"
+ ,"0x404FCFD: new<()> (sync.rs:440)"
+ ,"0x404FCFD: {closure#0} (scene2d.rs:31)"
+ ,"0x404FCFD: {closure#0}<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene2d::{impl#0}::revision::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x404FCFD: {closure#0}<alloc::sync::Arc<(), alloc::alloc::Global>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene2d::{impl#0}::revision::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x404FCFD: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<alloc::sync::Arc<()>>>::initialize<<std::sync::once_lock::OnceLock<alloc::sync::Arc<()>>>::get_or_init<<bevy_raytraced_audio::scene2d::AcousticScene2d>::revision::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x4084A48: <std::sys::sync::once::futex::Once>::call (futex.rs:183)"
+ ,"0x404A918: call_once_force<std::sync::once_lock::{impl#0}::initialize::{closure_env#0}<alloc::sync::Arc<(), alloc::alloc::Global>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene3d::{impl#0}::revision::{closure_env#0}>, !>> (once.rs:226)"
+ ,"0x404A918: <std::sync::once_lock::OnceLock<alloc::sync::Arc<()>>>::initialize::<<std::sync::once_lock::OnceLock<alloc::sync::Arc<()>>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::revision::{closure#0}>::{closure#0}, !> (once_lock.rs:571)"
+ ,"0x4055669: get_or_try_init<alloc::sync::Arc<(), alloc::alloc::Global>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene3d::{impl#0}::revision::{closure_env#0}>, !> (once_lock.rs:439)"
+ ,"0x4055669: get_or_init<alloc::sync::Arc<(), alloc::alloc::Global>, bevy_raytraced_audio::scene3d::{impl#0}::revision::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4055669: revision (scene3d.rs:31)"
+ ,"0x4055669: <bevy_raytraced_audio::scene3d::AcousticScene3d>::trace_listener (ray_tracer3d.rs:223)"
+ ,"0x4048325: <acoustic_performance::Workload>::new (lib.rs:266)"
+ ,"0x405043C: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x405043C: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x405043C: alloc (alloc.rs:130)"
+ ,"0x405043C: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x405043C: alloc_impl (alloc.rs:424)"
+ ,"0x405043C: allocate (alloc.rs:541)"
+ ,"0x405043C: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x405043C: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x405043C: with_capacity_in<bevy_raytraced_audio::scene3d::TriangleGeometry, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x405043C: with_capacity_in<bevy_raytraced_audio::scene3d::TriangleGeometry, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x405043C: with_capacity<bevy_raytraced_audio::scene3d::TriangleGeometry> (mod.rs:522)"
+ ,"0x405043C: from_iter<bevy_raytraced_audio::scene3d::TriangleGeometry, core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<bevy_raytraced_audio::triangle3d::Triangle3d>>, fn(bevy_raytraced_audio::triangle3d::Triangle3d) -> bevy_raytraced_audio::scene3d::TriangleGeometry>> (spec_from_iter_nested.rs:52)"
+ ,"0x405043C: from_iter<bevy_raytraced_audio::scene3d::TriangleGeometry, core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<bevy_raytraced_audio::triangle3d::Triangle3d>>, fn(bevy_raytraced_audio::triangle3d::Triangle3d) -> bevy_raytraced_audio::scene3d::TriangleGeometry>> (spec_from_iter.rs:33)"
+ ,"0x405043C: from_iter<bevy_raytraced_audio::scene3d::TriangleGeometry, core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<bevy_raytraced_audio::triangle3d::Triangle3d>>, fn(bevy_raytraced_audio::triangle3d::Triangle3d) -> bevy_raytraced_audio::scene3d::TriangleGeometry>> (mod.rs:3996)"
+ ,"0x405043C: collect<core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<bevy_raytraced_audio::triangle3d::Triangle3d>>, fn(bevy_raytraced_audio::triangle3d::Triangle3d) -> bevy_raytraced_audio::scene3d::TriangleGeometry>, alloc::vec::Vec<bevy_raytraced_audio::scene3d::TriangleGeometry, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x405043C: {closure#0} (scene3d.rs:268)"
+ ,"0x405043C: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x405043C: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x405043C: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x404A9AA: call_once_force<std::sync::once_lock::{impl#0}::initialize::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !>> (once.rs:226)"
+ ,"0x404A9AA: <std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !> (once_lock.rs:571)"
+ ,"0x40572BD: get_or_try_init<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !> (once_lock.rs:439)"
+ ,"0x40572BD: get_or_init<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x40572BD: acceleration (scene3d.rs:262)"
+ ,"0x40572BD: closest_hit (ray_tracer3d.rs:551)"
+ ,"0x40572BD: follow_ray (ray_tracer3d.rs:346)"
+ ,"0x40572BD: <bevy_raytraced_audio::scene3d::AcousticScene3d>::trace_listener (ray_tracer3d.rs:285)"
+ ,"0x4050B51: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x4050B51: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x4050B51: alloc (alloc.rs:130)"
+ ,"0x4050B51: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4050B51: alloc_impl (alloc.rs:424)"
+ ,"0x4050B51: allocate (alloc.rs:541)"
+ ,"0x4050B51: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4050B51: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4050B51: with_capacity_in<bevy_raytraced_audio::bvh::PrimitiveBounds, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4050B51: with_capacity_in<bevy_raytraced_audio::bvh::PrimitiveBounds, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4050B51: with_capacity<bevy_raytraced_audio::bvh::PrimitiveBounds> (mod.rs:522)"
+ ,"0x4050B51: from_iter<bevy_raytraced_audio::bvh::PrimitiveBounds, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>, bevy_raytraced_audio::bvh::{impl#1}::build::{closure_env#0}<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>>>> (spec_from_iter_nested.rs:52)"
+ ,"0x4050B51: from_iter<bevy_raytraced_audio::bvh::PrimitiveBounds, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>, bevy_raytraced_audio::bvh::{impl#1}::build::{closure_env#0}<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>>>> (spec_from_iter.rs:33)"
+ ,"0x4050B51: from_iter<bevy_raytraced_audio::bvh::PrimitiveBounds, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>, bevy_raytraced_audio::bvh::{impl#1}::build::{closure_env#0}<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>>>> (mod.rs:3996)"
+ ,"0x4050B51: collect<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>, bevy_raytraced_audio::bvh::{impl#1}::build::{closure_env#0}<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>>>, alloc::vec::Vec<bevy_raytraced_audio::bvh::PrimitiveBounds, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4050B51: build<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>> (bvh.rs:268)"
+ ,"0x4050B51: {closure#0} (scene3d.rs:269)"
+ ,"0x4050B51: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4050B51: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x4050B51: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x404FCA2: grow_amortized<alloc::alloc::Global> (mod.rs:529)"
+ ,"0x404FCA2: <alloc::raw_vec::RawVecInner<_>>::reserve::do_reserve_and_handle::<alloc::alloc::Global> (mod.rs:665)"
+ ,"0x405BBA2: reserve<alloc::alloc::Global> (mod.rs:672)"
+ ,"0x405BBA2: reserve<usize, alloc::alloc::Global> (mod.rs:341)"
+ ,"0x405BBA2: reserve<usize, alloc::alloc::Global> (mod.rs:1461)"
+ ,"0x405BBA2: extend_trusted<usize, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::bvh::PrimitiveBounds>, bevy_raytraced_audio::bvh::{impl#1}::build_node::{closure_env#1}>> (mod.rs:4128)"
+ ,"0x405BBA2: spec_extend<usize, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::bvh::PrimitiveBounds>, bevy_raytraced_audio::bvh::{impl#1}::build_node::{closure_env#1}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x405BBA2: extend<usize, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<bevy_raytraced_audio::bvh::PrimitiveBounds>, bevy_raytraced_audio::bvh::{impl#1}::build_node::{closure_env#1}>> (mod.rs:4064)"
+ ,"0x405BBA2: <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node (bvh.rs:488)"
+ ,"0x405BAAB: <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node (bvh.rs:523)"
+ ,"0x4050D7D: build<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<bevy_raytraced_audio::scene3d::TriangleGeometry>>, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure#0}::{closure_env#0}>> (bvh.rs:292)"
+ ,"0x4050D7D: {closure#0} (scene3d.rs:269)"
+ ,"0x4050D7D: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4050D7D: {closure#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<bevy_raytraced_audio::scene3d::SceneAcceleration3d, bevy_raytraced_audio::scene3d::{impl#0}::acceleration::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x4050D7D: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x4059C59: grow_amortized<alloc::alloc::Global> (mod.rs:529)"
+ ,"0x4059C59: grow_one<alloc::alloc::Global> (mod.rs:493)"
+ ,"0x4059C59: <alloc::raw_vec::RawVec<bevy_raytraced_audio::bvh::Node>>::grow_one (mod.rs:188)"
+ ,"0x405BA35: push_mut<bevy_raytraced_audio::bvh::Node, alloc::alloc::Global> (mod.rs:1033)"
+ ,"0x405BA35: push<bevy_raytraced_audio::bvh::Node, alloc::alloc::Global> (mod.rs:996)"
+ ,"0x405BA35: <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node (bvh.rs:491)"
+ ,"0x4048837: alloc (alloc.rs:130)"
+ ,"0x4048837: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4048837: alloc_impl (alloc.rs:424)"
+ ,"0x4048837: allocate (alloc.rs:541)"
+ ,"0x4048837: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4048837: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4048837: with_capacity_in<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4048837: with_capacity_in<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4048837: with_capacity<bevy_raytraced_audio::dsp::AcousticDspProcessor> (mod.rs:522)"
+ ,"0x4048837: from_iter<bevy_raytraced_audio::dsp::AcousticDspProcessor, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>> (spec_from_iter_nested.rs:52)"
+ ,"0x4048837: from_iter<bevy_raytraced_audio::dsp::AcousticDspProcessor, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>> (spec_from_iter.rs:33)"
+ ,"0x4048837: from_iter<bevy_raytraced_audio::dsp::AcousticDspProcessor, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>> (mod.rs:3996)"
+ ,"0x4048837: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4048837: <acoustic_performance::Workload>::new (lib.rs:278)"
+ ,"0x4058EC3: alloc_zeroed (library/std/src/sys/alloc/unix.rs:53)"
+ ,"0x4058EC3: __rdl_alloc_zeroed (library/std/src/alloc.rs:504)"
+ ,"0x4058EC3: alloc_zeroed (alloc.rs:290)"
+ ,"0x4058EC3: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4058EC3: alloc_impl (alloc.rs:424)"
+ ,"0x4058EC3: allocate_zeroed (alloc.rs:547)"
+ ,"0x4058EC3: try_allocate_in<alloc::alloc::Global> (mod.rs:468)"
+ ,"0x4058EC3: with_capacity_zeroed_in<alloc::alloc::Global> (mod.rs:587)"
+ ,"0x4058EC3: with_capacity_zeroed_in<f32, alloc::alloc::Global> (mod.rs:221)"
+ ,"0x4058EC3: from_elem<f32, alloc::alloc::Global> (spec_from_elem.rs:24)"
+ ,"0x4058EC3: from_elem<f32> (mod.rs:3773)"
+ ,"0x4058EC3: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:376)"
+ ,"0x4048B4B: {closure#5} (lib.rs:277)"
+ ,"0x4048B4B: {closure#0}<&alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, bevy_raytraced_audio::dsp::AcousticDspProcessor, (), acoustic_performance::{impl#1}::new::{closure_env#5}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>>>> (map.rs:88)"
+ ,"0x4048B4B: fold<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, (), core::iter::adapters::map::map_fold::{closure_env#0}<&alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>, bevy_raytraced_audio::dsp::AcousticDspProcessor, (), acoustic_performance::{impl#1}::new::{closure_env#5}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>>>>> (macros.rs:274)"
+ ,"0x4048B4B: fold<bevy_raytraced_audio::dsp::AcousticDspProcessor, core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>>>> (map.rs:128)"
+ ,"0x4048B4B: for_each<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>>> (iterator.rs:887)"
+ ,"0x4048B4B: extend_trusted<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>> (mod.rs:4132)"
+ ,"0x4048B4B: spec_extend<bevy_raytraced_audio::dsp::AcousticDspProcessor, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x4048B4B: from_iter<bevy_raytraced_audio::dsp::AcousticDspProcessor, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>> (spec_from_iter_nested.rs:60)"
+ ,"0x4048B4B: from_iter<bevy_raytraced_audio::dsp::AcousticDspProcessor, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>> (spec_from_iter.rs:33)"
+ ,"0x4048B4B: from_iter<bevy_raytraced_audio::dsp::AcousticDspProcessor, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>> (mod.rs:3996)"
+ ,"0x4048B4B: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<bevy_raytraced_audio::dsp::AcousticDspParams, alloc::alloc::Global>>, acoustic_performance::{impl#1}::new::{closure_env#5}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::AcousticDspProcessor, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4048B4B: <acoustic_performance::Workload>::new (lib.rs:278)"
+ ,"0x4058EE5: alloc_zeroed (library/std/src/sys/alloc/unix.rs:53)"
+ ,"0x4058EE5: __rdl_alloc_zeroed (library/std/src/alloc.rs:504)"
+ ,"0x4058EE5: alloc_zeroed (alloc.rs:290)"
+ ,"0x4058EE5: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4058EE5: alloc_impl (alloc.rs:424)"
+ ,"0x4058EE5: allocate_zeroed (alloc.rs:547)"
+ ,"0x4058EE5: try_allocate_in<alloc::alloc::Global> (mod.rs:468)"
+ ,"0x4058EE5: with_capacity_zeroed_in<alloc::alloc::Global> (mod.rs:587)"
+ ,"0x4058EE5: with_capacity_zeroed_in<f32, alloc::alloc::Global> (mod.rs:221)"
+ ,"0x4058EE5: from_elem<f32, alloc::alloc::Global> (spec_from_elem.rs:24)"
+ ,"0x4058EE5: from_elem<f32> (mod.rs:3773)"
+ ,"0x4058EE5: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:377)"
+ ,"0x4058FA0: alloc_zeroed (library/std/src/sys/alloc/unix.rs:53)"
+ ,"0x4058FA0: __rdl_alloc_zeroed (library/std/src/alloc.rs:504)"
+ ,"0x4058FA0: alloc_zeroed (alloc.rs:290)"
+ ,"0x4058FA0: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4058FA0: alloc_impl (alloc.rs:424)"
+ ,"0x4058FA0: allocate_zeroed (alloc.rs:547)"
+ ,"0x4058FA0: try_allocate_in<alloc::alloc::Global> (mod.rs:468)"
+ ,"0x4058FA0: with_capacity_zeroed_in<alloc::alloc::Global> (mod.rs:587)"
+ ,"0x4058FA0: with_capacity_zeroed_in<f32, alloc::alloc::Global> (mod.rs:221)"
+ ,"0x4058FA0: from_elem<f32, alloc::alloc::Global> (spec_from_elem.rs:24)"
+ ,"0x4058FA0: from_elem<f32> (mod.rs:3773)"
+ ,"0x4058FA0: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:380)"
+ ,"0x4058FE0: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x4058FE0: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x4058FE0: alloc (alloc.rs:130)"
+ ,"0x4058FE0: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4058FE0: alloc_impl (alloc.rs:424)"
+ ,"0x4058FE0: allocate (alloc.rs:541)"
+ ,"0x4058FE0: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4058FE0: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4058FE0: with_capacity_in<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4058FE0: with_capacity_in<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4058FE0: with_capacity<bevy_raytraced_audio::dsp::Comb> (mod.rs:522)"
+ ,"0x4058FE0: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter_nested.rs:52)"
+ ,"0x4058FE0: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter.rs:33)"
+ ,"0x4058FE0: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (mod.rs:3996)"
+ ,"0x4058FE0: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4058FE0: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:389)"
+ ,"0x40590B2: alloc_zeroed (library/std/src/sys/alloc/unix.rs:53)"
+ ,"0x40590B2: __rdl_alloc_zeroed (library/std/src/alloc.rs:504)"
+ ,"0x40590B2: alloc_zeroed (alloc.rs:290)"
+ ,"0x40590B2: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x40590B2: alloc_impl (alloc.rs:424)"
+ ,"0x40590B2: allocate_zeroed (alloc.rs:547)"
+ ,"0x40590B2: try_allocate_in<alloc::alloc::Global> (mod.rs:468)"
+ ,"0x40590B2: with_capacity_zeroed_in<alloc::alloc::Global> (mod.rs:587)"
+ ,"0x40590B2: with_capacity_zeroed_in<f32, alloc::alloc::Global> (mod.rs:221)"
+ ,"0x40590B2: from_elem<f32, alloc::alloc::Global> (spec_from_elem.rs:24)"
+ ,"0x40590B2: from_elem<f32> (mod.rs:3773)"
+ ,"0x40590B2: {closure#1} (dsp.rs:385)"
+ ,"0x40590B2: {closure#0}<&usize, bevy_raytraced_audio::dsp::Comb, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>> (map.rs:88)"
+ ,"0x40590B2: fold<usize, (), core::iter::adapters::map::map_fold::{closure_env#0}<&usize, bevy_raytraced_audio::dsp::Comb, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>>> (macros.rs:274)"
+ ,"0x40590B2: fold<bevy_raytraced_audio::dsp::Comb, core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>> (map.rs:128)"
+ ,"0x40590B2: for_each<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>> (iterator.rs:887)"
+ ,"0x40590B2: extend_trusted<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (mod.rs:4132)"
+ ,"0x40590B2: spec_extend<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x40590B2: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter_nested.rs:60)"
+ ,"0x40590B2: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter.rs:33)"
+ ,"0x40590B2: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (mod.rs:3996)"
+ ,"0x40590B2: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x40590B2: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:389)"
+ ,"0x4059195: alloc_zeroed (library/std/src/sys/alloc/unix.rs:53)"
+ ,"0x4059195: __rdl_alloc_zeroed (library/std/src/alloc.rs:504)"
+ ,"0x4059195: alloc_zeroed (alloc.rs:290)"
+ ,"0x4059195: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4059195: alloc_impl (alloc.rs:424)"
+ ,"0x4059195: allocate_zeroed (alloc.rs:547)"
+ ,"0x4059195: try_allocate_in<alloc::alloc::Global> (mod.rs:468)"
+ ,"0x4059195: with_capacity_zeroed_in<alloc::alloc::Global> (mod.rs:587)"
+ ,"0x4059195: with_capacity_zeroed_in<f32, alloc::alloc::Global> (mod.rs:221)"
+ ,"0x4059195: from_elem<f32, alloc::alloc::Global> (spec_from_elem.rs:24)"
+ ,"0x4059195: from_elem<f32> (mod.rs:3773)"
+ ,"0x4059195: {closure#1} (dsp.rs:385)"
+ ,"0x4059195: {closure#0}<&usize, bevy_raytraced_audio::dsp::Comb, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>> (map.rs:88)"
+ ,"0x4059195: fold<usize, (), core::iter::adapters::map::map_fold::{closure_env#0}<&usize, bevy_raytraced_audio::dsp::Comb, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>>> (macros.rs:274)"
+ ,"0x4059195: fold<bevy_raytraced_audio::dsp::Comb, core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>> (map.rs:128)"
+ ,"0x4059195: for_each<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>> (iterator.rs:887)"
+ ,"0x4059195: extend_trusted<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (mod.rs:4132)"
+ ,"0x4059195: spec_extend<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x4059195: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter_nested.rs:60)"
+ ,"0x4059195: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter.rs:33)"
+ ,"0x4059195: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (mod.rs:3996)"
+ ,"0x4059195: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4059195: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:389)"
+ ,"0x405927B: alloc_zeroed (library/std/src/sys/alloc/unix.rs:53)"
+ ,"0x405927B: __rdl_alloc_zeroed (library/std/src/alloc.rs:504)"
+ ,"0x405927B: alloc_zeroed (alloc.rs:290)"
+ ,"0x405927B: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x405927B: alloc_impl (alloc.rs:424)"
+ ,"0x405927B: allocate_zeroed (alloc.rs:547)"
+ ,"0x405927B: try_allocate_in<alloc::alloc::Global> (mod.rs:468)"
+ ,"0x405927B: with_capacity_zeroed_in<alloc::alloc::Global> (mod.rs:587)"
+ ,"0x405927B: with_capacity_zeroed_in<f32, alloc::alloc::Global> (mod.rs:221)"
+ ,"0x405927B: from_elem<f32, alloc::alloc::Global> (spec_from_elem.rs:24)"
+ ,"0x405927B: from_elem<f32> (mod.rs:3773)"
+ ,"0x405927B: {closure#1} (dsp.rs:385)"
+ ,"0x405927B: {closure#0}<&usize, bevy_raytraced_audio::dsp::Comb, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>> (map.rs:88)"
+ ,"0x405927B: fold<usize, (), core::iter::adapters::map::map_fold::{closure_env#0}<&usize, bevy_raytraced_audio::dsp::Comb, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>>> (macros.rs:274)"
+ ,"0x405927B: fold<bevy_raytraced_audio::dsp::Comb, core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>> (map.rs:128)"
+ ,"0x405927B: for_each<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>> (iterator.rs:887)"
+ ,"0x405927B: extend_trusted<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (mod.rs:4132)"
+ ,"0x405927B: spec_extend<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x405927B: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter_nested.rs:60)"
+ ,"0x405927B: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter.rs:33)"
+ ,"0x405927B: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (mod.rs:3996)"
+ ,"0x405927B: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x405927B: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:389)"
+ ,"0x4059375: alloc_zeroed (library/std/src/sys/alloc/unix.rs:53)"
+ ,"0x4059375: __rdl_alloc_zeroed (library/std/src/alloc.rs:504)"
+ ,"0x4059375: alloc_zeroed (alloc.rs:290)"
+ ,"0x4059375: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4059375: alloc_impl (alloc.rs:424)"
+ ,"0x4059375: allocate_zeroed (alloc.rs:547)"
+ ,"0x4059375: try_allocate_in<alloc::alloc::Global> (mod.rs:468)"
+ ,"0x4059375: with_capacity_zeroed_in<alloc::alloc::Global> (mod.rs:587)"
+ ,"0x4059375: with_capacity_zeroed_in<f32, alloc::alloc::Global> (mod.rs:221)"
+ ,"0x4059375: from_elem<f32, alloc::alloc::Global> (spec_from_elem.rs:24)"
+ ,"0x4059375: from_elem<f32> (mod.rs:3773)"
+ ,"0x4059375: {closure#1} (dsp.rs:385)"
+ ,"0x4059375: {closure#0}<&usize, bevy_raytraced_audio::dsp::Comb, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>> (map.rs:88)"
+ ,"0x4059375: fold<usize, (), core::iter::adapters::map::map_fold::{closure_env#0}<&usize, bevy_raytraced_audio::dsp::Comb, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>>> (macros.rs:274)"
+ ,"0x4059375: fold<bevy_raytraced_audio::dsp::Comb, core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>>> (map.rs:128)"
+ ,"0x4059375: for_each<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>>> (iterator.rs:887)"
+ ,"0x4059375: extend_trusted<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (mod.rs:4132)"
+ ,"0x4059375: spec_extend<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x4059375: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter_nested.rs:60)"
+ ,"0x4059375: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (spec_from_iter.rs:33)"
+ ,"0x4059375: from_iter<bevy_raytraced_audio::dsp::Comb, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>> (mod.rs:3996)"
+ ,"0x4059375: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#1}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::Comb, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4059375: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:389)"
+ ,"0x40593BD: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x40593BD: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x40593BD: alloc (alloc.rs:130)"
+ ,"0x40593BD: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x40593BD: alloc_impl (alloc.rs:424)"
+ ,"0x40593BD: allocate (alloc.rs:541)"
+ ,"0x40593BD: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x40593BD: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x40593BD: with_capacity_in<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x40593BD: with_capacity_in<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x40593BD: with_capacity<bevy_raytraced_audio::dsp::AllPass> (mod.rs:522)"
+ ,"0x40593BD: from_iter<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (spec_from_iter_nested.rs:52)"
+ ,"0x40593BD: from_iter<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (spec_from_iter.rs:33)"
+ ,"0x40593BD: from_iter<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (mod.rs:3996)"
+ ,"0x40593BD: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x40593BD: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:396)"
+ ,"0x4059486: alloc_zeroed (alloc.rs:290)"
+ ,"0x4059486: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4059486: alloc_impl (alloc.rs:424)"
+ ,"0x4059486: allocate_zeroed (alloc.rs:547)"
+ ,"0x4059486: try_allocate_in<alloc::alloc::Global> (mod.rs:468)"
+ ,"0x4059486: with_capacity_zeroed_in<alloc::alloc::Global> (mod.rs:587)"
+ ,"0x4059486: with_capacity_zeroed_in<f32, alloc::alloc::Global> (mod.rs:221)"
+ ,"0x4059486: from_elem<f32, alloc::alloc::Global> (spec_from_elem.rs:24)"
+ ,"0x4059486: from_elem<f32> (mod.rs:3773)"
+ ,"0x4059486: {closure#2} (dsp.rs:393)"
+ ,"0x4059486: {closure#0}<&usize, bevy_raytraced_audio::dsp::AllPass, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>>>> (map.rs:88)"
+ ,"0x4059486: fold<usize, (), core::iter::adapters::map::map_fold::{closure_env#0}<&usize, bevy_raytraced_audio::dsp::AllPass, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>>>>> (macros.rs:274)"
+ ,"0x4059486: fold<bevy_raytraced_audio::dsp::AllPass, core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>>>> (map.rs:128)"
+ ,"0x4059486: for_each<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>>> (iterator.rs:887)"
+ ,"0x4059486: extend_trusted<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (mod.rs:4132)"
+ ,"0x4059486: spec_extend<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x4059486: from_iter<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (spec_from_iter_nested.rs:60)"
+ ,"0x4059486: from_iter<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (spec_from_iter.rs:33)"
+ ,"0x4059486: from_iter<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (mod.rs:3996)"
+ ,"0x4059486: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4059486: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:396)"
+ ,"0x4059581: alloc_zeroed (alloc.rs:290)"
+ ,"0x4059581: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4059581: alloc_impl (alloc.rs:424)"
+ ,"0x4059581: allocate_zeroed (alloc.rs:547)"
+ ,"0x4059581: try_allocate_in<alloc::alloc::Global> (mod.rs:468)"
+ ,"0x4059581: with_capacity_zeroed_in<alloc::alloc::Global> (mod.rs:587)"
+ ,"0x4059581: with_capacity_zeroed_in<f32, alloc::alloc::Global> (mod.rs:221)"
+ ,"0x4059581: from_elem<f32, alloc::alloc::Global> (spec_from_elem.rs:24)"
+ ,"0x4059581: from_elem<f32> (mod.rs:3773)"
+ ,"0x4059581: {closure#2} (dsp.rs:393)"
+ ,"0x4059581: {closure#0}<&usize, bevy_raytraced_audio::dsp::AllPass, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>>>> (map.rs:88)"
+ ,"0x4059581: fold<usize, (), core::iter::adapters::map::map_fold::{closure_env#0}<&usize, bevy_raytraced_audio::dsp::AllPass, (), bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}, core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>>>>> (macros.rs:274)"
+ ,"0x4059581: fold<bevy_raytraced_audio::dsp::AllPass, core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}, (), core::iter::traits::iterator::Iterator::for_each::call::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>>>> (map.rs:128)"
+ ,"0x4059581: for_each<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>, alloc::vec::{impl#22}::extend_trusted::{closure_env#0}<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>>> (iterator.rs:887)"
+ ,"0x4059581: extend_trusted<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (mod.rs:4132)"
+ ,"0x4059581: spec_extend<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>, alloc::alloc::Global> (spec_extend.rs:27)"
+ ,"0x4059581: from_iter<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (spec_from_iter_nested.rs:60)"
+ ,"0x4059581: from_iter<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (spec_from_iter.rs:33)"
+ ,"0x4059581: from_iter<bevy_raytraced_audio::dsp::AllPass, core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>> (mod.rs:3996)"
+ ,"0x4059581: collect<core::iter::adapters::map::Map<core::slice::iter::Iter<usize>, bevy_raytraced_audio::dsp::{impl#5}::new::{closure_env#2}>, alloc::vec::Vec<bevy_raytraced_audio::dsp::AllPass, alloc::alloc::Global>> (iterator.rs:2086)"
+ ,"0x4059581: <bevy_raytraced_audio::dsp::AcousticDspProcessor>::new (dsp.rs:396)"
+ ,"0x4048BCD: alloc (library/std/src/sys/alloc/unix.rs:31)"
+ ,"0x4048BCD: __rdl_alloc (library/std/src/alloc.rs:472)"
+ ,"0x4048BCD: alloc (alloc.rs:130)"
+ ,"0x4048BCD: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4048BCD: alloc_impl (alloc.rs:424)"
+ ,"0x4048BCD: allocate (alloc.rs:541)"
+ ,"0x4048BCD: box_new_uninit (boxed.rs:251)"
+ ,"0x4048BCD: new<acoustic_performance::{impl#1}::new::{closure_env#6}> (boxed.rs:290)"
+ ,"0x4048BCD: <acoustic_performance::Workload>::new (lib.rs:280)"
+ ,"0x4081622: alloc (unix.rs:31)"
+ ,"0x4081622: __rdl_alloc (alloc.rs:472)"
+ ,"0x4081622: alloc (alloc.rs:130)"
+ ,"0x4081622: alloc_impl_runtime (alloc.rs:302)"
+ ,"0x4081622: alloc_impl (alloc.rs:424)"
+ ,"0x4081622: allocate (alloc.rs:541)"
+ ,"0x4081622: try_allocate_in<alloc::alloc::Global> (mod.rs:466)"
+ ,"0x4081622: with_capacity_in<alloc::alloc::Global> (mod.rs:435)"
+ ,"0x4081622: with_capacity_in<u8, alloc::alloc::Global> (mod.rs:177)"
+ ,"0x4081622: with_capacity_in<u8, alloc::alloc::Global> (mod.rs:969)"
+ ,"0x4081622: with_capacity<u8> (mod.rs:522)"
+ ,"0x4081622: with_capacity<std::io::stdio::StdoutRaw> (bufwriter.rs:132)"
+ ,"0x4081622: with_capacity<std::io::stdio::StdoutRaw> (linewriter.rs:112)"
+ ,"0x4081622: new<std::io::stdio::StdoutRaw> (linewriter.rs:91)"
+ ,"0x4081622: {closure#0} (stdio.rs:722)"
+ ,"0x4081622: {closure#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4081622: {closure#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}>, !> (once_lock.rs:572)"
+ ,"0x4081622: <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::initialize<<std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::get_or_init<std::io::stdio::stdout::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0} (once.rs:226)"
+ ,"0x4074E35: call_once_force<std::sync::once_lock::{impl#0}::initialize::{closure_env#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}>, !>> (once.rs:226)"
+ ,"0x4074E35: <std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::initialize::<<std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::get_or_init<std::io::stdio::stdout::{closure#0}>::{closure#0}, !> (once_lock.rs:571)"
+ ,"0x4094ABC: get_or_try_init<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::sync::once_lock::{impl#0}::get_or_init::{closure_env#0}<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}>, !> (once_lock.rs:439)"
+ ,"0x4094ABC: get_or_init<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>, std::io::stdio::stdout::{closure_env#0}> (once_lock.rs:350)"
+ ,"0x4094ABC: stdout (stdio.rs:722)"
+ ,"0x4094ABC: print_to<std::io::stdio::Stdout> (stdio.rs:1167)"
+ ,"0x4094ABC: std::io::stdio::_print (stdio.rs:1275)"
+ ,"0x40496C0: acoustic_performance::main (main.rs:19)"
+ ]
+}

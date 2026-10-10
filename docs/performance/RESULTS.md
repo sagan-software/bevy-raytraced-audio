@@ -7,13 +7,15 @@ the collaborative Chromium 152 / Electron 44 browser, which reports 32 logical
 processors; it runs on a different host. Cross-platform absolute times are not
 compared. Each before/after ratio uses the same environment and workload.
 
-| Candidate                                        | Native ratio vs compared baseline | Conservative lower bound | Browser geometric mean | Accepted round |
-| ------------------------------------------------ | -------------------------------------: | -----------------------: | ---------------------: | -------------- |
-| Math and DSP arithmetic                          |                                 1.463× |                   1.430× |                 1.324× | No             |
-| Above, plus FIR lanes and visibility termination |                                 1.720× |                   1.684× |                 1.721× | Round 1        |
-| Reuse unchanged Bevy traces (vs Round 1) | 1.539× | 1.506× | Shared kernel unchanged | Round 2 |
-| Geometry tree only (vs Round 2) | 1.017× | 0.999× | 0.960× vs Round 1 | No |
-| Above, plus exact shared trace reuse (vs Round 2) | 5.194× | 5.103× | 52.135× vs Round 1 | Round 3 |
+| Candidate                                                   | Native ratio vs compared baseline | Conservative lower bound |  Browser geometric mean | Accepted round |
+| ----------------------------------------------------------- | --------------------------------: | -----------------------: | ----------------------: | -------------- |
+| Math and DSP arithmetic                                     |                            1.463× |                   1.430× |                  1.324× | No             |
+| Above, plus FIR lanes and visibility termination            |                            1.720× |                   1.684× |                  1.721× | Round 1        |
+| Reuse unchanged Bevy traces (vs Round 1)                    |                            1.539× |                   1.506× | Shared kernel unchanged | Round 2        |
+| Geometry tree only (vs Round 2)                             |                            1.017× |                   0.999× |       0.960× vs Round 1 | No             |
+| Above, plus exact shared trace reuse (vs Round 2)           |                            5.194× |                   5.103× |      52.135× vs Round 1 | Round 3        |
+| Cached 2D geometry, path traversal and DSP (vs Round 3)     |                            1.095× |                   1.075× |            Not measured | No             |
+| Above, plus parallel-wall reflection rejection (vs Round 3) |                            1.802× |                   1.773× |       1.259× vs Round 3 | Round 4        |
 
 The accepted round retains ray counts, reflection depths, FIR lengths, materials,
 source counts and update workloads. It uses a fast norm with scaled-hypot
@@ -58,6 +60,27 @@ The cumulative native ratio through three accepted rounds is approximately 13.74
 the shared browser suite is approximately 89.7× its original baseline, dominated
 by repeated-input reuse. These are suite ratios, not application frame rates.
 
+Round 4 rejects impossible first-order reflection groups using conservative bounds
+in the tangential coordinates of parallel axis-aligned walls. Other orientations
+retain exact per-surface tests, and small scenes use the cheaper direct path.
+It also caches 2D geometric terms, prunes transmission paths by the ray, avoids
+modulo in delay-ring reads and specializes the unchanged one-tap stereo fallback.
+Tests compare cached geometry with scalar calculations, delay indexing with the
+modulo reference and HRTF coefficients with the fused reference (error < 1e-6).
+
+All four native rounds pass the fixed 51-case gate. Their cumulative geometric
+mean ratio is **24.767×**. Round 4's biggest gain is the 1,024-triangle miss query
+(16.24 µs to 32.09 ns, 506×). Its largest regression is the small 3D reflection
+iterator (61.35 ns to 88.04 ns, 43.5% more latency). Every case, including
+regressions, remains in the aggregate and raw comparison.
+
+The final real-browser run completed all 21 unchanged workloads with finite
+checksums and no hidden-tab intervals. Round 4 improves their geometric mean by
+25.9%; the cumulative browser ratio is **112.963×**. This remains a shared-kernel
+suite result dominated by unchanged-trace reuse, not an application frame-rate
+claim. Native rounds use the 1.5× acceptance gate; no claim is made that every
+round independently improves browser performance by 50%.
+
 ## Profiling evidence
 
 Userspace pprof sampling produced actual flame graphs without changing host
@@ -74,26 +97,41 @@ The graphs are sampling evidence, not instruction counts. Profiling runs are
 separate from Criterion measurement. [Leaf-sample summaries](flamegraphs/baseline-summary.json)
 retain the counts used above.
 
+Additional [Callgrind and DHAT evidence](profiles/summary.json) uses the original
+and final profiling binaries on `churn/3d/128`, five iterations, including setup.
+Instruction counts change from 361,315,650 to 359,181,320 (about 0.6% fewer).
+Peak heap usage increases from 81,464 to 86,712 bytes; total allocated bytes
+increase from 395,396 to 441,841. Caches trade some memory for query reuse.
+This changing-scene result is much smaller than the aggregate warm-cache gain.
+The raw profiles are retained beside the summary.
+
+The 64-changing-voice DSP driver allocates 796 blocks for both one and ten
+iterations, with the same 5,492,848-byte peak. Total bytes differ by one byte
+in whole-process output formatting. No per-iteration allocation growth was
+observed in this test; that is not a general leak or real-time-deadline guarantee.
+
 ## Verification status
 
-The accepted core change passed 92 core/shared workload tests, strict core/harness
-Clippy, the scalar FIR and extreme-range math regressions, and real-browser
-execution of all 21 cases with finite output and no hidden-tab intervals.
-The initial core coverage report was 97.50% lines, 97.76% regions and 95.66%
-functions. That is **not 100%**. The next workspace run passed its tests, but initially reported only default
-members. Selecting all packages explicitly reports 92.85% lines (952 uncovered),
-including shared adapter sources instantiated by each Bevy compatibility crate.
-The strict coverage command fails unless all selected lines execute. This is
-not a 100% coverage result.
+A fresh strict workspace coverage run passed **296 tests** across Bevy 0.17–0.20,
+with all four `debug_draw` features enabled. Production coverage is **9,309/9,309
+lines (100%)** and **934/934 functions (100%)**. LLVM regions are 12,992/13,094
+(99.22%); generic instantiations are 1,546/1,710 (90.41%). Branch coverage was not
+instrumented. These metrics are distinct; this is a 100% line/function result,
+not a claim of complete branch or instantiation coverage. The [per-file summary](coverage-summary.json)
+retains all of these metrics. Only tests, benchmarks and examples are excluded;
+production adapter, audio-processing and debug-drawing modules are included.
 
-The expanded tests also exercise 4,096 simultaneously changing emitters, actual
-decoding and internal looping on all four Bevy versions, and finite gizmo output
-without a GPU. Unit tests now live under `tests/unit` so coverage exclusions apply
-to test code consistently. Old instrumented feature binaries were found in the
-report directory; the strict script now cleans workspace coverage artifacts
-before collecting a fresh report. A fresh production-only report supersedes the
-intermediate percentages above; no 100% result is claimed.
+The strict script cleans both old profiles and workspace binaries for the custom
+coverage profile before measuring. It selects every workspace package explicitly,
+uses an isolated ALSA null device on Linux for older rodio output controls, and
+fails below 100% lines. `nix run .#coverage` and the Nix coverage derivation use
+the same gate. This supersedes the earlier partial coverage reports.
 
-Four successful 50% rounds are required by the request; only measured rounds
-that pass the complete-suite gate count. This report does not claim four rounds
-or 100% coverage until those checks pass.
+The expanded tests exercise 4,096 simultaneously changing emitters, decoding and
+internal looping on all four Bevy versions, finite gizmo output without a GPU,
+cache invalidation, scalar geometry/FIR references and extreme floating-point
+inputs. Strict core, performance-harness and Bevy 0.19 adapter Clippy passed.
+The full WebGL2 showcase also builds for `wasm32-unknown-unknown`.
+
+Additional environment timings, final browser execution and final CI results
+are recorded below as verification completes.

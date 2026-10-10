@@ -187,6 +187,10 @@ fn ring(elevation: i16, azimuth: f32, weight: f32) -> [WeightedRecord; 2] {
 }
 
 /// Bilinearly interpolates measured responses, swapping ears across the median plane.
+#[expect(
+    clippy::suboptimal_flops,
+    reason = "bounded audio rounding avoids per-tap software FMA dispatch"
+)]
 fn response(position: Position) -> [[f32; 2]; TAPS] {
     let mut lower = -40;
     let mut upper = 90;
@@ -216,7 +220,7 @@ fn response(position: Position) -> [[f32; 2]; TAPS] {
                     1 - ear
                 };
                 let offset = record.index * RECORD_BYTES + 4 + tap * 4 + measured_ear * 2;
-                *sample = f32::from(integer(offset)).mul_add(record.weight / 32_768.0, *sample);
+                *sample += f32::from(integer(offset)) * (record.weight / 32_768.0);
             }
         }
     }
@@ -257,6 +261,8 @@ pub struct BinauralProcessor {
     smoothing: f32,
     /// Whether a changed direction requires per-sample coefficient interpolation.
     smoothing_active: bool,
+    /// Whether every input so far has been finite; preserves non-finite FIR propagation.
+    finite_history: bool,
     /// Smoothed common gain, also applied to the diffuse reverb.
     gain: f32,
 }
@@ -313,6 +319,7 @@ impl BinauralProcessor {
             smoothing: 1.0 - (-1.0 / (0.015 * rate)).exp(),
             gain: position.gain,
             smoothing_active: false,
+            finite_history: true,
         };
         result.update_response();
         result.current.clone_from(&result.target);
@@ -360,7 +367,15 @@ impl BinauralProcessor {
             .history
             .get(self.cursor..self.cursor + length)
             .expect("doubled history window");
-        let filtered = if self.smoothing_active {
+        self.finite_history &= direct.is_finite();
+        let filtered = if !self.smoothing_active && !self.position.enabled && self.finite_history {
+            // A never-transitioned stereo fallback has exactly one nonzero FIR tap.
+            self.current
+                .first()
+                .copied()
+                .unwrap_or([0.; 2])
+                .map(|coefficient| direct * coefficient)
+        } else if self.smoothing_active {
             convolve::<true>(&mut self.current, &self.target, history, self.smoothing)
         } else {
             convolve::<false>(&mut self.current, &self.target, history, self.smoothing)
@@ -370,6 +385,10 @@ impl BinauralProcessor {
     }
 
     /// Rebuilds target filters in existing storage; the callback never allocates.
+    #[expect(
+        clippy::suboptimal_flops,
+        reason = "bounded audio rounding avoids per-tap software FMA dispatch"
+    )]
     fn update_response(&mut self) {
         if !self.position.enabled {
             self.target.fill([0.0; 2]);
@@ -387,8 +406,7 @@ impl BinauralProcessor {
             for &(index, weight) in &resample.weights {
                 if let Some(tap) = native.get(index) {
                     for (sample, value) in output.iter_mut().zip(tap) {
-                        *sample =
-                            (value * weight).mul_add(core::f32::consts::FRAC_1_SQRT_2, *sample);
+                        *sample += value * weight * core::f32::consts::FRAC_1_SQRT_2;
                     }
                 }
             }

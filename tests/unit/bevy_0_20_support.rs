@@ -13,3 +13,14 @@ pub(crate) fn test_audio_sink() -> bevy::audio::AudioSink {
 pub(crate) fn test_system_param<T>(value: Result<T, impl core::fmt::Debug>) -> T {
     value.expect("test system parameters are registered")
 }
+
+/// Runs spatial controls with a device-free mixer.
+pub(crate) fn with_spatial_audio_sink(test: impl FnOnce(bevy::audio::SpatialAudioSink)) {
+    let (mixer, _source) = rodio::mixer::mixer(
+        core::num::NonZeroU16::new(2).unwrap(),
+        core::num::NonZeroU32::new(48_000).unwrap(),
+    );
+    let player =
+        rodio::SpatialPlayer::connect_new(&mixer, [0.0; 3], [-0.1, 0.0, 0.0], [0.1, 0.0, 0.0]);
+    test(bevy::audio::SpatialAudioSink::new(player));
+}

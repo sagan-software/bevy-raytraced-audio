@@ -476,7 +476,13 @@ impl AcousticDspProcessor {
         }
         let delay_samples = samples_to_count(self.current.pre_delay_s * self.sample_rate)
             .min(length.saturating_sub(1));
-        let read = (self.pre_delay_position + length - delay_samples) % length.max(1);
+        // Both positions lie inside this nonempty constructor-allocated ring. Avoid an
+        // integer division on every audio frame when at most one wrap is possible.
+        let read = if self.pre_delay_position >= delay_samples {
+            self.pre_delay_position - delay_samples
+        } else {
+            self.pre_delay_position + length - delay_samples
+        };
         let delayed = self.pre_delay.get(read).copied().unwrap_or(0.0);
         self.pre_delay_position += 1;
         if self.pre_delay_position >= length {

@@ -1,0 +1,10487 @@
+# callgrind format
+version: 1
+creator: callgrind-3.26.0
+pid: 298503
+cmd:  target/performance/profile-reference/profiling/acoustic-performance churn/3d/128 5
+part: 1
+
+
+desc: I1 cache: 
+desc: D1 cache: 
+desc: LL cache: 
+
+desc: Timerange: Basic block 0 - 42426766
+desc: Trigger: Program termination
+
+positions: line
+events: Ir
+summary: 361315650
+
+
+ob=(4) ???
+fl=(4) ???
+fn=(652) 0x0000000004a303f0
+0 12
+cob=(2) /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libc.so.6
+cfi=(2) ???
+cfn=(654) free
+calls=6 0 
+0 258
+
+fn=(448) 0x0000000004921000
+0 7
+
+fn=(1328) 0x000000000409a980
+0 4
+
+fn=(494) 0x0000000004a307d0
+0 2
+cob=(1) /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/ld-linux-x86-64.so.2
+cfi=(1) ???
+cfn=(496) _dl_audit_preinit
+calls=1 0 
+0 11
+
+fn=(630) 0x0000000004a306e0
+0 168
+cob=(2)
+cfi=(2)
+cfn=(632) __memcpy_avx_unaligned_erms
+calls=84 0 
+0 3242
+
+fn=(690) 0x0000000004a30460
+0 2
+cob=(2)
+cfi=(2)
+cfn=(692) calloc
+calls=1 0 
+0 268
+
+fn=(1370) 0x0000000004909be8
+0 4
+
+fn=(458) 0x00000000048e7000
+0 7
+
+fn=(550) 0x0000000004a30400
+0 6
+cob=(2)
+cfi=(2)
+cfn=(552) malloc
+calls=3 0 
+0 1195
+
+fn=(620) 0x0000000004a30490
+0 100
+cob=(2)
+cfi=(2)
+cfn=(622) __memchr_avx2
+calls=50 0 
+0 2493
+
+fn=(640) 0x0000000004a30510
+0 90
+cob=(2)
+cfi=(2)
+cfn=(642) __strlen_avx2
+calls=45 0 
+0 1687
+
+fn=(1108) 0x0000000004921420
+0 36
+cob=(3) /nix/store/8kvxvr3pmsypxiypq4g8zy13glnfr7nx-glibc-2.42-67/lib/libm.so.6
+cfi=(3) ???
+cfn=(1110) __ieee754_log_fma
+calls=18 0 
+0 936
+
+fn=(1348) 0x00000000048df29c
+0 4
+
+fn=(1388) 0x00000000049a57f8
+0 4
+
+fn=(592) 0x0000000004a306b0
+0 2
+cob=(2)
+cfi=(2)
+cfn=(594) __strchr_avx2
+calls=1 0 
+0 21
+
+fn=(682) 0x0000000004a30770
+0 4
+cob=(2)
+cfi=(2)
+cfn=(684) __memset_avx2_unaligned_erms
+calls=2 0 
+0 37
+
+fn=(1360) 0x00000000048e73b0
+0 2
+cob=(2)
+cfi=(2)
+cfn=(1316) __cxa_finalize
+calls=1 0 
+0 87
+
+fn=(426) 0x00000000048df000
+0 7
+
+fn=(482) 0x000000000409a964
+0 7
+
+fn=(624) 0x0000000004a30420
+0 6
+cob=(2)
+cfi=(2)
+cfn=(626) realloc
+calls=3 0 
+0 857
+
+fn=(440) 0x0000000004a30690
+0 2
+cob=(2)
+cfi=(2)
+cfn=(442) __strrchr_avx2
+calls=1 0 
+0 39
+
+fn=(1338) 0x00000000048df030
+0 1
+cob=(2)
+cfi=(2)
+cfn=(1316)
+calls=1 0 
+0 87
+
+fn=(1378) 0x00000000049212a0
+0 2
+cob=(2)
+cfi=(2)
+cfn=(1316)
+calls=1 0 
+0 87
+
+fn=(398) 0x0000000004a30750
+0 40
+cob=(1)
+cfi=(1)
+cfn=(16) __tunable_get_val
+calls=20 0 
+0 489
+
+ob=(2)
+fl=(2)
+fn=(478) __internal_atexit
+0 19
+cfn=(480) __new_exitfn
+calls=1 0 
+0 38
+0 25
+
+fn=(220) strnlen
+0 56
+
+fn=(244) index
+0 23
+
+fn=(246) __memset_chk
+0 26
+
+fn=(270) bcmp
+0 56
+
+fn=(518) __syscall_cancel
+0 12
+cfn=(520) __internal_syscall_cancel
+calls=2 0 
+0 42
+0 24
+
+fn=(538) getpagesize
+0 20
+
+fn=(584) _IO_file_fopen@@GLIBC_2.2.5
+0 84
+cfn=(586) _IO_file_open
+calls=1 0 
+0 97
+0 6
+cfn=(590) __GI_strstr
+calls=1 0 
+0 64
+0 30
+
+fn=(590)
+0 20
+cob=(4)
+cfi=(4)
+cfn=(592)
+calls=1 0 
+0 23
+0 21
+
+fn=(596) getline
+0 180
+cfn=(598) getdelim
+calls=45 0 
+0 9646
+
+fn=(604) _IO_doallocbuf
+0 19
+cfn=(606) _IO_file_doallocate
+calls=1 0 
+0 288
+0 9
+
+fn=(606)
+0 21
+cfn=(608) _IO_file_stat
+calls=1 0 
+0 14
+0 12
+cob=(4)
+cfi=(4)
+cfn=(550)
+calls=1 0 
+0 196
+0 7
+cfn=(612) _IO_setb
+calls=1 0 
+0 25
+0 13
+
+fn=(626)
+0 837
+cfn=(552)
+calls=2 0 
+0 420
+0 3603
+cfn=(628) _int_realloc
+calls=61 0 
+0 22811
+0 671
+
+fn=(662) _IO_file_close_it@@GLIBC_2.2.5
+0 34
+cfn=(664) _IO_file_seekoff@@GLIBC_2.2.5
+calls=1 0 
+0 76
+0 13
+cfn=(666) _IO_file_seek
+calls=1 0 
+0 14
+0 6
+cfn=(670) _IO_unsave_markers
+calls=1 0 
+0 9
+0 10
+cfn=(672) _IO_file_close
+calls=1 0 
+0 13
+0 9
+cfn=(612)
+calls=1 0 
+0 83
+0 6
+cfn=(658) _IO_un_link
+calls=1 0 
+0 5
+0 19
+
+fn=(668) lseek
+0 22
+
+fn=(670)
+0 9
+
+fn=(870) malloc_consolidate
+0 700
+cfn=(1008) unlink_chunk.isra.0
+calls=1 0 
+0 23
+0 577
+cfn=(1008)
+calls=1 0 
+0 23
+0 3
+
+fn=(1302) pthread_mutex_unlock@@GLIBC_2.2.5
+0 3
+cfn=(1304) __pthread_mutex_unlock_usercnt
+calls=1 0 
+0 37
+
+fn=(436) _init_first
+0 19
+cfn=(438) __init_misc
+calls=1 0 
+0 72
+
+fn=(476) __cxa_atexit
+0 3
+cfn=(478)
+calls=1 0 
+0 82
+
+fn=(234) __memcpy_chk
+0 25
+
+fn=(242) wcschr
+0 56
+
+fn=(268) strchrnul
+0 28
+
+fn=(282) strncpy
+0 23
+
+fn=(296) wcpncpy
+0 21
+
+fn=(438)
+0 14
+cob=(4)
+cfi=(4)
+cfn=(440)
+calls=1 0 
+0 41
+0 17
+
+fn=(536) sysconf
+0 49
+cfn=(538)
+calls=1 0 
+0 10
+0 4
+
+fn=(552)
+0 997
+cfn=(558) __libc_malloc2
+calls=42 0 
+0 10609
+0 1
+cfn=(554) tcache_malloc_init
+calls=1 0 
+0 775
+
+fn=(554)
+0 11
+cfn=(556) tcache_init.part.0
+calls=1 0 
+0 579
+0 3
+cfn=(558)
+calls=1 0 
+0 182
+
+fn=(558)
+0 880
+cfn=(560) _int_malloc
+calls=44 0 
+0 10036
+0 308
+
+fn=(574) _IO_old_init
+0 1336
+
+fn=(588) __open_nocancel
+0 33
+
+fn=(608)
+0 3
+cfn=(610) fstat
+calls=1 0 
+0 11
+
+fn=(622)
+0 2493
+
+fn=(644) __vfscanf_internal
+0 2295
+cfn=(580) __libc_cleanup_push_defer
+calls=45 0 
+0 765
+0 7515
+cfn=(582) __libc_cleanup_pop_restore
+calls=45 0 
+0 630
+0 5715
+cfn=(646) _IO_sputbackc
+calls=90 0 
+0 2430
+0 29206
+cfn=(646)
+calls=90 0 
+0 2430
+0 1950
+cfn=(648) __strtoul_internal
+calls=90 0 
+0 23920
+0 1170
+
+fn=(648)
+0 450
+cfn=(650) ____strtoul_l_internal
+calls=90 0 
+0 23470
+
+fn=(656) fclose@@GLIBC_2.2.5
+0 19
+cfn=(676) _IO_file_finish@@GLIBC_2.2.5
+calls=1 0 
+0 27
+0 15
+cob=(4)
+cfi=(4)
+cfn=(652)
+calls=1 0 
+0 45
+0 12
+cfn=(658)
+calls=1 0 
+0 99
+0 19
+cfn=(662)
+calls=1 0 
+0 297
+0 4
+
+fn=(658)
+0 9
+cfn=(660) __GI__IO_un_link.part.0
+calls=1 0 
+0 95
+
+fn=(686) pthread_attr_setaffinity_np@@GLIBC_2.32
+0 21
+cfn=(688) __pthread_attr_extension
+calls=1 0 
+0 290
+0 9
+cob=(4)
+cfi=(4)
+cfn=(624)
+calls=1 0 
+0 236
+0 11
+cob=(4)
+cfi=(4)
+cfn=(630)
+calls=1 0 
+0 14
+0 1
+
+fn=(1296) __call_tls_dtors
+0 16
+
+fn=(1392) _IO_flush_all
+0 16
+cfn=(580)
+calls=1 0 
+0 17
+0 138
+cfn=(582)
+calls=1 0 
+0 14
+0 31
+
+fn=(1394) _Exit
+0 3
+
+fn=(232) __mempcpy_chk
+0 25
+
+fn=(250) wcscmp
+0 28
+
+fn=(254) wmemchr
+0 48
+
+fn=(260) strcspn
+0 8
+
+fn=(400) __getrandom_early_init
+0 24
+
+fn=(444) check_stdfiles_vtables
+0 14
+
+fn=(500) _setjmp
+0 3
+cfn=(502) __sigsetjmp
+calls=1 0 
+0 31
+
+fn=(502)
+0 21
+cfn=(504) __sigjmp_save
+calls=1 0 
+0 10
+
+fn=(586)
+0 29
+cfn=(578) _IO_link_in
+calls=1 0 
+0 21
+0 12
+cfn=(588)
+calls=1 0 
+0 33
+0 2
+
+fn=(602) _IO_file_underflow@@GLIBC_2.2.5
+0 136
+cfn=(614) _IO_switch_to_get_mode
+calls=6 0 
+0 156
+0 96
+cfn=(616) _IO_file_read
+calls=6 0 
+0 96
+0 113
+cfn=(604)
+calls=1 0 
+0 316
+0 4
+
+fn=(636) __isoc23_sscanf
+0 1125
+cfn=(572) _IO_no_init
+calls=45 0 
+0 2655
+0 315
+cfn=(638) _IO_str_init_static_internal
+calls=45 0 
+0 4837
+0 495
+cfn=(644)
+calls=45 0 
+0 78026
+0 675
+
+fn=(664)
+0 52
+cfn=(666)
+calls=1 0 
+0 14
+0 10
+
+fn=(672)
+0 3
+cfn=(674) __close_nocancel
+calls=1 0 
+0 10
+
+fn=(1300) pthread_mutex_lock@@GLIBC_2.2.5
+0 45
+
+fn=(1304)
+0 37
+
+fn=(1316)
+0 184
+cfn=(1318) __unregister_atfork
+calls=4 0 
+0 96
+0 68
+
+fn=(474) __libc_start_main@@GLIBC_2.34
+0 19
+cfn=(476)
+calls=1 0 
+0 85
+0 12
+cob=(4)
+cfi=(4)
+cfn=(494)
+calls=1 0 
+0 13
+0 6
+cfn=(498) (below main)
+calls=1 0 
+0 360927686
+0 11
+cob=(4)
+cfi=(4)
+cfn=(482)
+calls=1 0 
+0 7
+0 22
+cob=(7) /home/leona/Code/github.com/sagan-software/bevy-raytraced-audio/target/performance/profile-reference/profiling/acoustic-performance
+cfi=(7) ???
+cfn=(488) 0x0000000000044ad0
+calls=1 0 
+0 12
+0 4
+cob=(7)
+cfi=(8) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/args/unix.rs
+cfn=(486) std::sys::args::unix::imp::ARGV_INIT_ARRAY::init_wrapper
+calls=1 132 
+0 4
+0 7
+
+fn=(228) memset
+0 78
+
+fn=(230) wcslen
+0 22
+
+fn=(236) memrchr
+0 28
+
+fn=(248) rindex
+0 28
+
+fn=(288) stpcpy
+0 21
+
+fn=(290) memmove
+0 75
+
+fn=(516) poll
+0 10
+cfn=(518)
+calls=1 0 
+0 39
+0 8
+
+fn=(520)
+0 42
+
+fn=(548) __fopen_internal
+0 14
+cob=(4)
+cfi=(4)
+cfn=(550)
+calls=1 0 
+0 793
+0 12
+cfn=(572)
+calls=1 0 
+0 68
+0 4
+cfn=(576) _IO_new_file_init_internal
+calls=1 0 
+0 130
+0 5
+cfn=(584)
+calls=1 0 
+0 281
+0 18
+
+fn=(564) __glibc_morecore
+0 12
+cfn=(566) sbrk
+calls=2 0 
+0 82
+0 10
+
+fn=(566)
+0 38
+cfn=(568) brk
+calls=1 0 
+0 13
+0 12
+cfn=(568)
+calls=1 0 
+0 13
+0 6
+
+fn=(582)
+0 686
+
+fn=(594)
+0 21
+
+fn=(598)
+0 1883
+cob=(4)
+cfi=(4)
+cfn=(624)
+calls=1 0 
+0 391
+0 14
+cob=(4)
+cfi=(4)
+cfn=(630)
+calls=1 0 
+0 32
+0 245
+cob=(4)
+cfi=(4)
+cfn=(630)
+calls=49 0 
+0 1266
+0 160
+cfn=(600) __underflow
+calls=5 0 
+0 660
+0 50
+cob=(4)
+cfi=(4)
+cfn=(620)
+calls=5 0 
+0 154
+0 180
+cob=(4)
+cfi=(4)
+cfn=(620)
+calls=45 0 
+0 2439
+0 1264
+cob=(4)
+cfi=(4)
+cfn=(550)
+calls=1 0 
+0 212
+0 11
+cfn=(600)
+calls=1 0 
+0 454
+0 231
+
+fn=(632)
+0 3434
+
+fn=(634) _int_free_chunk
+0 1888
+cfn=(1010) _int_free_merge_chunk
+calls=62 0 
+0 6833
+0 1086
+
+fn=(678) _IO_default_finish
+0 22
+
+fn=(680) pthread_getaffinity_np@@GLIBC_2.32
+0 18
+cob=(4)
+cfi=(4)
+cfn=(682)
+calls=1 0 
+0 13
+0 9
+
+fn=(692)
+0 25
+cfn=(694) __libc_calloc2
+calls=1 0 
+0 239
+0 4
+
+fn=(1012) _int_free_create_chunk
+0 1969
+cfn=(1008)
+calls=20 0 
+0 466
+0 591
+
+fn=(1244) write
+0 10
+cfn=(518)
+calls=1 0 
+0 39
+0 8
+
+fn=(1294) __run_exit_handlers
+0 65
+cfn=(1394)
+calls=1 0 
+0 3
+0 13
+cob=(1)
+cfi=(1)
+cfn=(1298) _dl_fini
+calls=1 0 
+0 1668
+0 5
+cfn=(1390) _IO_cleanup
+calls=1 0 
+0 422
+0 2
+cfn=(1296)
+calls=1 0 
+0 16
+0 1
+
+fn=(480)
+0 38
+
+fn=(224) strcmp
+0 22
+
+fn=(226) wcsnlen
+0 22
+
+fn=(240) memcpy@@GLIBC_2.14
+0 75
+
+fn=(286) __memmove_chk
+0 25
+
+fn=(392) __ctype_init
+0 22
+
+fn=(528) signal
+0 26
+cfn=(530) sigaction
+calls=1 0 
+0 101
+0 12
+
+fn=(560)
+0 8033
+cfn=(870)
+calls=7 0 
+0 1326
+0 6707
+cfn=(1008)
+calls=30 0 
+0 870
+0 1198
+cfn=(1008)
+calls=5 0 
+0 175
+0 60
+cfn=(570) alloc_perturb
+calls=1 0 
+0 9
+0 156
+cfn=(570)
+calls=39 0 
+0 351
+0 735
+cfn=(570)
+calls=5 0 
+0 45
+0 9
+cfn=(562) sysmalloc
+calls=1 0 
+0 268
+0 6
+cfn=(570)
+calls=1 0 
+0 9
+0 17
+
+fn=(576)
+0 9
+cfn=(578)
+calls=1 0 
+0 116
+0 5
+
+fn=(628)
+0 2693
+cfn=(560)
+calls=33 0 
+0 9783
+0 627
+cob=(4)
+cfi=(4)
+cfn=(630)
+calls=33 0 
+0 2098
+0 198
+cfn=(634)
+calls=33 0 
+0 4389
+0 611
+cfn=(634)
+calls=14 0 
+0 1447
+0 200
+cfn=(1008)
+calls=16 0 
+0 413
+0 352
+
+fn=(650)
+0 23470
+
+fn=(676)
+0 5
+cfn=(678)
+calls=1 0 
+0 22
+
+fn=(688)
+0 10
+cob=(4)
+cfi=(4)
+cfn=(690)
+calls=1 0 
+0 270
+0 10
+
+fn=(698) pthread_attr_getstack@@GLIBC_2.34
+0 13
+
+fn=(712) mmap
+0 34
+
+fn=(1292) exit
+0 7
+cfn=(1294)
+calls=1 0 
+0 2195
+
+fn=(278) wcscat
+0 21
+
+fn=(280) strlen
+0 84
+
+fn=(284) wmemcmp
+0 28
+
+fn=(292) memchr
+0 24
+
+fn=(294) strspn
+0 8
+
+fn=(402) __lll_elision_init
+0 11
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 27
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 27
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 27
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 27
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 27
+0 14
+
+fn=(406) __popcountdi2
+0 21
+
+fn=(442)
+0 39
+
+fn=(530)
+0 95
+cfn=(532) __libc_sigaction
+calls=5 0 
+0 314
+
+fn=(610)
+0 11
+
+fn=(614)
+0 156
+
+fn=(616)
+0 30
+cfn=(618) __read_nocancel
+calls=6 0 
+0 66
+
+fn=(666)
+0 6
+cfn=(668)
+calls=2 0 
+0 22
+
+fn=(684)
+0 337
+
+fn=(708) getauxval
+0 148
+
+fn=(1010)
+0 1923
+cfn=(1008)
+calls=17 0 
+0 424
+0 102
+cfn=(1012)
+calls=17 0 
+0 758
+0 180
+cfn=(1012)
+calls=45 0 
+0 2268
+0 1178
+
+fn=(274) strcpy
+0 21
+
+fn=(276) strcasecmp_l
+0 24
+
+fn=(300) strncasecmp
+0 24
+
+fn=(390) __libc_early_init
+0 9
+cfn=(392)
+calls=1 0 
+0 22
+0 7
+cfn=(394) getrlimit
+calls=1 0 
+0 16
+0 29
+cfn=(396) __pthread_tunables_init
+calls=1 0 
+0 109
+0 2
+cfn=(400)
+calls=1 0 
+0 24
+0 1
+cfn=(402)
+calls=1 0 
+0 176
+0 6
+cfn=(404) __ptmalloc_init
+calls=1 0 
+0 1199
+
+fn=(540) pthread_self
+0 3
+
+fn=(542) pthread_getattr_np@@GLIBC_2.32
+0 15
+cfn=(544) pthread_attr_init@@GLIBC_2.2.5
+calls=1 0 
+0 29
+0 53
+cob=(4)
+cfi=(4)
+cfn=(624)
+calls=1 0 
+0 236
+0 7
+cfn=(680)
+calls=1 0 
+0 40
+0 13
+cfn=(686)
+calls=1 0 
+0 582
+0 3
+cob=(4)
+cfi=(4)
+cfn=(652)
+calls=1 0 
+0 45
+0 12
+cfn=(546) fopen@@GLIBC_2.2.5
+calls=1 0 
+0 1328
+0 8
+cfn=(394)
+calls=1 0 
+0 16
+0 7
+cfn=(656)
+calls=1 0 
+0 537
+0 294
+cfn=(636)
+calls=45 0 
+0 88128
+0 717
+cfn=(596)
+calls=45 0 
+0 9826
+0 94
+cob=(4)
+cfi=(4)
+cfn=(652)
+calls=1 0 
+0 45
+0 24
+
+fn=(556)
+0 4
+cfn=(558)
+calls=1 0 
+0 433
+0 142
+
+fn=(562)
+0 102
+cfn=(564)
+calls=1 0 
+0 74
+0 36
+cfn=(564)
+calls=1 0 
+0 30
+0 26
+
+fn=(568)
+0 26
+
+fn=(580)
+0 833
+
+fn=(600)
+0 175
+cfn=(602)
+calls=6 0 
+0 917
+0 22
+
+fn=(612)
+0 1182
+cob=(4)
+cfi=(4)
+cfn=(652)
+calls=1 0 
+0 45
+0 6
+
+fn=(618)
+0 66
+
+fn=(646)
+0 4860
+
+fn=(654)
+0 1377
+cfn=(634)
+calls=28 0 
+0 3971
+
+fn=(674)
+0 10
+
+fn=(700) pthread_attr_destroy
+0 10
+cob=(4)
+cfi=(4)
+cfn=(652)
+calls=1 0 
+0 45
+0 3
+cob=(4)
+cfi=(4)
+cfn=(652)
+calls=1 0 
+0 45
+0 5
+
+fn=(1318)
+0 96
+
+fn=(218) __x86_cacheinfo
+0 32
+
+fn=(238) wcsncpy
+0 21
+
+fn=(252) stpncpy
+0 23
+
+fn=(262) wcscpy
+0 19
+
+fn=(264) strcat
+0 21
+
+fn=(266) strncasecmp_l
+0 24
+
+fn=(298) mempcpy
+0 25
+
+fn=(394)
+0 32
+
+fn=(404)
+0 19
+cfn=(406)
+calls=1 0 
+0 21
+0 781
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 27
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 27
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 20
+
+fn=(498)
+0 10
+cfn=(500)
+calls=1 0 
+0 34
+0 14
+cob=(7)
+cfi=(7)
+cfn=(506) main
+calls=1 0 
+0 360925424
+0 2
+cfn=(1292)
+calls=1 0 
+0 2202
+
+fn=(504)
+0 10
+
+fn=(544)
+0 12
+cfn=(538)
+calls=1 0 
+0 10
+0 7
+
+fn=(570)
+0 414
+
+fn=(578)
+0 52
+cfn=(580)
+calls=1 0 
+0 17
+0 38
+cfn=(582)
+calls=1 0 
+0 14
+0 16
+
+fn=(638)
+0 630
+cob=(4)
+cfi=(4)
+cfn=(640)
+calls=45 0 
+0 1777
+0 270
+cfn=(612)
+calls=45 0 
+0 1125
+0 1035
+
+fn=(642)
+0 1741
+
+fn=(706) sigaltstack
+0 12
+
+fn=(722) gettid
+0 4
+
+fn=(736) __errno_location
+0 8
+
+fn=(1008)
+0 2394
+
+fn=(1390)
+0 12
+cfn=(1392)
+calls=1 0 
+0 216
+0 6
+cfn=(580)
+calls=1 0 
+0 17
+0 128
+cfn=(582)
+calls=1 0 
+0 14
+0 29
+
+fn=(222) strpbrk
+0 8
+
+fn=(256) strncmp
+0 24
+
+fn=(258) strcasecmp
+0 24
+
+fn=(272) wmemset
+0 42
+
+fn=(396)
+0 11
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 27
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 26
+0 4
+cob=(4)
+cfi=(4)
+cfn=(398)
+calls=1 0 
+0 27
+0 10
+
+fn=(446) _IO_stdfiles_init
+0 24
+
+fn=(532)
+0 314
+
+fn=(546)
+0 3
+cfn=(548)
+calls=1 0 
+0 1325
+
+fn=(572)
+0 552
+cfn=(574)
+calls=46 0 
+0 1336
+0 835
+
+fn=(660)
+0 13
+cfn=(580)
+calls=1 0 
+0 17
+0 36
+cfn=(582)
+calls=1 0 
+0 14
+0 15
+
+fn=(694)
+0 17
+cfn=(560)
+calls=1 0 
+0 155
+0 39
+cob=(4)
+cfi=(4)
+cfn=(682)
+calls=1 0 
+0 28
+
+fn=(714) mprotect
+0 3
+
+ob=(5) /nix/store/l8kvr38dk84afq0bffmsdybfix0wdvci-valgrind-3.26.0/libexec/valgrind/vgpreload_core-amd64-linux.so
+fl=(5) ???
+fn=(1332) 0x00000000000010c0
+0 9
+cob=(4)
+cfi=(4)
+cfn=(1338)
+calls=1 0 
+0 88
+0 1
+cfn=(1342) 0x0000000000001050
+calls=1 0 
+0 5
+0 3
+
+fn=(430) 0x0000000000001100
+0 12
+
+fn=(1342)
+0 4
+
+ob=(2)
+fl=(2)
+fn=(714)
+0 3
+
+ob=(5)
+fl=(5)
+fn=(1342)
+0 1
+
+ob=(3)
+fl=(3)
+fn=(352) __atanh_finite@GLIBC_2.15
+0 11
+
+fn=(358) sin
+0 11
+
+fn=(1372) 0x00000000000115e0
+0 9
+cob=(4)
+cfi=(4)
+cfn=(1378)
+calls=1 0 
+0 89
+0 1
+cfn=(1382) 0x0000000000011570
+calls=1 0 
+0 5
+0 3
+
+fn=(312) __exp_finite@GLIBC_2.15
+0 11
+
+fn=(322) sincosf
+0 11
+
+fn=(330) __log1p
+0 11
+
+fn=(338) sinf
+0 22
+
+fn=(342) roundeven
+0 8
+
+fn=(346) expm1
+0 11
+
+fn=(314) cos
+0 11
+
+fn=(320) log2@@GLIBC_2.29
+0 11
+
+fn=(328) log2f@@GLIBC_2.27
+0 11
+
+fn=(452) 0x0000000000011620
+0 12
+
+fn=(1106) log@@GLIBC_2.29
+0 90
+cob=(4)
+cfi=(4)
+cfn=(1108)
+calls=18 0 
+0 972
+
+fn=(336) __acos_finite@GLIBC_2.15
+0 9
+
+fn=(344) __asin_finite@GLIBC_2.15
+0 9
+
+fn=(350) __sinh_finite@GLIBC_2.15
+0 11
+
+fn=(1048) __sincos_fma
+0 263148
+
+fn=(318) tan
+0 11
+
+fn=(324) powf@@GLIBC_2.27
+0 22
+
+fn=(326) __pow_finite@GLIBC_2.15
+0 9
+
+fn=(332) __log_finite@GLIBC_2.15
+0 11
+
+fn=(340) fma
+0 7
+
+fn=(348) exp2f@@GLIBC_2.27
+0 11
+
+fn=(362) sincos
+0 18
+
+fn=(830) hypot@@GLIBC_2.35
+0 6889388
+
+fn=(1124) hypotf@@GLIBC_2.35
+0 35328
+
+fn=(1382)
+0 5
+
+fn=(310) cosf
+0 22
+
+fn=(316) logf@@GLIBC_2.27
+0 11
+
+fn=(334) atan
+0 11
+
+fn=(354) roundevenf
+0 8
+
+fn=(360) fmaf
+0 7
+
+fn=(308) expf@@GLIBC_2.27
+0 33
+
+fn=(356) __atan2_finite@GLIBC_2.15
+0 11
+
+fn=(1110)
+0 936
+
+ob=(7)
+fl=(28) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/std/src/rt.rs
+fn=(740) std::rt::lang_start::<()>::{closure#0}
+206 3
+cfi=(29) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/std/src/sys/backtrace.rs
+cfn=(742) std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+calls=1 -44 
+* 360821488
+* 3
+
+fl=(70) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/ptr/mod.rs
+fn=(1260) core::ptr::drop_glue::<<acoustic_performance::Workload>::new::{closure#3}>
+847 4
+fi=(42) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs
+631 2
+fe=(70)
+847 1
+fi=(24) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/alloc/unix.rs
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 143
+fi=(77) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/std/src/sync/once_lock.rs
+724 1
+fi=(101) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/std/src/sys/sync/once/futex.rs
+92 5
+fi=(42)
+631 2
+fe=(70)
+847 1
+fi=(24)
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 182
+fi=(42)
+631 2
+fe=(70)
+847 1
+fi=(24)
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 43
+fi=(42)
+631 2
+fe=(70)
+847 1
+fi=(24)
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 143
+fi=(42)
+631 2
+fe=(70)
+847 1
+fi=(24)
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 182
+fi=(42)
+631 2
+fe=(70)
+847 1
+fi=(24)
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 214
+fi=(42)
+631 4
+fe=(70)
+847 1
+fi=(24)
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 143
+fi=(42)
+631 2
+fe=(70)
+847 1
+fi=(24)
+65 4
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 43
+fe=(70)
+
+fl=(119) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/io/buffered/bufwriter.rs
+fn=(1240) <alloc::io::buffered::bufwriter::BufWriter<std::io::stdio::StdoutRaw>>::flush_buf
+208 16
++15 2
+fi=(33) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/vec/mod.rs
+3101 2
+fe=(119)
+238 2
++22 2
+0 4
+fi=(33)
+3101 1
+fe=(119)
+238 1
++22 1
++1 1
+fi=(118) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/slice/index.rs
+544 3
+0 1
+90 1
+fi=(124) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/fd/unix.rs
+376 3
+cob=(2)
+cfi=(2)
+cfn=(1244)
+calls=1 0 
+* 57
+fi=(13) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/pal/unix/mod.rs
+230 1
++10 1
+fe=(119)
++23 3
++2 2
+-32 3
+fi=(10) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/sync/atomic.rs
+0 1
+fe=(119)
+260 1
+0 1
+244 2
+fi=(33)
+3101 1
+fe=(119)
+247 2
+fi=(118)
+1020 1
+fe=(119)
+251 1
+fi=(20) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/ptr/mut_ptr.rs
+970 1
+fi=(18) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/ptr/mod.rs
+664 3
+cob=(2)
+cfi=(2)
+cfn=(632)
+calls=1 0 
+* 13
+fi=(33)
+1823 2
++5 1
+fe=(119)
+278 18
+
+fl=(8)
+fn=(486)
+132 1
+fi=(10)
+3978 2
+fe=(8)
+133 1
+
+fl=(80) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/std/src/sync/once.rs
+fn=(926) <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0}
+226 48
+fi=(37) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/mem/mod.rs
+975 12
++1 6
+fi=(91) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/option.rs
++36 12
+fi=(77)
+572 6
+fi=(47) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs
+3212 6
+fi=(66) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/intrinsics/mod.rs
+478 18
+fi=(42)
+0 18
+461 12
+0 6
+fi=(24)
+31 12
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=6 -31 
+* 1585
+* 6
+-31 6
+fi=(42)
+470 12
+fi=(81) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/ptr/non_null.rs
+1663 6
+fi=(46) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs
+25 6
+-25 12
+279 12
+0 30
+fi=(82) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/iter/adapters/copied.rs
+36 1680
+-36 840
+fi=(83) /tmp/bevy-audio-performance-reference/src/bvh.rs
+94 840
+-94 840
+fi=(54) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/convert/num.rs
+72 1680
+fi=(84) /tmp/bevy-audio-performance-reference/src/acoustic_material.rs
++31 840
+0 840
+103 840
+fi=(54)
+-31 1680
+fi=(84)
++31 1680
+fi=(62) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/num/f64.rs
+2001 840
+cfi=(55) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/compiler-builtins/compiler-builtins/src/macros.rs
+cfn=(812) fma
+calls=840 467 
+* 6720
+0 840
+fi=(54)
+72 5040
+fi=(96) /tmp/bevy-audio-performance-reference/src/math3d.rs
+-43 3360
+fi=(70)
+1963 1680
+fi=(96)
+62 840
+fi=(70)
+1963 1680
+fi=(96)
+62 840
+-62 840
+fi=(62)
+2001 840
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+0 1680
+fi=(96)
+63 840
+-63 1680
+fi=(62)
+2001 840
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+0 1680
+fi=(96)
+64 840
+-64 840
+64 840
+-64 840
+fi=(62)
+2001 840
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+0 1680
+fi=(96)
+56 840
+-56 840
+fi=(62)
+2001 1680
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+* 840
+0 840
+2001 1680
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+0 1680
+fi=(96)
+56 840
+-56 840
+fi=(62)
+2001 1680
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+* 840
+0 840
+2001 1680
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+0 1680
+fi=(96)
+56 840
+-56 1680
+fi=(62)
+2001 840
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+* 840
+0 1680
+2001 840
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+0 1680
+fi=(96)
+56 840
+-56 840
+fi=(62)
+2001 1680
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+* 840
+0 840
+2001 1680
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+* 1680
+0 840
+fi=(51) /tmp/bevy-audio-performance-reference/src/scene3d.rs
+353 1680
+0 840
+354 840
+fi=(62)
+2001 840
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+0 2520
+1651 2520
+fi=(83)
+84 4200
+fi=(62)
+1118 16800
+fi=(83)
+89 3360
+fi=(63) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/std/src/num/f64.rs
+678 840
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=840 0 
+* 25200
+0 840
+678 840
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=840 0 
+* 25200
+0 2520
+678 840
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=840 0 
+* 25488
+0 840
+678 840
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=840 0 
+* 25776
+0 2520
+678 840
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=840 0 
+* 25488
+0 840
+678 840
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=840 0 
+* 45744
+0 840
+fi=(70)
+1963 10080
+fi=(62)
+1091 9240
+fi=(83)
+92 840
+fi=(70)
+1963 24360
+fi=(82)
+36 1680
+fi=(54)
++36 840
+fi=(84)
++27 3360
+fi=(54)
+-27 1680
+fi=(84)
++27 2520
+fi=(62)
+2001 840
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+* 5880
+cfi=(55)
+cfn=(812)
+calls=840 467 
+* 6720
+* 2520
+fi=(70)
+-38 4200
+fi=(76) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/alloc/src/vec/set_len_on_drop.rs
+19 840
+fi=(46)
+279 3360
+fi=(82)
+36 1680
+fi=(54)
++36 2520
+fi=(82)
+-36 840
+fi=(54)
++36 1680
+fi=(96)
+-41 3360
+-31 840
+fi=(62)
+1651 2520
+fi=(83)
+86 1680
+fi=(62)
+1118 840
+0 840
+1091 840
+0 4200
+1118 12600
+fi=(83)
+91 2520
+-91 3360
+fi=(47)
+3212 6
+fi=(24)
+31 12
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=6 -31 
+* 1602
+fi=(42)
+470 12
+fi=(85) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter_nested.rs
+0 6
+fi=(46)
+279 54
+0 6
+fi=(70)
+1963 90
+fi=(76)
+19 6
+fi=(46)
+279 24
+fi=(70)
+1963 6210
+fi=(76)
+19 414
+fi=(46)
+279 1668
+fi=(83)
+-39 54
++24 24
+cfn=(954) <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node
+calls=6 384 
+* 999417
++6 12
++1 60
+fi=(81)
+1663 6
+fi=(42)
+631 6
+fi=(24)
+65 12
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=6 -65 
+* 858
+fi=(92) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/mem/maybe_uninit.rs
+575 84
+fe=(80)
+226 48
+
+fl=(111) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/num/imp/flt2dec/strategy/grisu.rs
+fn=(1190) core::num::imp::flt2dec::strategy::grisu::format_shortest_opt
+167 8
++4 3
+0 1
+172 3
++1 3
+fi=(11) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/num/uint_macros.rs
+938 1
+fi=(125) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/intrinsics/mod.rs
+478 1
+fi=(11)
+1092 3
+fe=(111)
+176 2
++1 3
++3 1
+fi=(11)
+-26 3
+fi=(112) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/num/imp/diy_float.rs
+46 7
+fi=(113) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/macros/mod.rs
++1 2
+fi=(112)
+-1 7
+fi=(113)
++1 2
+-47 3
+fe=(111)
+198 2
+-72 10
++1 3
+fi=(112)
+-93 1
+fe=(111)
++93 3
+fi=(11)
+3363 4
+fi=(112)
+26 2
++1 1
+fe=(111)
+226 2
++4 1
++5 3
+127 1
+fi=(11)
+3363 4
+fi=(112)
+26 2
+fe=(111)
+236 1
+fi=(11)
+3363 3
+fi=(112)
+26 1
+fe=(111)
+236 2
+-89 4
++7 2
++2 2
++1 7
+0 9
+243 5
+-14 3
++24 3
++2 1
++14 3
++2 4
+0 3
+268 2
++3 1
++3 3
+-3 1
++3 2
++1 2
+0 2
+268 2
++3 1
++3 3
+-3 1
++3 2
++1 2
+0 1
+292 2
+-24 2
++30 4
+-29 3
++2 5
++6 6
++7 1
++91 1
++1 3
++46 2
+0 3
+437 5
++12 2
+0 2
+449 7
++2 9
+
+fl=(7)
+fn=(488)
+0 12
+
+fn=(472) (below main)
+0 12
+cob=(2)
+cfi=(2)
+cfn=(474)
+calls=1 0 
+0 360927888
+
+fn=(506)
+0 10
+cfi=(9) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/rt.rs
+cfn=(508) std::rt::lang_start_internal
+calls=1 152 
+0 360925412
+0 2
+
+fn=(1322) 0x0000000000044a20
+0 5
+
+fn=(1308) 0x0000000000044a90
+0 9
+cob=(2)
+cfi=(2)
+cfn=(1316)
+calls=1 0 
+0 87
+0 1
+0 1
+cfn=(1322)
+calls=1 0 
+0 5
+0 3
+
+fl=(14) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/pal/unix/stack_overflow.rs
+fn=(702) std::sys::pal::unix::stack_overflow::imp::make_handler
+244 6
+fi=(10)
+3995 1
+762 1
+fe=(14)
+245 1
++4 2
+fi=(18)
+735 4
+fe=(14)
+258 2
+cob=(2)
+cfi=(2)
+cfn=(706)
+calls=1 0 
+* 6
++2 2
++44 2
+cob=(2)
+cfi=(2)
+cfn=(708)
+calls=1 0 
+* 148
+fi=(19) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/cmp.rs
+1051 3
+fi=(10)
+3994 1
+fe=(14)
+223 1
+-2 6
+cob=(2)
+cfi=(2)
+cfn=(712)
+calls=1 0 
+* 34
++8 2
+0 1
+232 4
+cob=(2)
+cfi=(2)
+cfn=(714)
+calls=1 0 
+* 6
++1 2
+fi=(20)
+970 1
+fe=(14)
+263 4
++1 2
+cob=(2)
+cfi=(2)
+cfn=(706)
+calls=1 0 
+* 6
++6 6
+
+fl=(74) /tmp/bevy-audio-performance-reference/src/ray_tracer3d.rs
+fn=(1076) <bevy_raytraced_audio::scene3d::AcousticScene3d>::segment_is_blocked
+563 451680
++6 282300
+fi=(96)
+29 112920
++2 56460
+-31 56460
+fi=(63)
+678 282300
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=56460 0 
+* 3123132
+0 56460
+678 56460
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=56460 0 
+* 3117032
+0 56460
+fe=(74)
+572 169380
++1 112920
+0 56460
+fi=(62)
+1006 112920
+0 56460
+fi=(96)
+49 56460
+-2 56460
+-47 56460
+47 56460
+-1 112920
+fi=(51)
+232 56460
+fi=(78) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/sync/atomic.rs
+3995 56460
+fi=(101)
+87 56460
+fi=(77)
++98 56460
+fe=(74)
+578 56460
+fi=(62)
+1006 225840
+fi=(83)
+550 338760
+fe=(74)
++35 508140
+-6 56460
+0 56460
+fi=(83)
+308 169380
+fi=(94) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/slice/index.rs
+184 112920
+fi=(42)
+611 56460
+fi=(94)
+186 112920
+fi=(83)
+314 338760
+132 1016280
+fi=(69) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/ops/index_range.rs
+-1 451680
+fi=(83)
++21 677520
+0 169380
+fi=(70)
+1755 508140
+fi=(62)
+725 169380
+fi=(70)
+1755 338760
+fi=(62)
+725 169380
+fi=(83)
+152 169380
++7 338760
++1 338760
++3 169380
+0 169380
+163 169380
+0 75648
+168 75648
+0 378240
+171 75648
++3 302592
+-6 93732
+0 468660
+171 93732
++3 374928
+fe=(74)
+597 282300
+0 169380
+fi=(83)
+317 56460
+cfn=(1086) <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::visit_ray_node::<<bevy_raytraced_audio::scene3d::AcousticScene3d>::segment_is_blocked::{closure#0}>
+calls=56460 +8 
+* 316350232
+fe=(74)
+596 56460
+0 56460
+
+fn=(896) <bevy_raytraced_audio::scene3d::AcousticScene3d>::trace_listener
+210 72
+fi=(68) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs
+3082 18
+3574 18
+fi=(42)
+764 6
+-94 6
+0 5
+fi=(75) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/ptr/mut_ptr.rs
+970 15
+fi=(71) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/cmp.rs
+2144 5
+fi=(72) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/iter/range.rs
+1100 5
+fi=(75)
+970 3
+fi=(71)
+2144 1
+fi=(72)
+1100 49
+0 6
+fi=(70)
+1963 144
+fi=(75)
+970 6
+fi=(72)
+1100 12
+fi=(70)
+1963 2016
+fi=(75)
+970 84
+fi=(72)
+1100 180
+0 12
+fi=(70)
+1963 18
+fi=(75)
+970 6
+fi=(72)
+1100 12
+fi=(70)
+1963 108
+fi=(75)
+970 36
+fi=(72)
+1100 84
+fi=(76)
+19 6
+fi=(70)
+1963 24
+fi=(68)
+0 6
+3082 6
+fi=(42)
+764 6
+-94 6
+0 5
+611 5
+fi=(75)
+970 5
+fi=(71)
+2144 5
+fi=(72)
+1100 17
+fi=(70)
+1963 12
+cob=(2)
+cfi=(2)
+cfn=(684)
+calls=6 0 
+* 300
+* 12
+fi=(72)
+1100 30
+fi=(70)
+1963 6
+fi=(76)
+19 6
+-19 12
+fe=(74)
+155 30
++1 6
++1 6
+fi=(66)
+478 18
+fi=(42)
+0 78
+fi=(68)
+3574 6
+0 12
+fi=(42)
+461 6
+0 18
+fi=(24)
+31 12
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=6 -31 
+* 2354
+fi=(42)
+470 12
+fi=(46)
+279 36
+0 6
+fe=(74)
+222 6
+fi=(54)
+72 12
+fi=(70)
+1963 6
+fe=(74)
+222 6
+fi=(54)
+72 6
+fi=(70)
+1963 6
+fi=(54)
+72 6
+fi=(70)
+1963 12
+fi=(76)
+19 6
+fi=(46)
+279 18
+fe=(74)
+-57 378
+fi=(54)
+72 756
+fi=(70)
+1963 378
+fe=(74)
+222 378
+fi=(54)
+72 378
+fi=(70)
+1963 378
+fi=(54)
+72 378
+fi=(70)
+1963 756
+fi=(76)
+19 378
+fi=(46)
+279 1146
+fi=(75)
+970 12
+0 42
+fi=(81)
+1663 1536
+fi=(126) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/iter/adapters/enumerate.rs
+82 768
+fi=(81)
+1663 768
+fi=(46)
+180 768
+0 768
+fi=(91)
+2138 1536
+0 768
+fe=(74)
+227 5376
+0 768
+fi=(78)
+3995 768
+fi=(101)
+87 768
+fi=(77)
++98 768
+fi=(51)
+-53 768
++1 2304
+fi=(68)
+462 2304
+fi=(51)
+135 3072
+0 1536
+fi=(96)
+29 768
++1 1536
+-30 1536
+31 768
+-31 1536
+fi=(63)
+678 768
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=768 0 
+* 42912
+0 768
+678 768
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=768 0 
+* 42272
+fi=(51)
+135 2304
+0 768
+fi=(62)
+1118 3072
+-27 768
+0 15360
+fi=(83)
+118 1536
+fi=(62)
+1091 2304
+fi=(83)
+118 1536
+fi=(51)
++24 8448
+fi=(83)
+293 1536
+0 768
+293 768
++3 2304
+cfn=(1028) <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::visit_candidate_node::<<bevy_raytraced_audio::scene3d::AcousticScene3d>::direct_transmission::{closure#0}>
+calls=768 486 
+* 1905240
+fi=(51)
+162 768
+fi=(42)
+631 768
+fi=(51)
+162 2304
+fi=(42)
+631 768
+fi=(24)
+0 768
+fi=(94)
+195 1536
+fi=(42)
+611 768
+fe=(74)
+229 2304
+fi=(97) /tmp/bevy-audio-performance-reference/src/ray_trace.rs
+627 768
+fi=(54)
+72 768
+fi=(97)
+628 768
+fi=(62)
+2001 768
+fi=(54)
+72 1536
+fi=(97)
+628 768
+fi=(62)
+2001 768
+fi=(97)
+630 1536
+fe=(74)
+232 1536
+fi=(77)
+439 18
+cfi=(78)
+cfn=(918) <std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::initialize::<<std::sync::once_lock::OnceLock<bevy_raytraced_audio::scene3d::SceneAcceleration3d>>::get_or_init<<bevy_raytraced_audio::scene3d::AcousticScene3d>::acceleration::{closure#0}>::{closure#0}, !>
+calls=6 3995 
+* 1521826
+* 6
+0 24
+fi=(47)
+1420 6
+0 6
+fi=(66)
+478 6
+0 12
+fi=(47)
+1425 18
+fi=(91)
+1227 18
+0 12
+fi=(97)
+662 18
+-81 36
+fi=(71)
+2144 12
+fi=(72)
+1100 6
+0 426
+fi=(47)
+1013 24
+0 6
+1420 6
+fe=(74)
+256 6
+fi=(72)
+0 756
+fi=(47)
+1013 1512
+0 378
+1420 378
+fe=(74)
+256 1914
+0 384
+fi=(54)
+72 1536
+fe=(74)
+-72 1152
+638 768
+0 768
+fi=(62)
+2001 384
+cfi=(55)
+cfn=(812)
+calls=384 467 
+* 3072
+0 384
+fe=(74)
+639 768
+fi=(62)
+2001 768
+cfi=(55)
+cfn=(812)
+calls=384 467 
+* 3072
+0 1152
+1091 384
+2122 384
+0 768
+2001 1152
+cfi=(55)
+cfn=(812)
+calls=384 467 
+* 3072
+fi=(63)
+702 1152
+cob=(3)
+cfi=(3)
+cfn=(1048)
+calls=384 0 
+* 55344
+0 768
+fe=(74)
+643 384
+-1 4608
+0 768
+317 2304
++1 1920
+0 1536
+fi=(78)
+3995 384
+fi=(101)
+87 384
+fi=(77)
++98 384
+fe=(74)
+0 2304
+317 6912
++1 5760
+0 4608
+fi=(78)
+3995 1152
+fi=(101)
+87 1152
+fi=(77)
++98 1152
+fe=(74)
+522 1536
++3 1536
++1 1536
+fi=(62)
+1006 3072
+fe=(74)
+525 1536
+fi=(83)
++25 3072
+fe=(74)
+-24 1536
+fi=(62)
+1006 3072
+fi=(83)
+550 3072
+fe=(74)
+-21 18432
+-6 1536
+0 1536
+fi=(83)
+308 4608
+fi=(94)
+184 3072
+0 3072
+fi=(42)
+611 1536
+fi=(94)
+186 3072
+fi=(83)
+314 9216
+132 23040
+fi=(69)
+-1 12288
+fi=(83)
++21 23040
+0 4608
+fi=(70)
+1755 13824
+fi=(62)
+725 4608
+fi=(70)
+1755 9216
+fi=(62)
+725 9216
+fi=(83)
+152 4608
++7 9216
++1 9216
++3 4608
+0 4608
+163 4608
+0 2250
+168 2250
+0 11250
+171 2250
++3 9000
+-6 2358
+0 11790
+171 2358
++3 9432
+0 6144
+317 6144
+cfn=(1054) <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::visit_ray_node::<<bevy_raytraced_audio::scene3d::AcousticScene3d>::closest_hit::{closure#0}>
+calls=1536 +8 
+* 8453630
+fi=(91)
+2869 3072
+fe=(74)
+0 1536
+fi=(94)
+184 3072
+fi=(42)
+611 1536
+0 1536
+fi=(94)
+186 1536
+fi=(62)
+1006 3072
+0 1536
+fi=(96)
+47 3072
++1 1536
++1 1536
+-49 6144
+56 4608
+fi=(62)
+2001 6144
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+* 6144
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+* 1536
+fe=(74)
+548 6144
+0 4620
+548 4572
+0 1524
+fi=(96)
+47 762
+-47 762
+48 762
++1 762
+-11 762
+-38 762
+39 762
++1 762
+fe=(74)
+170 1524
+0 1524
+170 762
+0 1548
+fi=(96)
+47 774
+-47 774
+48 774
++1 774
+-11 774
+-38 774
+39 774
++1 774
+fe=(74)
+170 1548
+0 1548
+170 774
+fi=(68)
+0 1536
+fi=(94)
+184 3072
+0 18432
+fi=(42)
+611 1536
+fi=(94)
+186 4608
+fe=(74)
+343 3072
+0 1536
+343 1536
+0 1536
+347 4608
+-4 1536
+fi=(54)
+72 1536
+fi=(84)
++31 4608
+fi=(54)
+-31 3072
+fi=(84)
++31 3072
+0 1536
+fi=(62)
+2001 1536
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+0 1536
+fi=(54)
+72 3072
+fi=(84)
++29 4608
+fi=(54)
+-29 3072
+fi=(84)
++29 4608
+fi=(62)
+2001 3072
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+* 1536
+0 1536
+2001 7680
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+* 6144
+fe=(74)
+348 9216
+-3 1536
+0 3072
+350 7680
+0 1536
+fi=(96)
+29 3072
++1 1536
+-30 1536
+31 1536
+-31 3072
+56 1536
+-56 3072
+fi=(62)
+2001 1536
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+* 6144
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+fe=(74)
+354 3072
+0 4608
+355 1536
+0 1488
+356 20832
+cfn=(1076)
+calls=1488 563 
+* 8284783
+* 2976
+0 136
+fi=(68)
+3574 68
+fi=(46)
+180 68
+fe=(74)
+0 1468
+fi=(68)
+3574 1468
+fi=(46)
+180 1468
+0 16896
+fi=(81)
+1663 393216
+fi=(126)
+82 196608
+fi=(81)
+1663 196608
+fi=(46)
+180 196608
+fi=(68)
+1865 196608
+0 196608
+fi=(94)
+184 393216
+fi=(42)
+611 196608
+0 196608
+fe=(74)
+488 393216
+0 393216
+fi=(96)
+29 393216
+-29 196608
+30 393216
+-30 196608
+31 196608
+-31 196608
+56 196608
+-56 393216
+fi=(62)
+2001 196608
+cfi=(55)
+cfn=(812)
+calls=196608 467 
+* 1572864
+* 786432
+cfi=(55)
+cfn=(812)
+calls=196608 467 
+* 1572864
+* 196608
+fe=(74)
+489 393216
++1 577728
+0 54972
+492 769608
+cfn=(1076)
+calls=54972 +71 
+* 326237861
+* 109944
+fi=(94)
+184 48391
++11 48391
+fi=(42)
+611 48391
+0 48391
+fe=(74)
+497 48391
+fi=(94)
+195 96782
+fi=(42)
+611 48391
+0 48391
+fe=(74)
+500 96782
+170 96782
+388 10752
+fi=(68)
+3574 48
+fi=(46)
+180 48
+0 960
+fi=(81)
+1663 12288
+fi=(126)
+82 6144
+fi=(81)
+1663 6144
+fi=(46)
+180 6144
+fi=(91)
+2138 18432
+0 12288
+fi=(94)
+184 12288
+0 6144
+fi=(42)
+611 6144
+fe=(74)
+395 12288
+fi=(77)
+0 4608
+fi=(62)
+1091 24576
+fe=(74)
+413 6144
+0 1536
+fi=(96)
+56 1536
+-56 3072
+fi=(62)
+2001 1536
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+* 6144
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+fi=(91)
+0 29184
+fe=(74)
+735 4608
+0 1536
+fi=(97)
+673 4608
++1 4608
++1 4608
+-2 1536
++5 3072
+fi=(54)
+72 3072
+fi=(97)
+673 3072
+0 1536
+678 1536
+-4 4608
++1 4608
+0 1536
+678 3072
+fi=(54)
+72 1536
+fe=(74)
+739 3072
+fi=(97)
+-61 1536
+0 3072
+fe=(74)
+742 4608
+fi=(62)
+1091 3072
+0 1536
+1709 4608
+0 1536
+fe=(74)
+718 3072
+0 1536
+fi=(62)
+1006 3072
+0 1536
+fe=(74)
+721 7680
+0 4608
+fi=(62)
+2001 1536
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+0 3072
+fe=(74)
+727 1536
+0 3072
+fi=(62)
+2001 1536
+cfi=(55)
+cfn=(812)
+calls=1536 467 
+* 12288
+0 3072
+fi=(63)
+726 4608
+cob=(3)
+cfi=(3)
+cfn=(1048)
+calls=1536 0 
+* 207804
+0 1536
+fi=(62)
+2122 4608
+fe=(74)
+746 1536
+0 1536
+719 12288
++3 1536
++25 4608
+fi=(96)
+49 1536
+-1 3072
+-48 1536
+49 1536
+-1 1536
+-9 1536
++10 1536
+-9 1536
+-40 1536
+47 3072
+-47 1536
+48 1536
+-9 1536
+-1 4608
++2 1536
+-40 1536
+fi=(54)
+72 1536
+fi=(96)
+-32 1536
+fe=(74)
+749 3072
+0 1536
+fi=(96)
+47 1536
+-47 1536
+48 1536
+-48 1536
+49 1536
+-2 1536
+-9 1536
+-38 1536
+48 1536
+-9 1536
++10 1536
+-9 1536
+-40 3072
+fi=(63)
+678 1536
+0 3072
+678 1536
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=1536 0 
+* 85052
+0 1536
+678 1536
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=1536 0 
+* 84948
+fe=(74)
++73 4608
+fi=(62)
+1006 3072
+0 1536
+fi=(96)
+47 3072
++1 3072
++1 1536
+-49 7476
+fi=(63)
+678 1468
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=1468 0 
+* 80936
+0 1468
+678 1468
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=1468 0 
+* 81048
+* 1468
+fe=(74)
+358 1468
+0 1468
+359 7340
++1 4404
+0 2936
+fi=(62)
+2001 1468
+cfi=(55)
+cfn=(812)
+calls=1468 467 
+* 11744
+* 1468
+fe=(74)
+361 1468
++3 2936
+0 768
+365 1152
+0 768
+fi=(62)
+2001 384
+cfi=(55)
+cfn=(812)
+calls=384 467 
+* 3072
+* 384
+fe=(74)
+366 384
+0 1152
+170 768
+0 3252
+170 2168
+0 4608
+fi=(71)
+2144 4608
+0 4608
+fi=(72)
+1100 1920
+0 8808
+fe=(74)
+170 1468
+0 384
+fi=(71)
+2144 384
+fi=(72)
+1100 390
+0 30
+fe=(74)
+276 12
+cfi=(97)
+cfn=(1104) <bevy_raytraced_audio::ray_trace::ReverbEstimate>::from_statistics
+calls=6 456 
+* 2004
+* 36
+0 6
+fi=(63)
+678 30
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=6 0 
+* 180
+0 6
+678 18
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=6 0 
+* 180
+0 12
+fe=(74)
+278 12
+fi=(37)
+975 18
++1 18
+fi=(42)
+616 6
+fi=(68)
+1461 6
+fi=(47)
+2689 6
+fi=(42)
+764 12
+-94 6
+fi=(81)
+1663 5
+fi=(46)
+25 5
+-25 12
+279 54
+0 12
+fe=(74)
+287 24
+cfi=(97)
+cfn=(1116) <bevy_raytraced_audio::ray_trace::SourceAccumulator>::finish
+calls=6 634 
+* 978
+* 3048
+cfi=(97)
+cfn=(1116)
+calls=762 634 
+* 124206
+fi=(70)
+1963 3072
+fi=(46)
+279 3840
+0 6
+fi=(76)
+31 6
+fi=(42)
+631 6
+fi=(76)
+31 6
+-31 30
+fi=(42)
+631 6
+fe=(74)
+289 18
+fi=(68)
+3574 6
+fi=(42)
+631 6
+fi=(24)
+65 12
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=6 -65 
+* 1018
+fe=(74)
+290 48
+fi=(42)
+672 7
+cfn=(900) <alloc::raw_vec::RawVecInner<_>>::reserve::do_reserve_and_handle::<alloc::alloc::Global>
+calls=1 -14 
+* 252
+* 1
+fi=(68)
+3101 2
+fi=(42)
+672 7
+cfn=(900)
+calls=1 -14 
+* 273
+* 1
+fi=(68)
+3101 1
+fi=(42)
+611 1
+fi=(75)
+970 1
+fi=(71)
+2144 1
+fi=(72)
+1100 1
+fe=(74)
+284 1
+fi=(42)
+672 3
+cfn=(900)
+calls=1 -14 
+* 488
+fi=(76)
+14 1
+-14 1
+fi=(46)
+25 1
+fe=(74)
+
+fn=(1058) bevy_raytraced_audio::ray_tracer3d::ray_triangle_distance
+657 7225728
++45 6021440
++1 6021440
++1 6021440
+-46 3612864
++32 9634304
+0 1204288
+fi=(62)
+1651 1204288
+fe=(74)
+660 6021440
+0 1204288
+fi=(62)
+1006 1204288
+fe=(74)
+664 3612864
+fi=(96)
+29 1204288
++1 1204288
++1 1204288
+fe=(74)
+690 6021440
+-25 2408576
+fi=(71)
+2146 1204288
+fi=(95) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/ops/range.rs
+885 1204288
+0 492204
+885 984408
+fe=(74)
+702 1128185
++1 676911
++1 676911
+-14 1128185
+-20 225637
+0 451274
+671 451274
+0 110830
+671 221660
++19 269440
+-14 53888
++1 161664
++1 1204288
+
+fl=(116) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/slice/memchr.rs
+fn=(1214) core::slice::memchr::memrchr_aligned
+123 18
+fi=(18)
+2380 6
++1 9
+fi=(117) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/slice/mod.rs
+4531 6
+2062 4
+4485 2
+fe=(116)
+140 4
+fi=(118)
+544 2
+0 2
+fi=(15) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/ptr/non_null.rs
+1663 2
+fi=(114) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/slice/iter/macros.rs
+25 2
+fi=(15)
+1663 1
+fi=(114)
+25 7
+-25 2
+fe=(116)
+144 2
+fi=(114)
+402 2
+fi=(15)
+1663 8
+fi=(114)
+25 2
+-25 6
+fi=(127) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/num/mod.rs
+1485 9
+0 6
+fe=(116)
+154 6
+0 3
+fi=(11)
+1092 3
+fi=(15)
+1663 3
+fi=(114)
+25 3
+-25 6
+fe=(116)
+172 2
+fi=(114)
+402 2
+fi=(15)
+1663 1
+fi=(114)
+25 2
+-25 3
+fe=(116)
+173 21
+
+fl=(29)
+fn=(742)
+162 1
+fi=(128) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/ops/function.rs
++88 1
+cfi=(30) /tmp/bevy-audio-performance-reference/tests/performance/src/main.rs
+cfn=(744) acoustic_performance::main
+calls=1 4 
+* 360821484
+fe=(29)
+-78 2
+
+fl=(89) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/slice/sort/unstable/quicksort.rs
+fn=(972) core::slice::sort::unstable::quicksort::partition::<bevy_raytraced_audio::bvh::PrimitiveBounds, <[bevy_raytraced_audio::bvh::PrimitiveBounds]>::select_nth_unstable_by<<bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node::{closure#2}>::{closure#0}>
+93 966
++11 276
+fi=(75)
+970 138
+fi=(70)
+573 1656
++91 1104
+-91 1104
+fi=(75)
+970 138
+fi=(70)
+1755 1104
+0 138
+fi=(75)
+970 414
+fe=(89)
+0 1656
+312 414
+0 276
+fi=(83)
+417 11682
+0 7788
+fe=(89)
+281 3894
+fi=(83)
+417 11682
+210 3894
+0 3894
+fi=(62)
+2001 3894
+cfi=(55)
+cfn=(812)
+calls=3894 467 
+* 31152
+fe=(89)
+281 1104
+fi=(83)
+417 3312
+210 1104
+0 1104
+fi=(62)
+2001 1104
+cfi=(55)
+cfn=(812)
+calls=1104 467 
+* 8832
+* 4998
+fi=(83)
+419 4998
+0 9996
+210 4998
+fi=(62)
+2001 4998
+cfi=(55)
+cfn=(812)
+calls=4998 467 
+* 39984
+0 4998
+1264 9996
+1547 19992
++1 19992
+fi=(71)
+669 19992
+410 4998
+669 4998
+410 4998
+669 4998
+fi=(75)
+970 4998
+0 4998
+fi=(70)
+664 39984
+-91 39984
+fe=(89)
+288 9996
+0 9996
+312 19992
+0 14994
+fi=(83)
+205 4998
+0 4998
+205 7206
+417 2208
+0 3312
+205 414
+fe=(89)
+325 84
+fi=(83)
++92 756
+210 84
+0 84
+fi=(62)
+2001 84
+cfi=(55)
+cfn=(812)
+calls=84 467 
+* 672
+fi=(83)
+417 162
+210 54
+0 54
+fi=(62)
+2001 54
+cfi=(55)
+cfn=(812)
+calls=54 467 
+* 432
+* 138
+fi=(83)
+419 138
+0 276
+210 138
+fi=(62)
+2001 138
+cfi=(55)
+cfn=(812)
+calls=138 467 
+* 1104
+0 138
+1264 276
+1547 552
++1 552
+fe=(89)
+325 138
+fi=(71)
+669 966
+410 138
+669 138
+410 138
+669 138
+0 138
+fi=(75)
+970 138
+0 138
+fi=(70)
+664 1242
+-91 1104
+fe=(89)
+288 276
+fi=(75)
+970 138
+fe=(89)
+325 690
++5 138
+-5 138
++1 276
+fi=(83)
+205 138
+0 276
+205 246
+fe=(89)
+325 54
+fi=(83)
++92 378
+fe=(89)
+126 414
+fi=(75)
+970 138
+fi=(70)
+573 1104
++91 1104
+-91 1104
+fe=(89)
+137 1104
+
+fl=(90) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/slice/sort/shared/smallsort.rs
+fn=(980) core::slice::sort::shared::smallsort::insertion_sort_shift_left::<bevy_raytraced_audio::bvh::PrimitiveBounds, <[bevy_raytraced_audio::bvh::PrimitiveBounds]>::select_nth_unstable_by<<bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node::{closure#2}>::{closure#0}>
+574 1344
+fi=(75)
+970 672
+fi=(86) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/slice/mod.rs
+3604 1176
+0 538
+fi=(70)
+573 518
+fi=(86)
+3604 148
+0 74
+fi=(75)
+970 74
+fe=(90)
+593 296
+fi=(86)
+0 1912
+fi=(70)
+573 3346
+fi=(86)
+3604 956
+0 478
+fi=(75)
+970 478
+fe=(90)
+593 1912
+fi=(86)
+0 31
+fi=(70)
+573 217
+fi=(86)
+3604 62
+0 31
+fi=(75)
+970 31
+fe=(90)
+593 124
+fi=(86)
+0 905
+fi=(75)
+970 905
+fe=(90)
+593 3620
+0 2976
+fi=(83)
+418 2976
+205 3466
+417 989
+0 989
+210 989
+fi=(62)
+2001 989
+cfi=(55)
+cfn=(812)
+calls=989 467 
+* 7912
+0 989
+fi=(83)
+419 2967
+-2 499
+0 499
+210 499
+fi=(62)
+2001 499
+cfi=(55)
+cfn=(812)
+calls=499 467 
+* 3992
+0 499
+fi=(83)
+419 499
+0 499
+206 499
+419 1488
+0 2976
+210 1488
+fi=(62)
+2001 1488
+cfi=(55)
+cfn=(812)
+calls=1488 467 
+* 11904
+0 1488
+1264 2976
+1547 5952
++1 5952
+fi=(71)
+669 5952
+410 1488
+669 1488
+410 1488
+669 1488
+fe=(90)
+541 2976
+fi=(70)
+1755 2915
+0 3498
+cfi=(55)
+cfn=(812)
+calls=583 467 
+0 4664
+0 4081
+cfi=(55)
+cfn=(812)
+calls=583 467 
+0 4664
+0 4081
+cfi=(55)
+cfn=(812)
+calls=583 467 
+0 4664
+0 583
+573 5830
+fe=(90)
+-13 1166
+0 2760
+fi=(75)
+1054 552
+0 552
+fi=(86)
+3604 552
+fi=(83)
+418 1104
+205 552
+fi=(75)
+1054 1517
+0 1517
+fi=(86)
+3604 1517
+fi=(83)
+418 3034
+205 4883
+419 2244
+0 5610
+419 947
+0 3788
+206 947
+419 2069
+0 2069
+210 2069
+fi=(62)
+2001 2069
+cfi=(55)
+cfn=(812)
+calls=2069 467 
+* 16552
+0 2069
+1264 4138
+1547 8276
++1 8276
+fi=(71)
+669 6207
+410 2069
+669 2069
+410 2069
+669 2069
+0 1995
+fe=(90)
+566 1399
+fi=(71)
+669 1404
+fe=(90)
+0 1404
+566 2808
+0 3182
+fi=(70)
+573 12728
+0 1591
+fe=(90)
+560 3256
++42 1344
+
+fl=(51)
+fn=(838) <bevy_raytraced_audio::scene3d::AcousticScene3d>::add_triangle
+28 4900
+fi=(68)
+1029 980
++3 1960
+fi=(42)
+611 980
+fi=(75)
+970 2940
+fi=(70)
+1963 9800
+fi=(68)
+1038 1960
+fi=(77)
+534 980
+fi=(101)
+92 2940
+fe=(51)
+-61 5880
+fi=(24)
+-31 14
+fi=(68)
+1033 7
+cfi=(42)
+cfn=(842) <alloc::raw_vec::RawVec<bevy_raytraced_audio::triangle3d::Triangle3d>>::grow_one
+calls=7 186 
+* 1554
+0 21
+fe=(51)
+
+fn=(1032) <bevy_raytraced_audio::scene3d::AcousticScene3d>::direct_transmission::{closure#0}
+142 110400
++1 13800
+fi=(94)
++41 27600
+fe=(51)
+-40 27600
+480 13800
++1 27600
+fi=(62)
+1118 27600
+-27 13800
+0 55200
+1118 27600
+-27 13800
+0 69000
+1118 27600
+-27 13800
+0 27600
+fi=(83)
+195 27600
+fe=(51)
+0 92544
+483 11568
+fi=(83)
+195 41232
+fe=(51)
+0 60096
+483 7512
+fi=(83)
+195 26976
+fe=(51)
+0 35520
+483 4440
+fi=(83)
+195 8880
+fe=(51)
+-37 13800
+fi=(129) /tmp/bevy-audio-performance-reference/src/band_gain.rs
+7 69000
+fe=(51)
+159 110400
+
+fl=(110) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/num/imp/flt2dec/mod.rs
+fn=(1200) core::num::imp::flt2dec::digits_to_dec_str
+177 2
++6 2
++1 2
++1 2
+0 1
+200 2
++15 1
++1 1
+0 1
+216 2
++15 1
++1 3
++1 2
+0 1
+244 3
+
+fl=(88) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/slice/sort/shared/pivot.rs
+fn=(966) core::slice::sort::shared::pivot::median3_rec::<bevy_raytraced_audio::bvh::PrimitiveBounds, <[bevy_raytraced_audio::bvh::PrimitiveBounds]>::select_nth_unstable_by<<bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node::{closure#2}>::{closure#0}>
+55 216
++10 48
++1 24
+-66 48
+fi=(130) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/ptr/const_ptr.rs
+871 120
+fe=(88)
+67 48
+cfn=(967) core::slice::sort::shared::pivot::median3_rec::<bevy_raytraced_audio::bvh::PrimitiveBounds, <[bevy_raytraced_audio::bvh::PrimitiveBounds]>::select_nth_unstable_by<<bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node::{closure#2}>::{closure#0}>'2
+calls=24 -12 
+* 4170
+-67 24
+fi=(130)
+871 48
+fe=(88)
+68 96
+cfn=(967)
+calls=24 -13 
+* 4170
+* 24
+fi=(130)
+871 48
+fe=(88)
+69 144
+cfn=(967)
+calls=24 -14 
+* 4488
+* 24
+-69 24
+82 24
+fi=(86)
+3604 24
+fi=(83)
+418 48
+205 24
+0 24
+417 24
+0 48
+210 24
+fi=(62)
+2001 24
+cfi=(55)
+cfn=(812)
+calls=24 467 
+* 192
+0 48
+fi=(83)
+419 24
+0 24
+206 24
+419 48
+0 24
+210 24
+fi=(62)
+2001 24
+cfi=(55)
+cfn=(812)
+calls=24 467 
+* 192
+0 24
+1264 48
+1547 96
++1 96
+fi=(71)
+669 120
+410 24
+669 24
+410 24
+669 24
+fi=(83)
+205 24
+0 24
+205 24
+417 24
+0 48
+210 24
+fi=(62)
+2001 24
+cfi=(55)
+cfn=(812)
+calls=24 467 
+* 192
+0 24
+fi=(83)
+419 24
+0 24
+206 24
+419 24
+0 48
+210 24
+fi=(62)
+2001 24
+cfi=(55)
+cfn=(812)
+calls=24 467 
+* 192
+0 24
+1264 48
+1547 96
++1 120
+fi=(71)
+669 96
+410 24
+669 24
+410 24
+669 24
+fe=(88)
+84 48
+fi=(83)
+205 24
+0 12
+417 12
+0 24
+210 12
+fi=(62)
+2001 12
+cfi=(55)
+cfn=(812)
+calls=12 467 
+* 96
+0 12
+fi=(83)
+419 12
+0 12
+206 12
+419 24
+fi=(62)
+2001 12
+fi=(83)
+210 12
+fi=(62)
+2001 12
+cfi=(55)
+cfn=(812)
+calls=12 467 
+* 96
+0 12
+1264 24
+1547 48
++1 48
+fi=(71)
+669 36
+410 12
+669 12
+410 12
+669 12
+fe=(88)
+89 24
+-16 216
+
+fn=(967)
+55 648
++10 144
+-65 144
+82 72
+fi=(86)
+3604 72
+fi=(83)
+418 144
+205 72
+0 72
+417 72
+0 144
+210 72
+fi=(62)
+2001 72
+cfi=(55)
+cfn=(812)
+calls=72 467 
+* 576
+0 144
+fi=(83)
+419 72
+0 72
+206 72
+419 144
+0 72
+210 72
+fi=(62)
+2001 72
+cfi=(55)
+cfn=(812)
+calls=72 467 
+* 576
+0 72
+1264 144
+1547 288
++1 288
+fi=(71)
+669 360
+410 72
+669 72
+410 72
+669 72
+fi=(83)
+205 72
+0 72
+205 72
+417 72
+0 144
+210 72
+fi=(62)
+2001 72
+cfi=(55)
+cfn=(812)
+calls=72 467 
+* 576
+0 72
+fi=(83)
+419 72
+0 72
+206 72
+419 72
+0 144
+210 72
+fi=(62)
+2001 72
+cfi=(55)
+cfn=(812)
+calls=72 467 
+* 576
+0 72
+1264 144
+1547 288
++1 360
+fi=(71)
+669 288
+410 72
+669 72
+410 72
+669 72
+fe=(88)
+84 144
+fi=(83)
+205 120
+0 60
+417 60
+0 120
+210 60
+fi=(62)
+2001 60
+cfi=(55)
+cfn=(812)
+calls=60 467 
+* 480
+0 60
+fi=(83)
+419 60
+0 60
+206 60
+419 120
+fi=(62)
+2001 60
+fi=(83)
+210 60
+fi=(62)
+2001 60
+cfi=(55)
+cfn=(812)
+calls=60 467 
+* 480
+0 60
+1264 120
+1547 240
++1 240
+fi=(71)
+669 180
+410 60
+669 60
+410 60
+669 60
+fe=(88)
+89 120
+-16 648
+
+fl=(59) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/../../stdarch/crates/core_arch/src/x86/xsave.rs
+fn=(822) core::core_arch::x86::xsave::_xgetbv
+90 4
++1 1
+
+fl=(97)
+fn=(1104)
+456 30
+fi=(71)
+1051 12
+fi=(54)
+72 6
+fe=(97)
+459 6
+-1 6
+fi=(54)
+72 6
+fe=(97)
+458 12
+0 6
+fi=(62)
+1596 12
+fe=(97)
+459 12
+0 18
+fi=(54)
+72 18
+fe=(97)
+467 6
+fi=(54)
+72 12
+fe=(97)
+467 6
+fi=(62)
+1596 6
+0 6
+fe=(97)
+468 12
++5 12
+0 6
+475 6
+0 12
+478 6
+0 6
+483 18
+0 6
+481 6
+0 6
+477 18
+fi=(62)
+1593 12
++3 12
+0 12
+fi=(63)
+474 6
+cob=(3)
+cfi=(3)
+cfn=(1106)
+calls=6 0 
+* 354
+0 12
+474 12
+cob=(3)
+cfi=(3)
+cfn=(1106)
+calls=6 0 
+* 354
+* 12
+fe=(97)
++4 24
+fi=(62)
+1593 12
++3 6
+fe=(97)
+468 30
+0 6
+468 6
+0 60
+483 18
+0 6
+483 6
+0 18
+488 6
+fi=(62)
+1593 12
+0 6
+fe=(97)
+492 12
+fi=(62)
+1593 24
++3 12
+fe=(97)
+493 6
+fi=(62)
+2122 6
+1596 24
+fe=(97)
+43 6
+-43 12
+fi=(62)
+1593 6
+0 6
+1596 6
+fi=(63)
+474 6
+cob=(3)
+cfi=(3)
+cfn=(1106)
+calls=6 0 
+* 354
+fe=(97)
++4 18
+0 6
+fi=(62)
+1593 6
+0 12
+fe=(97)
+506 6
+0 6
+fi=(62)
+1593 6
+0 6
+1596 6
+2122 12
+fe=(97)
+506 6
+fi=(62)
+1596 6
+fe=(97)
+43 18
+497 18
+43 18
+497 24
+43 6
+-43 18
+510 30
+
+fn=(1116)
+634 3840
+fi=(71)
+1051 1536
+fe=(97)
+635 768
++1 3072
+fi=(54)
+72 1536
+fe=(97)
+642 1536
+0 768
+fi=(62)
+1593 768
+0 768
+1596 768
+fe=(97)
+43 2304
+643 3072
+fi=(62)
+1593 2304
++3 1536
+fe=(97)
+43 3840
+fi=(53) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/num/f32.rs
+750 6912
+0 1536
+fi=(98) /tmp/bevy-audio-performance-reference/src/geometry_error.rs
+45 2304
+-45 1536
+45 6144
+-45 1536
+fi=(65) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/result.rs
+1598 768
+0 768
+fi=(54)
+72 2304
+fe=(97)
+635 768
+43 768
+647 768
+fi=(53)
+1613 768
+0 768
+1616 1536
+0 768
+fe=(97)
+316 2304
+0 1536
+fi=(53)
+1613 768
+0 768
+1616 768
+2142 1536
+fe=(97)
+276 768
+0 768
+321 1536
+0 768
+fi=(99) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/std/src/num/f32.rs
+678 1536
+cob=(3)
+cfi=(3)
+cfn=(1124)
+calls=768 0 
+* 17664
+0 2304
+678 768
+cob=(3)
+cfi=(3)
+cfn=(1124)
+calls=768 0 
+* 17664
+fe=(97)
+321 9216
+fi=(53)
+1118 1536
+fe=(97)
+321 768
+648 3840
+
+fl=(105) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sync/once.rs
+fn=(1162) <std::sync::once::Once>::call_once_force::<<std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::initialize<<std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::get_or_init<std::io::stdio::stdout::{closure#0}>::{closure#0}, !>::{closure#0}>::{closure#0}
+226 5
+fi=(12) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/mem/mod.rs
+975 1
++1 1
+fi=(103) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/option.rs
++36 2
+fi=(24)
+31 2
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=1 -31 
+* 41
+fi=(32) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/raw_vec/mod.rs
+470 2
+fi=(106) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/mem/maybe_uninit.rs
+575 7
+fe=(105)
+226 4
+
+fn=(1272) <std::sync::once::Once>::call_once::<std::rt::cleanup::{closure#0}>::{closure#0}
+166 5
+fi=(12)
+975 1
++1 1
+fi=(103)
++36 2
+fi=(102) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/io/stdio.rs
+730 1
+fi=(10)
+3995 1
+fi=(79) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/sync/once/futex.rs
+87 1
+fi=(104) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sync/once_lock.rs
++98 1
+fi=(102)
+736 2
+fi=(23) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/thread/current.rs
+34 1
+fi=(93) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/cell.rs
+558 1
+fi=(103)
+1063 2
+fi=(10)
+3994 1
+fi=(131) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sync/reentrant_lock.rs
+101 1
+337 1
+fi=(10)
+4083 3
+fi=(131)
+340 1
+fi=(10)
+3978 1
+fi=(131)
+0 1
+fi=(132) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/io/buffered/linewriter.rs
+112 4
+fi=(93)
+2069 2
+fi=(12)
+976 1
+fi=(119)
+712 2
++2 2
+cfn=(1240)
+calls=1 208 
+* 23
+fi=(18)
+847 2
+fi=(32)
+631 2
+fi=(18)
+847 1
+fi=(24)
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 43
+fi=(102)
+742 4
+fi=(12)
+976 1
+fi=(131)
+425 1
++1 1
+fe=(105)
+166 4
+fi=(10)
+3978 1
++35 2
+fi=(133) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/sync/mutex/futex.rs
+90 2
+fe=(105)
+
+fl=(55)
+fn=(812)
+467 893964
+fi=(10)
+3994 446982
+fi=(61) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/compiler-builtins/compiler-builtins/src/math/../../../libm/src/math/arch/x86/fma.rs
+24 446982
+cfn=(826) compiler_builtins::math::libm_math::arch::x86::fma::fma_with_fma
+calls=446981 +31 
+* 893962
+cfi=(10)
+cfn=(814) compiler_builtins::math::libm_math::arch::x86::fma::fma::initializer
+calls=1 3994 
+* 156
+fe=(55)
+470 893964
+
+fl=(79)
+fn=(922) <std::sys::sync::once::futex::Once>::call
+146 72
+fi=(10)
+3995 48
+0 21
+fe=(79)
+149 14
++1 14
++1 21
++8 7
+fi=(10)
+4152 14
+fe=(79)
+160 7
++19 14
+-2 35
++6 7
+cfi=(105)
+cfn=(1162)
+calls=1 +43 
+* 65
+cfi=(80)
+cfn=(926)
+calls=6 +43 
+* 1521418
+-6 5
++6 1
+cfi=(105)
+cfn=(1272)
+calls=1 -17 
+* 127
+fi=(93)
+558 8
+fi=(10)
+4013 8
+fe=(79)
+62 16
+210 64
+-61 2
++1 3
++1 3
++8 1
+fi=(10)
+4152 2
+fe=(79)
+160 1
+0 1
+160 1
+
+fl=(83)
+fn=(1028)
+486 6912
+fi=(94)
+184 1536
+0 9216
+186 1536
+fe=(83)
+496 1536
+195 13056
+fi=(94)
+-9 3408
+fe=(83)
+496 3408
+195 32712
+496 1872
+195 3744
+0 1704
+500 3408
++17 5112
+cfi=(51)
+cfn=(1032)
+calls=1704 142 
+* 114144
+* 3408
++3 8520
+cfn=(1029) <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::visit_candidate_node::<<bevy_raytraced_audio::scene3d::AcousticScene3d>::direct_transmission::{closure#0}>'2
+calls=1704 -34 
+* 1673808
+* 3408
++3 1704
+fi=(94)
+184 3408
+0 1536
+fe=(83)
+526 6144
+
+fn=(1029)
+486 69768
+fi=(94)
+184 15504
+0 93024
+186 15504
+fe=(83)
+496 15504
+195 131784
+fi=(94)
+-9 12096
+fe=(83)
+496 12096
+195 124080
+496 10632
+195 21264
+0 7752
+500 15504
++17 18144
+cfi=(51)
+cfn=(1032)
+calls=6048 142 
+* 441888
+* 12096
++3 30240
+cfn=(1029)
+calls=6048 -34 
+* 1744728
+* 12096
++3 6048
+fi=(94)
+184 12096
+0 12096
+fe=(83)
+526 62016
+-24 3408
+fi=(47)
+1092 1704
+0 1704
+1092 5112
+fi=(81)
+1663 1704
+fi=(46)
+180 1704
+fe=(83)
+0 1704
+fi=(46)
+180 3408
+0 1704
+fe=(83)
+504 5112
+cfi=(51)
+cfn=(1032)
+calls=1704 142 
+* 135456
+* 13032
+cfi=(51)
+cfn=(1032)
+calls=4344 142 
+* 314880
+* 31944
+
+fn=(954)
+384 42
+fi=(86)
+156 12
+0 24
+fi=(91)
+2138 24
+fi=(81)
+1663 6
+fi=(46)
+25 6
+-25 6
+fi=(75)
+970 6
+fi=(130)
+733 36
+fi=(46)
+28 12
+-28 66
+28 12
+-28 6
+fi=(62)
+1118 84
+-27 30
++27 30
+-27 24
++27 36
+-27 24
++27 12
+-27 36
++27 5712
+-27 2040
++27 2040
+-27 1632
++27 2448
+-27 1632
++27 816
+-27 6936
+fi=(46)
+279 1224
+fi=(62)
+1091 66
+fi=(46)
+279 342
+0 48
+279 30
+0 6
+fi=(62)
+1118 12
+fe=(83)
+395 12
+fi=(62)
+1091 12
+fe=(83)
+395 6
+fi=(62)
+1118 66
+fe=(83)
+395 6
+fi=(62)
+1118 18
+-27 84
+fi=(46)
+279 18
+fe=(83)
+398 12
+fi=(68)
+1038 24
+fe=(83)
+220 24
++9 12
+0 6
+232 24
+0 6
+232 6
+414 6
++1 12
+0 24
+fi=(87) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/slice/sort/select.rs
+34 24
+-34 42
+34 6
+-34 12
+83 12
++2 6
+cfi=(90)
+cfn=(980)
+calls=6 574 
+* 10524
+-1 6
+fi=(70)
+-84 6
+fi=(75)
+970 6
+fe=(83)
+422 6
+0 6
+425 48
+cfn=(955) <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::build_node'2
+calls=6 -41 
+* 418320
+fi=(91)
+2869 12
+fe=(83)
+0 6
+fi=(86)
+221 24
+0 6
+fe=(83)
+426 30
+cfn=(955)
+calls=6 -42 
+* 364467
+fi=(91)
+2869 12
+0 12
+fi=(68)
+3101 6
+1032 12
+fi=(42)
+611 6
+fi=(75)
+970 12
+fi=(70)
+1963 84
+fe=(83)
+437 48
+0 54
+fi=(88)
+28 12
+fi=(130)
+871 30
+fi=(88)
+34 12
+fe=(83)
+-34 72
+fi=(88)
+28 48
+fi=(130)
+871 120
+fi=(88)
+34 48
+-34 18
+82 18
+-82 18
+fi=(86)
+3604 18
+fe=(83)
+418 36
+205 18
+fi=(88)
+37 60
+cfn=(966)
+calls=12 +18 
+* 8016
+* 12
+fi=(87)
++88 24
+fi=(130)
+733 12
+0 12
+fi=(87)
+103 30
+fe=(83)
+417 18
+0 18
+210 18
+0 18
+fi=(62)
+2001 18
+cfi=(55)
+cfn=(812)
+calls=18 467 
+* 144
+0 18
+fe=(83)
+419 18
+0 18
+206 18
+419 18
+0 36
+210 18
+fi=(62)
+2001 18
+cfi=(55)
+cfn=(812)
+calls=18 467 
+* 144
+0 18
+1264 36
+1547 72
++1 72
+fi=(71)
+669 90
+410 18
+669 18
+410 18
+669 18
+fe=(83)
+205 18
+0 18
+205 18
+0 18
+417 18
+0 36
+210 18
+fi=(62)
+2001 18
+cfi=(55)
+cfn=(812)
+calls=18 467 
+* 144
+0 18
+fe=(83)
+419 18
+0 18
+206 18
+419 18
+0 36
+210 18
+fi=(62)
+2001 18
+cfi=(55)
+cfn=(812)
+calls=18 467 
+* 144
+0 18
+1264 36
+1547 72
++1 72
+fi=(71)
+669 72
+410 18
+669 18
+410 18
+669 18
+fi=(88)
+84 36
+-84 24
+fi=(130)
+733 6
+0 6
+fi=(87)
+103 12
+fe=(83)
+205 12
+0 24
+205 12
+417 12
+0 24
+210 12
+0 12
+fi=(62)
+2001 12
+cfi=(55)
+cfn=(812)
+calls=12 467 
+* 96
+0 12
+fe=(83)
+419 24
+0 24
+419 12
+0 24
+210 12
+fi=(62)
+2001 12
+cfi=(55)
+cfn=(812)
+calls=12 467 
+* 96
+0 12
+1264 24
+1547 48
++1 48
+fi=(71)
+669 48
+410 12
+669 12
+410 12
+669 12
+fi=(88)
+89 24
+-89 12
+fi=(130)
+733 12
+0 12
+fi=(87)
+103 24
++1 24
+0 24
+fi=(86)
+3604 24
+fe=(83)
+418 48
+205 24
+417 24
+0 48
+210 24
+0 48
+fi=(62)
+2001 24
+cfi=(55)
+cfn=(812)
+calls=24 467 
+* 192
+0 24
+fe=(83)
+419 24
+0 24
+206 24
+419 24
+0 48
+210 24
+fi=(62)
+2001 24
+cfi=(55)
+cfn=(812)
+calls=24 467 
+* 192
+0 24
+1264 48
+1547 96
++1 96
+fi=(71)
+669 96
+410 24
+669 24
+410 24
+669 24
+fi=(87)
+106 96
+0 90
+125 150
+cfi=(89)
+cfn=(972)
+calls=30 -32 
+* 166170
+fi=(86)
+2202 90
+0 30
+fi=(87)
+132 60
+0 12
+fi=(86)
+2118 12
+0 6
+fi=(75)
+970 6
+fi=(87)
+134 6
+0 18
+132 6
+0 72
+136 24
+-53 90
+-83 24
+90 24
+-6 12
++1 24
+fe=(83)
+
+fn=(955)
+384 2604
+fi=(86)
+156 744
+0 1488
+fi=(91)
+2138 1488
+fi=(81)
+1663 372
+fi=(46)
+25 372
+-25 372
+fi=(75)
+970 372
+fi=(130)
+733 2232
+fi=(46)
+28 744
+-28 114
+28 114
+-28 2838
+28 516
+-28 258
+fi=(62)
+1118 3612
+-27 1290
++27 1290
+-27 1032
++27 1548
+-27 1032
++27 516
+-27 1548
++27 16968
+-27 6060
++27 6060
+-27 4848
++27 7272
+-27 4848
++27 2424
+-27 20604
+fi=(46)
+279 3636
+fi=(62)
+1091 2838
+fi=(46)
+279 14706
+0 2292
+279 1860
+0 372
+fi=(62)
+1118 744
+fe=(83)
+395 744
+fi=(62)
+1091 744
+fe=(83)
+395 372
+fi=(62)
+1118 4092
+fe=(83)
+395 372
+fi=(62)
+1118 1116
+-27 5208
+fi=(46)
+279 1116
+fi=(62)
+1118 348
+fe=(83)
+395 348
+fi=(62)
+1091 348
+fe=(83)
+395 174
+fi=(62)
+1118 1914
+fe=(83)
+395 174
+fi=(62)
+1118 522
+-27 2436
+fi=(46)
+279 522
+fe=(83)
+398 744
+fi=(42)
+616 192
+fi=(68)
+3101 192
+fi=(47)
+2689 192
+0 192
+fi=(42)
+764 192
+-94 192
+-59 192
+fi=(46)
+25 768
+-25 114
+25 582
+-25 78
+274 78
+fi=(70)
+1963 78
+fi=(46)
+274 78
+fi=(70)
+1963 78
+fi=(46)
+274 78
+fi=(70)
+1963 78
+fi=(46)
+274 78
+fi=(70)
+1963 78
+fi=(47)
+1013 78
+fi=(46)
+279 1152
+0 114
+274 114
+fi=(70)
+1963 114
+fi=(76)
+19 114
+fi=(46)
+279 342
+-5 228
+fi=(70)
+1963 228
+fi=(76)
+19 228
+fi=(46)
+279 684
+fi=(76)
+31 192
+fi=(68)
+3101 192
+1032 384
+fi=(42)
+611 192
+fi=(75)
+970 384
+fi=(70)
+1963 1344
+fi=(68)
+1038 1488
+fe=(83)
+220 720
++9 360
+0 180
+232 458
+0 49
+232 49
+414 180
++1 360
+0 720
+fi=(87)
+34 720
+-34 1260
+34 180
+-34 360
+83 360
++2 162
+cfi=(90)
+cfn=(980)
+calls=162 574 
+* 254545
+-1 162
+fi=(70)
+-84 180
+fi=(75)
+970 180
+fe=(83)
+422 180
+0 180
+425 1440
+cfn=(955)
+calls=180 -41 
+* 657730
+fi=(91)
+2869 360
+fe=(83)
+0 180
+fi=(86)
+221 720
+0 180
+fe=(83)
+426 900
+cfn=(955)
+calls=180 -42 
+* 550826
+fi=(91)
+2869 360
+0 360
+fi=(68)
+3101 180
+1032 360
+fi=(42)
+611 180
+fi=(75)
+970 360
+fi=(70)
+1963 2520
+fe=(83)
+437 2976
+0 131
+233 131
+0 987
+fi=(88)
+28 132
+fi=(130)
+871 330
+fi=(88)
+34 132
+fe=(83)
+-34 126
+fi=(88)
+28 84
+fi=(130)
+871 210
+fi=(88)
+34 84
+-34 96
+82 96
+-82 96
+fi=(86)
+3604 96
+fe=(83)
+418 192
+205 258
+417 54
+0 54
+210 54
+fi=(62)
+2001 54
+cfi=(55)
+cfn=(812)
+calls=54 467 
+* 432
+0 54
+fe=(83)
+419 162
+fi=(88)
+37 60
+cfn=(966)
+calls=12 +18 
+* 9288
+* 12
+fi=(87)
++88 24
+fi=(130)
+733 12
+0 12
+fi=(87)
+103 36
+fe=(83)
+417 42
+0 42
+210 42
+0 42
+fi=(62)
+2001 42
+cfi=(55)
+cfn=(812)
+calls=42 467 
+* 336
+0 42
+fe=(83)
+419 42
+0 42
+206 42
+419 96
+0 192
+210 96
+fi=(62)
+2001 96
+cfi=(55)
+cfn=(812)
+calls=96 467 
+* 768
+0 96
+1264 192
+1547 384
++1 384
+fi=(71)
+669 480
+410 96
+669 96
+410 96
+669 96
+fe=(83)
+205 96
+0 96
+205 204
+0 54
+417 54
+0 108
+210 54
+fi=(62)
+2001 54
+cfi=(55)
+cfn=(812)
+calls=54 467 
+* 432
+0 54
+fe=(83)
+419 162
+0 42
+417 42
+0 84
+210 42
+fi=(62)
+2001 42
+cfi=(55)
+cfn=(812)
+calls=42 467 
+* 336
+0 42
+fe=(83)
+419 42
+0 42
+206 42
+419 96
+0 192
+210 96
+fi=(62)
+2001 96
+cfi=(55)
+cfn=(812)
+calls=96 467 
+* 768
+0 96
+1264 192
+1547 384
++1 384
+fi=(71)
+669 384
+410 96
+669 96
+410 96
+669 96
+fi=(88)
+84 192
+-84 72
+fi=(130)
+733 18
+0 18
+fi=(87)
+103 42
+fe=(83)
+205 78
+0 156
+205 204
+417 42
+0 42
+210 42
+0 42
+fi=(62)
+2001 42
+cfi=(55)
+cfn=(812)
+calls=42 467 
+* 336
+0 42
+fe=(83)
+419 126
+-2 36
+0 72
+210 36
+0 36
+fi=(62)
+2001 36
+cfi=(55)
+cfn=(812)
+calls=36 467 
+* 288
+0 36
+fe=(83)
+419 72
+0 156
+419 78
+0 156
+210 78
+fi=(62)
+2001 78
+cfi=(55)
+cfn=(812)
+calls=78 467 
+* 624
+0 78
+1264 156
+1547 312
++1 312
+fi=(71)
+669 312
+410 78
+669 78
+410 78
+669 78
+fi=(88)
+89 156
+-89 78
+fi=(130)
+733 78
+0 78
+fi=(87)
+103 156
++1 24
+0 24
+fi=(86)
+3604 24
+fe=(83)
+418 48
+205 60
+417 12
+0 12
+210 12
+0 24
+fi=(62)
+2001 12
+cfi=(55)
+cfn=(812)
+calls=12 467 
+* 96
+0 12
+fe=(83)
+419 36
+-2 12
+0 24
+210 12
+0 24
+fi=(62)
+2001 12
+cfi=(55)
+cfn=(812)
+calls=12 467 
+* 96
+0 12
+fe=(83)
+419 12
+0 12
+206 12
+419 24
+0 48
+210 24
+fi=(62)
+2001 24
+cfi=(55)
+cfn=(812)
+calls=24 467 
+* 192
+0 24
+1264 48
+1547 96
++1 96
+fi=(71)
+669 96
+410 24
+669 24
+410 24
+669 24
+fi=(87)
+106 96
+0 324
+125 540
+cfi=(89)
+cfn=(972)
+calls=108 -32 
+* 288768
+fi=(86)
+2202 324
+0 108
+fi=(87)
+132 216
+0 108
+fi=(86)
+2118 108
+0 54
+fi=(75)
+970 54
+fi=(87)
+134 54
+0 162
+132 54
+0 162
+136 72
+-53 270
+-83 42
+90 42
+fi=(68)
+1033 60
+0 150
+1033 30
+cfi=(42)
+cfn=(1002) <alloc::raw_vec::RawVec<bevy_raytraced_audio::bvh::Node>>::grow_one
+calls=30 186 
+* 16307
+* 180
+0 30
+fi=(87)
+84 96
++1 192
+fi=(42)
+672 360
+cfn=(900)
+calls=36 -14 
+* 17320
+* 144
+fi=(76)
+14 72
+fe=(83)
+
+fn=(1054)
+325 64512
+0 1536
+fi=(94)
+184 7692
++2 11538
+fe=(83)
+343 7692
++13 3840
+fi=(91)
+2439 7680
+fi=(71)
+2105 2934
+fi=(74)
+530 2934
+fi=(94)
+184 7464
++2 7464
+0 7464
+fi=(74)
+534 3732
+cfn=(1058)
+calls=3732 657 
+* 228096
+0 11196
+fi=(91)
+2869 7464
+0 132
+fi=(74)
+535 264
+0 132
+fi=(91)
+660 264
+0 6
+fi=(74)
+536 12
+0 132
+540 396
+0 396
+fe=(83)
+336 132
+0 132
+339 132
++20 132
+fi=(94)
+184 264
+fe=(83)
+359 3708
+fi=(94)
+184 7416
++2 7680
+fe=(83)
+360 23040
+0 3840
+360 3840
+0 3840
+132 69120
+0 11520
+fi=(69)
+131 11520
+fe=(83)
+0 11502
+fi=(69)
+131 34506
+fe=(83)
++21 46056
+fi=(70)
+1755 57570
+fi=(62)
+725 23028
+fe=(83)
+152 11514
++7 23028
++1 23028
++3 11514
+0 11514
+163 11514
+0 33804
+168 5634
++3 5634
++3 22536
+0 29400
+168 5880
++3 5880
++3 23520
+0 12
+363 12
+fi=(94)
+184 24
+fe=(83)
+0 3840
+fi=(94)
+184 3840
++2 7680
+fe=(83)
+364 23040
+0 3840
+132 69120
+0 11520
+fi=(69)
+131 7680
+fe=(83)
+0 7842
+fi=(69)
+131 15684
+fe=(83)
++21 37408
+0 9352
+fi=(70)
+1755 46760
+fi=(62)
+725 18704
+fe=(83)
+152 9352
++7 18704
++1 18704
++3 9352
+0 9352
+163 9352
+0 27468
+168 4578
++3 4578
++3 13734
+0 23870
+168 4774
++3 4774
++3 14322
+0 1510
+366 3020
+0 2330
+366 4660
+0 24
+366 7668
+0 2318
+368 4636
+0 120
+375 60
+0 4530
+375 4530
+0 4576
+375 4576
+0 3828
+363 3828
+fi=(94)
+184 7656
+fe=(83)
+0 11484
+376 15312
+cfn=(1055) <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::visit_ray_node::<<bevy_raytraced_audio::scene3d::AcousticScene3d>::closest_hit::{closure#0}>'2
+calls=3828 -51 
+* 6950076
+0 22968
+374 12360
+-29 12
+fi=(47)
+1092 12
+0 6
+1092 12
+fi=(81)
+1663 6
+fi=(46)
+180 6
+fe=(83)
+381 12288
+0 30
+fi=(46)
+180 12
+0 24
+fi=(81)
+1663 36
+fi=(46)
+180 18
+fe=(83)
+347 18
+fi=(91)
+2439 36
+fi=(71)
+2105 18
+fi=(74)
+530 18
+fi=(94)
+184 36
++2 36
+0 36
+fi=(74)
+534 18
+cfn=(1058)
+calls=18 657 
+* 1224
+fi=(91)
+2869 36
+fe=(83)
+
+fn=(1055)
+325 524706
+0 12493
+fi=(94)
+184 37904
++2 56856
+fe=(83)
+343 37904
++13 14339
+fi=(91)
+2439 28678
+fi=(71)
+2105 10985
+fi=(74)
+530 10985
+fi=(94)
+184 28546
++2 28546
+0 28546
+fi=(74)
+534 14273
+cfn=(1058)
+calls=14273 657 
+* 842001
+0 42819
+fi=(91)
+2869 28546
+0 149
+fi=(74)
+535 298
+0 149
+fi=(91)
+660 298
+0 11
+fi=(74)
+536 22
+0 143
+540 429
+0 429
+fe=(83)
+336 143
+0 143
+339 143
++20 143
+fi=(94)
+184 286
+fe=(83)
+359 14196
+fi=(94)
+184 28392
++2 28678
+fe=(83)
+360 86034
+0 14339
+360 14339
+0 14339
+132 258102
+0 43017
+fi=(69)
+131 43017
+fe=(83)
+0 29400
+fi=(69)
+131 88200
+fe=(83)
++21 140296
+fi=(70)
+1755 175370
+fi=(62)
+725 70148
+fe=(83)
+152 35074
++7 70148
++1 70148
++3 35074
+0 35074
+163 35074
+0 105870
+168 17645
++3 17645
++3 70580
+0 87145
+168 17429
++3 17429
++3 69716
+0 5674
+363 5674
+fi=(94)
+184 11348
+fe=(83)
+0 14339
+fi=(94)
+184 14339
++2 28678
+fe=(83)
+364 86034
+0 14339
+132 258102
+0 43017
+fi=(69)
+131 28678
+fe=(83)
+0 25830
+fi=(69)
+131 51660
+fe=(83)
++21 134760
+0 33690
+fi=(70)
+1755 168450
+fi=(62)
+725 67380
+fe=(83)
+152 33690
++7 67380
++1 67380
++3 33690
+0 33690
+163 33690
+0 97974
+168 16329
++3 16329
++3 48987
+0 86805
+168 17361
++3 17361
++3 52083
+0 7860
+366 15879
+0 6479
+366 12958
+0 11348
+366 23004
+0 964
+368 1928
+0 1464
+375 732
+0 23103
+375 23103
+0 1196
+375 1196
+0 8665
+363 8665
+fi=(94)
+184 17330
+fe=(83)
+0 25995
+376 34660
+cfn=(1055)
+calls=8665 -51 
+* 6972677
+0 51990
+374 41656
+-29 9226
+fi=(47)
+1092 9226
+0 4613
+1092 9226
+fi=(81)
+1663 4613
+fi=(46)
+180 4613
+fe=(83)
+381 99944
+0 23065
+fi=(46)
+180 9226
+0 18976
+fi=(81)
+1663 28726
+fi=(46)
+180 14363
+fi=(81)
+1663 4710
+fi=(46)
+180 2355
+fe=(83)
+347 16718
+fi=(91)
+2439 33436
+fi=(71)
+2105 13046
+fi=(74)
+530 13046
+fi=(94)
+184 31480
++2 31480
+0 31480
+fi=(74)
+534 15740
+cfn=(1058)
+calls=15740 657 
+* 1048032
+fi=(91)
+2869 31480
+0 1377
+fi=(74)
+535 2754
+0 1377
+fi=(91)
+660 4131
+fi=(74)
+536 210
++4 4098
+0 2732
+fe=(83)
+336 1366
+0 1366
+339 2732
+0 1366
+
+fn=(1086)
+325 2258400
+0 56460
+fi=(94)
+184 284246
++2 426369
+fe=(83)
+343 284246
+fi=(74)
+586 283862
+fe=(83)
+356 136994
+0 136994
+fi=(91)
+2439 273988
+0 136994
+fi=(71)
+2105 136994
+fi=(74)
+586 136994
+fi=(94)
+184 263550
++2 263550
+0 263550
+fi=(74)
+590 131775
+cfn=(1058)
+calls=131775 +67 
+* 8126748
+0 1185975
+fi=(91)
+2869 263550
+0 3664
+fi=(74)
+592 10992
+fe=(83)
+336 3664
+0 412
+336 1236
++3 412
+0 412
+359 412
+fi=(94)
+184 824
+fe=(83)
+359 141519
+fi=(94)
+184 283038
++2 283862
+fe=(83)
+360 993517
+132 1845103
+0 425793
+fi=(69)
+131 425793
+fe=(83)
+0 423577
+fi=(69)
+131 1270731
+fe=(83)
++21 2126695
+0 425339
+fi=(70)
+1755 2126695
+fi=(62)
+725 850678
+fe=(83)
+152 425339
++7 850678
++1 850678
++3 425339
+0 425339
+163 425339
+0 1108446
+168 184741
++3 184741
++3 738964
+0 1202990
+168 240598
++3 240598
++3 962392
+0 1762
+363 1762
+fi=(94)
+184 3524
+fe=(83)
+0 141931
+fi=(94)
+184 141931
++2 283862
+fe=(83)
+364 851586
+132 1845103
+0 425793
+fi=(69)
+131 283862
+fe=(83)
+0 296304
+fi=(69)
+131 592608
+fe=(83)
++21 1759010
+0 351802
+fi=(70)
+1755 1759010
+fi=(62)
+725 703604
+fe=(83)
+152 351802
++7 703604
++1 703604
++3 351802
+0 351802
+163 351802
+0 919122
+168 153187
++3 153187
++3 459561
+0 993075
+168 198615
++3 198615
++3 595845
+0 55498
+366 111409
+0 86433
+366 172866
+0 3524
+366 282100
+0 85084
+368 170168
+0 3168
+375 1584
+0 165255
+375 165255
+0 168584
+375 168584
+0 140169
+363 140169
+fi=(94)
+184 280338
+fe=(83)
+0 560676
+376 140169
+cfn=(1087) <bevy_raytraced_audio::bvh::BoundingVolumeHierarchy>::visit_ray_node::<<bevy_raytraced_audio::scene3d::AcousticScene3d>::segment_is_blocked::{closure#0}>'2
+calls=140169 -51 
+* 260054412
+0 1541859
+374 457498
+-29 384
+fi=(47)
+1092 384
+0 192
+1092 384
+fi=(81)
+1663 192
+fi=(46)
+180 192
+0 384
+fe=(83)
+381 451680
+0 768
+fi=(74)
+586 384
+0 384
+fi=(81)
+1663 1152
+fi=(46)
+180 576
+fi=(74)
+586 1728
+fe=(83)
+347 546
+0 546
+fi=(91)
+2439 1092
+0 546
+fi=(71)
+2105 546
+fi=(74)
+586 546
+fi=(94)
+184 1092
++2 1092
+0 1092
+fi=(74)
+590 546
+cfn=(1058)
+calls=546 +67 
+* 35136
+fi=(91)
+2869 1092
+0 18
+fi=(74)
+592 90
+0 18
+fe=(83)
+336 18
+0 18
+336 72
++3 90
+0 1056
+336 528
+
+fn=(1087)
+325 18213840
+0 455346
+fi=(94)
+184 1398090
++2 2097135
+fe=(83)
+343 1398090
+fi=(74)
+586 1060242
+fe=(83)
+356 512483
+0 512483
+fi=(91)
+2439 1024966
+0 512483
+fi=(71)
+2105 512483
+fi=(74)
+586 512483
+fi=(94)
+184 1019634
++2 1019634
+0 1019634
+fi=(74)
+590 509817
+cfn=(1058)
+calls=509817 +67 
+* 30566850
+0 4588353
+fi=(91)
+2869 1019634
+0 15916
+fi=(74)
+592 47748
+fe=(83)
+336 15916
+0 1496
+336 4488
++3 1496
+0 1496
+359 1496
+fi=(94)
+184 2992
+fe=(83)
+359 528625
+fi=(94)
+184 1057250
++2 1060242
+fe=(83)
+360 3710847
+132 6891573
+0 1590363
+fi=(69)
+131 1590363
+fe=(83)
+0 1084877
+fi=(69)
+131 3254631
+fe=(83)
++21 6499105
+0 1299821
+fi=(70)
+1755 6499105
+fi=(62)
+725 2599642
+fe=(83)
+152 1299821
++7 2599642
++1 2599642
++3 1299821
+0 1299821
+163 1299821
+0 3816234
+168 636039
++3 636039
++3 2544156
+0 3318910
+168 663782
++3 663782
++3 2655128
+0 214944
+363 214944
+fi=(94)
+184 429888
+fe=(83)
+0 530121
+fi=(94)
+184 530121
++2 1060242
+fe=(83)
+364 3180726
+132 6891573
+0 1590363
+fi=(69)
+131 1060242
+fe=(83)
+0 1042144
+fi=(69)
+131 2084288
+fe=(83)
++21 6625425
+0 1325085
+fi=(70)
+1755 6625425
+fi=(62)
+725 2650170
+fe=(83)
+152 1325085
++7 2650170
++1 2650170
++3 1325085
+0 1325085
+163 1325085
+0 3713136
+168 618856
++3 618856
++3 1856568
+0 3531145
+168 706229
++3 706229
++3 2118687
+0 282941
+366 579966
+0 247180
+366 494360
+0 429888
+366 845298
+0 46320
+368 92640
+0 59924
+375 29962
+0 806571
+375 806571
+0 62678
+375 62678
+0 315177
+363 315177
+fi=(94)
+184 630354
+fe=(83)
+0 1260708
+376 315177
+cfn=(1087)
+calls=315177 -51 
+* 253046376
+0 3466947
+374 1558083
+-29 337848
+fi=(47)
+1092 337848
+0 168924
+1092 337848
+fi=(81)
+1663 168924
+fi=(46)
+180 168924
+0 337848
+fe=(83)
+381 3642768
+0 648156
+fi=(74)
+586 324078
+0 371400
+fi=(81)
+1663 94644
+fi=(46)
+180 47322
+fi=(81)
+1663 1065920
+fi=(46)
+180 532960
+fi=(74)
+586 1740846
+fe=(83)
+347 575709
+0 575709
+fi=(91)
+2439 1151418
+0 575709
+fi=(71)
+2105 575709
+fi=(74)
+586 575709
+fi=(94)
+184 1056774
++2 1056774
+0 1056774
+fi=(74)
+590 528387
+cfn=(1058)
+calls=528387 +67 
+* 34828800
+fi=(91)
+2869 1056774
+0 30122
+fi=(74)
+592 150610
+0 30122
+fe=(83)
+336 30122
+0 4675
+336 18700
++3 23375
+0 996530
+336 498265
+0 25447
+336 25447
+
+fl=(30)
+fn=(744)
+4 8
+fi=(31) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/env.rs
+829 1
+cfn=(746) std::env::args_os
+calls=1 +34 
+* 1094
+fi=(37)
+976 1
+fi=(15)
+1663 1
+fi=(134) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/vec/into_iter.rs
+28 1
+fi=(15)
+1663 1
+fi=(134)
+262 1
+fi=(15)
+627 1
+fi=(134)
+266 1
+fi=(18)
+1755 1
+fi=(103)
+1162 2
+fi=(31)
+878 3
+fi=(40) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/string.rs
+570 3
+cfi=(38) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/str/converts.rs
+cfn=(770) core::str::converts::from_utf8
+calls=1 89 
+* 82
+* 2
+fi=(41) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs
+2489 2
+fi=(24)
+65 2
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 43
+fi=(15)
+1663 1
+fi=(134)
+262 1
+fi=(15)
+627 1
+fi=(134)
+266 1
+fi=(18)
+1755 1
+fi=(103)
+1162 2
+fi=(31)
+878 3
+fi=(40)
+570 3
+cfi=(38)
+cfn=(770)
+calls=1 89 
+* 99
+* 2
+fi=(42)
++61 3
+0 1
+fi=(15)
+1663 1
+fi=(134)
+262 1
+fi=(15)
+627 1
+fi=(134)
+266 1
+fi=(18)
+1755 2
+fi=(103)
+1162 2
+fi=(31)
+878 4
+fi=(40)
+570 2
+cfi=(38)
+cfn=(770)
+calls=1 89 
+* 44
+* 2
+fi=(43) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/num/mod.rs
+1781 3
++7 12
+0 1
+1574 1
+1819 2
++2 1
+fi=(47)
+2689 1
+0 1
+fi=(135) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/char/methods.rs
+427 1
+fi=(43)
+1801 1
++18 2
++42 2
+fi=(65)
+1182 2
+fi=(42)
+631 2
+fi=(24)
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 43
+-65 1
+fe=(30)
+12 3
+cfi=(44) /tmp/bevy-audio-performance-reference/tests/performance/src/lib.rs
+cfn=(786) <acoustic_performance::Workload>::new
+calls=1 162 
+* 60237298
+-12 4
+fi=(71)
+2144 1
+fi=(72)
+1100 1
+0 5
+fi=(73) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/alloc/src/boxed.rs
+2327 2
+cfi=(44)
+cfn=(884) <acoustic_performance::Workload>::new::{closure#3}
+calls=1 228 
+* 60272624
+* 8
+cfi=(44)
+cfn=(884)
+calls=4 228 
+* 240307355
+fi=(100) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/hint.rs
+491 5
+0 5
+fi=(136) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/iter/traits/accum.rs
+166 5
+0 5
+fi=(71)
+2144 5
+fi=(72)
+1100 6
+0 1
+fe=(30)
+19 1
+-19 1
+19 6
+cfi=(102)
+cfn=(1148) std::io::stdio::_print
+calls=1 1274 
+* 1336
+* 1
+fi=(70)
+847 6
+cfn=(1260)
+calls=1 * 
+* 1140
+fi=(73)
+1999 2
+fi=(24)
+65 2
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 43
+fi=(42)
+631 2
+fi=(24)
+65 2
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 43
+fi=(70)
+847 2
+fi=(130)
+733 2
+fi=(70)
+847 2
+fi=(42)
+631 2
+fi=(122) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/alloc/src/vec/into_iter.rs
+203 1
+fi=(24)
+65 1
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=1 -65 
+* 43
+fe=(30)
+-37 8
+
+fl=(42)
+fn=(900)
+658 117
+fi=(47)
+938 39
+fi=(66)
+478 39
+0 117
+fe=(42)
+523 78
+fi=(71)
+1051 195
+fe=(42)
+529 39
+0 39
+529 117
+cfn=(844) <alloc::raw_vec::RawVecInner>::finish_grow
+calls=39 +15 
+* 17202
+fi=(65)
+2177 78
++1 39
+fe=(42)
+773 39
++1 39
+668 156
+
+fn=(842)
+186 28
+493 7
++30 7
+fi=(71)
+1051 21
+fe=(42)
+529 42
+cfn=(844)
+calls=7 +15 
+* 1386
+fi=(65)
+2177 14
++1 7
+fe=(42)
+773 7
++1 7
+189 28
+
+fn=(844)
+544 684
+fi=(47)
+3212 304
+0 304
+fi=(66)
+478 228
+0 76
+fe=(42)
+631 152
+fi=(67) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/alloc/src/alloc.rs
+228 60
+fi=(24)
+70 60
+fi=(67)
+298 32
+130 16
+fi=(24)
+30 16
++41 180
+cob=(2)
+cfi=(2)
+cfn=(626)
+calls=60 -71 
+* 27485
+fi=(65)
+965 120
++1 152
+0 152
+fi=(24)
+31 32
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=16 -31 
+* 3330
+fi=(65)
+965 32
+fe=(42)
+0 152
+564 608
+
+fn=(1002)
+186 120
+493 30
++30 30
+fi=(71)
+1051 90
+fe=(42)
+529 180
+cfn=(844)
+calls=30 +15 
+* 15587
+fi=(65)
+2177 60
++1 30
+fe=(42)
+773 30
++1 30
+189 120
+
+fl=(57) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/compiler-builtins/compiler-builtins/src/math/../../../libm/src/math/arch/x86/detect.rs
+fn=(818) compiler_builtins::math::libm_math::arch::x86::detect::load_x86_features
+44 8
+fi=(58) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/../../stdarch/crates/core_arch/src/x86/cpuid.rs
++44 7
+fe=(57)
+-18 2
+-70 4
+fi=(58)
+88 10
+fe=(57)
+-2 2
+fi=(58)
++2 12
+fi=(56) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/compiler-builtins/compiler-builtins/src/math/../../../libm/src/math/support/feature_detect.rs
++30 4
+fe=(57)
+0 1
+fi=(58)
+88 5
+fe=(57)
++14 2
+fi=(58)
+-14 5
+fi=(56)
++30 2
+fe=(57)
+0 1
+108 19
++14 2
+0 3
+148 1
+cfi=(59)
+cfn=(822)
+calls=1 -58 
+* 5
+* 2
++2 1
++6 1
+-4 1
+-44 5
++44 1
++20 1
+0 1
+191 6
+0 2
+191 4
++6 8
+
+fl=(115) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/io/write.rs
+fn=(1208) <core::io::write::default_write_fmt::Adapter<std::io::stdio::StdoutLock> as core::fmt::Write>::write_str
+390 15
++1 6
+cfi=(102)
+cfn=(1210) <std::io::stdio::StdoutLock as core::io::write::Write>::write_all
+calls=3 862 
+* 514
+* 15
++7 12
+
+fl=(21) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/pal/unix/stack_overflow/thread_info.rs
+fn=(718) std::sys::pal::unix::stack_overflow::thread_info::set_current_info
+112 10
+fi=(22) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/pal/unix/weak/syscall.rs
+12 2
++1 1
+cob=(2)
+cfi=(2)
+cfn=(722)
+calls=1 -13 
+* 4
+* 1
+-1 1
+fi=(23)
+194 1
+fi=(93)
+558 1
+fi=(23)
+195 3
+fi=(10)
+3994 3
+fi=(23)
+221 2
+0 1
+221 2
+fi=(24)
+31 2
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=1 -31 
+* 207
+fi=(25) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/result.rs
+2177 2
+fi=(26) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/boxed.rs
+0 1
+fi=(18)
+573 1
+fi=(103)
+1163 1
+fi=(18)
+0 1
+fe=(21)
+116 1
+cob=(2)
+cfi=(2)
+cfn=(736)
+calls=1 0 
+* 4
+* 1
+fi=(10)
+4083 3
+fi=(133)
+32 1
+fi=(10)
+3994 2
+fi=(27) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/panicking.rs
+465 4
+0 1
+fi=(10)
+3994 2
+762 4
+fi=(137) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sync/poison.rs
+0 4
+fi=(10)
+4083 2
+fe=(21)
+96 1
+-96 2
+fi=(138) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/collections/btree/map.rs
+1506 3
+fi=(24)
+31 2
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=1 -31 
+* 199
+fi=(26)
+586 2
+fi=(18)
+1963 1
+fi=(103)
+1722 2
+fi=(139) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/collections/btree/node.rs
+671 1
+fi=(106)
+-96 10
+fi=(140) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/collections/btree/map/entry.rs
+471 1
+0 3
+fi=(10)
+3979 1
+762 1
+fi=(18)
++85 9
+fe=(21)
+123 8
+
+fl=(44)
+fn=(804) acoustic_performance::scene3
+80 70
+fi=(68)
+3082 7
+fi=(77)
+534 7
+fi=(101)
+92 21
+fe=(44)
+-10 238
+-82 7
+fi=(70)
+1755 35
+fi=(53)
+750 63
+fi=(52) /tmp/bevy-audio-performance-reference/src/point3.rs
+23 7
+fi=(70)
+1755 175
+fi=(53)
+750 315
+fi=(52)
+23 203
+fi=(53)
+1671 126
+750 588
+fi=(52)
+23 210
+-23 168
+fi=(53)
+1671 42
+750 420
+fi=(52)
+23 210
+fi=(54)
++49 294
+-72 42
+72 210
+fi=(96)
+-43 42
+-29 42
+30 42
+-30 84
+31 84
+-31 42
+29 42
+-29 126
+30 84
+-30 42
+31 42
+-31 84
+62 126
+fi=(62)
+2001 126
+0 126
+2001 42
+cfi=(55)
+cfn=(812)
+calls=42 467 
+* 490
+0 84
+fi=(96)
+63 42
+-63 42
+63 42
+-63 42
+fi=(62)
+2001 42
+cfi=(55)
+cfn=(812)
+calls=42 467 
+* 336
+0 84
+fi=(96)
+64 42
+-64 42
+64 42
+-64 42
+fi=(62)
+2001 42
+cfi=(55)
+cfn=(812)
+calls=42 467 
+* 336
+0 126
+fi=(63)
+678 42
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=42 0 
+* 1260
+0 42
+678 42
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=42 0 
+* 1260
+fi=(64) /tmp/bevy-audio-performance-reference/src/triangle3d.rs
+31 126
+fi=(65)
+1183 756
+fe=(44)
+121 126
+cfi=(51)
+cfn=(838)
+calls=42 -93 
+* 2148
+0 42
+fi=(53)
+1671 126
+750 546
+fi=(52)
+23 210
+fi=(54)
++49 126
+fi=(96)
+-43 42
+-29 42
+30 42
+-30 42
+31 42
+-31 84
+62 42
+-62 42
+62 42
+-62 42
+fi=(62)
+2001 42
+cfi=(55)
+cfn=(812)
+calls=42 467 
+* 336
+0 84
+fi=(96)
+63 42
+-63 42
+63 42
+-63 42
+fi=(62)
+2001 42
+cfi=(55)
+cfn=(812)
+calls=42 467 
+* 336
+0 84
+fi=(96)
+64 42
+-64 42
+64 42
+-64 42
+fi=(62)
+2001 42
+cfi=(55)
+cfn=(812)
+calls=42 467 
+* 336
+0 126
+fi=(63)
+678 42
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=42 0 
+* 1260
+0 42
+678 42
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=42 0 
+* 1260
+fi=(64)
+31 84
+-31 42
+31 42
+-31 42
+fi=(65)
+1183 546
+fe=(44)
+121 126
+cfi=(51)
+cfn=(838)
+calls=42 -93 
+* 1428
+fi=(69)
++10 126
+fi=(71)
+2144 7
+fi=(72)
+1100 7
+0 42
+fi=(54)
+72 28
+fe=(44)
++56 14
+fi=(54)
+303 35
+fi=(65)
+1182 14
+fi=(54)
+72 3556
+fe=(44)
++56 1778
+fi=(54)
+303 4445
+fi=(65)
+1182 1778
+0 1792
+fi=(54)
+72 896
+fe=(44)
++57 2688
+fi=(53)
+750 5376
+fi=(52)
+23 2688
+fe=(44)
+132 2688
+0 1792
+fi=(52)
+23 896
+fi=(54)
++49 2688
+-72 896
+72 896
+fi=(96)
+-43 896
+-29 896
+31 896
+-31 896
+31 896
+-31 1792
+62 2688
+fi=(62)
+2001 3584
+cfi=(55)
+cfn=(812)
+calls=896 467 
+* 7168
+0 2688
+fi=(96)
+63 896
+-63 1792
+63 896
+fi=(62)
+2001 896
+cfi=(55)
+cfn=(812)
+calls=896 467 
+* 7168
+0 1792
+fi=(96)
+64 2688
+-64 896
+fi=(62)
+2001 1792
+cfi=(55)
+cfn=(812)
+calls=896 467 
+* 7168
+0 2688
+fi=(63)
+678 896
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=896 0 
+* 26880
+0 896
+678 896
+cob=(3)
+cfi=(3)
+cfn=(830)
+calls=896 0 
+* 26880
+fi=(64)
+31 2688
+-31 896
+fi=(65)
+1183 16128
+fe=(44)
+130 2688
+cfi=(51)
+cfn=(838)
+calls=896 28 
+* 31340
+fi=(71)
+2144 3584
+fi=(72)
+1100 896
+fe=(44)
+138 56
+fi=(101)
+-46 10
+fi=(77)
+535 5
+fi=(70)
+847 10
+fi=(51)
+36 20
+fi=(42)
+631 10
+fi=(51)
+36 5
+fi=(24)
++29 5
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=5 -65 
+* 859
+fi=(42)
+631 10
+fi=(24)
+65 10
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=5 -65 
+* 215
+fi=(42)
+631 10
+fi=(24)
+65 10
+cob=(2)
+cfi=(2)
+cfn=(654)
+calls=5 -65 
+* 789
+* 5
+fe=(44)
+
+fn=(786)
+162 10
+fi=(45) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/slice/cmp.rs
+21 3
+-21 2
+21 3
+157 5
+fi=(46)
+327 1
+fi=(45)
+157 5
+fi=(46)
+327 1
+0 3
+fi=(48) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/slice/memchr.rs
+28 7
+fi=(47)
+1096 2
+fi=(94)
+90 1
+fi=(48)
+-62 2
++13 2
+-41 2
+42 12
++4 5
+-5 10
+fi=(49) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/str/pattern.rs
+459 2
++1 3
+fi=(45)
+157 1
+fi=(49)
+463 1
+0 1
+fi=(47)
+1092 1
+0 3
+1096 2
+fi=(94)
+90 1
+fi=(48)
+-62 2
++13 2
+-41 2
+42 6
++4 2
+-5 4
+fi=(49)
+459 2
++1 3
+fi=(45)
+157 1
+fi=(49)
+463 1
+0 1
+fi=(47)
+1092 1
+fi=(50) /nix/store/gdmwxvljfzg4170cywp01acax62izwpf-rust-default-1.99.0/lib/rustlib/src/rust/library/core/src/str/iter.rs
+0 6
+fi=(45)
+21 2
+-21 1
+21 2
+-21 1
+fi=(47)
+1096 2
+0 1
+fi=(94)
+90 1
+fi=(48)
+-62 2
++13 2
+-41 2
+42 6
++4 3
+-5 7
+fi=(45)
+157 5
+fe=(44)
++11 1
+0 2
+fi=(45)
+21 6
+fi=(73)
+2327 2
+cfi=(44)
+cfn=(884)
+calls=1 228 
+* 60198672
+fi=(100)
+491 2
+fe=(44)
+324 10
+fi=(43)
+1788 1
+0 1
+1788 6
+0 1
+1574 1
+1819 2
+-18 6
+0 1
+1821 1
+fi=(47)
+2689 1
+fi=(135)
+427 1
+fi=(43)
+1801 1
++20 2
+fi=(47)
+2689 2
+fi=(135)
+427 2
+fi=(43)
+1801 2
++19 3
++2 6
+-3 10
+fi=(45)
+0 2
+fe=(44)
+172 3
+fi=(45)
+21 2
+157 1
+fe=(44)
++23 1
+fi=(51)
+18 5
+fe=(44)
+217 3
+cfn=(804)
+calls=1 80 
+* 33138
+fi=(47)
+3212 2
+fi=(66)
+478 3
+fi=(42)
+-17 2
+0 1
+fi=(24)
+31 2
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=1 -31 
+* 405
+* 1
+-31 1
+fi=(42)
+470 2
+fi=(71)
+2144 1
+fi=(72)
+1100 1
+fi=(65)
++82 6
+0 1
+fi=(54)
+72 4
+fe=(44)
+221 2
+fi=(54)
++82 4
+fi=(65)
+1182 2
+fi=(54)
+72 508
+fe=(44)
+221 254
+fi=(54)
++82 508
+fi=(65)
+1182 254
+0 128
+fi=(54)
+72 256
+fe=(44)
+223 384
+fi=(53)
+750 768
+fi=(52)
+23 384
+-23 128
+fi=(70)
+1963 384
+fi=(71)
+2144 384
+fi=(72)
+1100 128
+fe=(44)
+228 46
+fi=(24)
+31 2
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=1 -31 
+* 207
+fi=(73)
+251 2
+0 2
+293 3
+cob=(2)
+cfi=(2)
+cfn=(632)
+calls=1 0 
+* 65
+* 1
+fe=(44)
+180 1
+
+fn=(884)
+228 18
++1 12
++1 24
+fi=(54)
+72 6
+fe=(44)
+231 6
++1 24
+cfn=(804)
+calls=6 80 
+* 190301
+fi=(42)
+611 6
+fi=(68)
+1904 6
+0 6
+fi=(81)
+1663 6
+fi=(46)
+180 6
+0 54
+fi=(54)
+72 24
+fe=(44)
+235 12
+fi=(54)
++68 24
+fi=(65)
+1182 12
+fi=(54)
+72 3048
+fe=(44)
+235 1524
+fi=(54)
++68 3048
+fi=(65)
+1182 1524
+0 1536
+fi=(54)
+72 1536
+fe=(44)
+237 2304
+fi=(53)
+750 4608
+fi=(52)
+23 2304
+fe=(44)
+234 2304
+fi=(81)
+1663 1536
+fi=(126)
+82 768
+fi=(81)
+1663 768
+fi=(46)
+180 774
+fe=(44)
++61 6
+fi=(141) /tmp/bevy-audio-performance-reference/src/listener3d.rs
+16 18
+fi=(100)
+491 18
+fe=(44)
+244 36
+-3 12
+0 12
+241 12
+cfi=(74)
+cfn=(896)
+calls=6 -31 
+* 360556814
+fi=(100)
+491 12
+fi=(74)
+125 6
+fi=(68)
+1865 6
+fi=(81)
+1663 6
+fi=(46)
+25 6
+fe=(44)
+-25 6
+fi=(46)
+279 48
+0 6
+274 6
+fi=(54)
+72 6
+fi=(46)
+274 6
+fi=(136)
+166 6
+fi=(54)
+-94 12
+fi=(136)
++94 6
+fi=(46)
+274 6
+fi=(54)
+72 12
+fi=(136)
++94 6
+fi=(46)
+274 6
+fi=(54)
+72 6
+fi=(136)
++94 6
+fi=(47)
+1013 6
+fi=(46)
+279 18
+-5 186
+fi=(54)
+72 186
+fi=(46)
+274 186
+fi=(136)
+166 186
+fi=(54)
+-94 372
+fi=(136)
++94 186
+fi=(46)
+274 186
+fi=(54)
+72 372
+fi=(136)
++94 186
+fi=(46)
+274 186
+fi=(54)
+72 186
+fi=(136)
++94 186
+fi=(47)
+1013 186
+fi=(46)
+279 570
+fi=(54)
+72 6
+fe=(44)
+248 6
++6 18
+
+fl=(61)
+fn=(826)
+55 446982
++9 446982
+
+fl=(102)
+fn=(1150) std::io::stdio::print_to_buffer_if_capture_used
+1172 8
+fi=(10)
+3994 1
+762 1
+fe=(102)
+1173 1
+fi=(103)
+0 1
+fe=(102)
+1183 8
+
+fn=(1210)
+862 24
+fi=(131)
+401 3
+fi=(93)
+2069 6
+0 3
+fi=(12)
+976 3
+fi=(116)
+115 9
+cfn=(1214)
+calls=3 +8 
+* 157
+fe=(102)
+863 3
+fi=(116)
+116 6
+0 1
+fi=(120) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/io/buffered/linewritershim.rs
+306 1
+fi=(33)
+1865 1
+fi=(120)
+308 4
+fi=(32)
+616 1
+fi=(119)
+482 1
++92 2
+0 1
+fi=(20)
+970 2
+fi=(18)
+573 2
+cob=(2)
+cfi=(2)
+cfn=(632)
+calls=1 0 
+* 16
+fi=(119)
+-97 1
+fi=(33)
+2224 1
+fi=(120)
+318 2
+cfi=(119)
+cfn=(1240)
+calls=1 208 
+* 132
+* 1
+fi=(25)
+2177 2
+0 6
+fi=(32)
+616 1
+fi=(33)
+3101 1
+fi=(119)
+482 1
++92 2
+fi=(33)
+1865 2
+fi=(117)
+282 4
+fi=(32)
+611 1
+fi=(120)
+48 3
+fi=(10)
+-48 2
+fi=(32)
+616 1
+fi=(119)
+482 1
++92 2
+fi=(32)
++42 1
+fi=(119)
+482 1
++92 2
+0 3
+fi=(20)
+970 3
+fi=(18)
+573 6
+cob=(2)
+cfi=(2)
+cfn=(632)
+calls=3 0 
+* 47
+fi=(119)
+-97 3
+fi=(33)
+2224 6
+fi=(12)
+976 3
+fe=(102)
+864 27
+
+fn=(1172) <&std::io::stdio::Stdout as core::io::write::Write>::write_fmt
+836 9
++1 1
+-65 1
+fi=(23)
+34 1
+fi=(93)
+558 1
+fi=(103)
+1063 2
+fi=(10)
+3994 1
+fi=(131)
+101 1
+290 1
+fi=(10)
+4083 3
+fi=(133)
+32 1
+fi=(10)
+3978 1
+fi=(131)
+296 1
+fe=(102)
+837 2
+fi=(115)
+401 2
++1 5
+cfi=(107) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/fmt/mod.rs
+cfn=(1176) core::fmt::write
+calls=1 1631 
+* 1093
+0 1
+402 2
+0 1
+fi=(18)
+847 1
+fi=(121) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/io/error.rs
+0 1
+fe=(102)
+837 1
+fi=(131)
+425 1
++1 1
+fi=(10)
+3978 1
++35 2
+fi=(133)
+90 2
+fe=(102)
+838 7
+
+fn=(1148)
+1274 10
+1162 1
+cfn=(1150)
+calls=1 +10 
+* 20
+* 2
+fi=(10)
+3995 1
+fi=(79)
+87 1
+fi=(104)
++98 1
+fe=(102)
+1167 3
+811 5
+cfn=(1172)
+calls=1 +25 
+* 1147
+1167 2
+1276 5
+fi=(104)
+439 1
+cfi=(10)
+cfn=(1158) <std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::initialize::<<std::sync::once_lock::OnceLock<std::sync::reentrant_lock::ReentrantLock<core::cell::RefCell<alloc::io::buffered::linewriter::LineWriter<std::io::stdio::StdoutRaw>>>>>::get_or_init<std::io::stdio::stdout::{closure#0}>::{closure#0}, !>
+calls=1 3995 
+* 136
+* 1
+fe=(102)
+
+fl=(38)
+fn=(770)
+89 15
+fi=(39) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/str/validations.rs
++44 9
++12 6
+0 21
+164 3
++1 6
+fi=(11)
+2689 6
+3875 3
+fi=(39)
+222 3
++16 4
+-14 14
++9 4
++1 12
++7 6
+0 3
+241 32
++1 16
+-1 35
+fe=(38)
+94 12
+-94 3
+98 12
+
+fl=(107)
+fn=(1202) <core::fmt::Formatter>::pad_formatted_parts
+1981 10
++1 3
++3 10
+cfn=(1204) <core::fmt::Formatter>::write_formatted_parts
+calls=1 +46 
+* 339
+
+fn=(1176)
+1631 12
+878 2
+0 1
+fi=(18)
+1755 1
+fe=(107)
+1653 2
+0 5
+fi=(18)
+1755 4
+fe=(107)
+1653 4
+fi=(15)
+627 4
+fe=(107)
+1656 4
++9 4
+cfi=(115)
+cfn=(1208)
+calls=1 390 
+* 289
+fi=(25)
+2177 2
+fe=(107)
+0 1
+fi=(25)
+2177 1
+fe=(107)
+1666 4
+0 1
+fi=(15)
+627 2
+fe=(107)
+-50 5
+fi=(142) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/fmt/rt.rs
+144 1
++8 2
+cfi=(108) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/fmt/float.rs
+cfn=(1180) <f64 as core::fmt::Display>::fmt
+calls=1 +65 
+* 727
+fi=(25)
+2177 2
+fe=(107)
+0 5
+1740 8
+
+fn=(1204)
+2031 11
++9 1
+fi=(143) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/str/mod.rs
+176 1
+fe=(107)
+2040 1
++3 1
+fi=(15)
+1663 1
+fi=(114)
+180 1
+0 5
+fi=(25)
+0 2
+fi=(15)
+1663 2
+fi=(114)
+180 2
+fe=(107)
+2044 8
++1 1
++3 2
++21 2
+-32 2
+cfi=(115)
+cfn=(1208)
+calls=1 390 
+* 140
+fi=(25)
+2177 2
+fe=(107)
+2052 2
+0 1
+2053 5
+cfi=(115)
+cfn=(1208)
+calls=1 390 
+* 133
+fi=(25)
+2177 4
+fe=(107)
+0 1
+2075 8
+
+fl=(9)
+fn=(508)
+152 9
+fi=(23)
+34 1
+fi=(93)
+558 1
+fi=(103)
+1063 2
+fi=(10)
+3994 1
+0 1
+fi=(11)
+938 1
+fi=(125)
+478 1
+fi=(11)
+938 1
+fi=(10)
+4140 1
+fi=(144) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/thread/id.rs
+53 1
+fi=(12)
+976 1
+0 4
+fi=(10)
+3978 1
+fi=(13)
+91 6
+-91 1
+97 4
+cob=(2)
+cfi=(2)
+cfn=(516)
+calls=1 -97 
+* 57
+* 2
++70 2
+0 3
+167 3
++11 2
+cob=(2)
+cfi=(2)
+cfn=(528)
+calls=1 0 
+* 139
+* 2
+fi=(16) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/pal/unix/conf.rs
+6 2
+cob=(2)
+cfi=(2)
+cfn=(536)
+calls=1 -6 
+* 63
+fi=(10)
+3978 1
++16 1
+fi=(18)
+735 5
+fi=(14)
+366 1
+cob=(2)
+cfi=(2)
+cfn=(540)
+calls=1 0 
+* 3
+* 3
+cob=(2)
+cfi=(2)
+cfn=(542)
+calls=1 0 
+* 102059
+* 1
++1 3
+fi=(17) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/ptr/metadata.rs
+133 1
+fi=(14)
+369 4
++2 2
+cob=(2)
+cfi=(2)
+cfn=(698)
+calls=1 0 
+* 13
+* 1
+-1 2
++4 2
++3 1
+cob=(2)
+cfi=(2)
+cfn=(700)
+calls=1 0 
+* 108
+* 3
++15 10
+0 6
+fi=(15)
+1663 1
+fi=(114)
+180 1
+fi=(15)
+1663 3
+fi=(114)
+180 3
+fi=(15)
+627 3
+fi=(13)
+114 9
+fi=(14)
+393 5
++50 2
+fi=(18)
+735 12
+fi=(14)
+174 3
+cob=(2)
+cfi=(2)
+cfn=(530)
+calls=1 0 
+* 77
++2 2
+fi=(10)
+3994 1
+762 1
+fi=(14)
+177 1
+fi=(10)
+3979 1
+fi=(14)
+180 2
+cfn=(702)
+calls=1 +64 
+* 254
+367 1
+184 1
++1 3
+cfi=(21)
+cfn=(718)
+calls=1 -73 
+* 522
+0 1
+189 1
++1 3
++4 3
+cob=(2)
+cfi=(2)
+cfn=(530)
+calls=1 0 
+* 77
+0 1
+174 3
+cob=(2)
+cfi=(2)
+cfn=(530)
+calls=1 0 
+* 77
++2 2
+fi=(10)
+3994 1
+762 1
+fi=(14)
+177 1
++12 1
++1 3
++4 3
+cob=(2)
+cfi=(2)
+cfn=(530)
+calls=1 0 
+* 77
+0 1
+fi=(10)
+3978 5
+fi=(60) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/ops/function.rs
+287 1
+cfi=(28)
+cfn=(740)
+calls=1 -81 
+* 360821494
+fe=(9)
+185 1
+fi=(10)
+3995 1
+fi=(79)
+87 1
+fi=(105)
++74 1
+fi=(123) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/std/src/sys/exit.rs
+36 1
+cob=(2)
+cfi=(2)
+cfn=(736)
+calls=1 -36 
+* 4
+* 1
+fi=(10)
+4083 2
+fi=(123)
+37 1
+fe=(9)
+195 9
+fi=(105)
+-30 2
++1 7
+cfi=(79)
+cfn=(922)
+calls=1 -20 
+* 174
+* 1
+fe=(9)
+
+fl=(31)
+fn=(746)
+863 8
+fi=(10)
+3994 2
+fi=(145) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/ptr/const_ptr.rs
+38 1
+fi=(8)
+146 1
+0 1
+fi=(10)
+3994 1
+fi=(11)
+3212 2
+fi=(125)
+478 2
+fi=(20)
+970 2
+fe=(31)
+864 4
++1 9
+fi=(32)
+461 2
+0 2
+fi=(24)
+31 2
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=1 -31 
+* 210
+* 3
+fi=(32)
+470 2
+fi=(33)
+969 2
+fi=(8)
+0 1
+fi=(19)
+2144 1
+fi=(34) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/iter/range.rs
+1100 1
+0 8
+fi=(18)
+1963 9
+fi=(8)
+0 3
+fi=(19)
+2144 9
+fi=(34)
+1100 3
+0 3
+fi=(18)
+1755 3
+fi=(145)
+38 3
+fi=(8)
++4 3
+-42 3
+fi=(35) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/ffi/c_str.rs
+772 6
+cob=(2)
+cfi=(2)
+cfn=(642)
+calls=3 0 
+* 54
+* 3
+fi=(32)
+461 6
+fi=(24)
+31 6
+cob=(2)
+cfi=(2)
+cfn=(552)
+calls=3 -31 
+* 627
+fi=(32)
+470 6
+fi=(36) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/alloc/src/slice.rs
+0 3
+fi=(18)
+573 12
+cob=(2)
+cfi=(2)
+cfn=(632)
+calls=3 0 
+* 51
+fi=(33)
+1032 9
+fi=(34)
+0 1
+fi=(8)
+61 4
+fe=(31)
+
+fl=(10)
+fn=(1158)
+3995 1
+fi=(79)
+87 1
+fi=(105)
+221 1
+fi=(104)
+0 3
+fi=(105)
+225 6
++1 7
+cfi=(79)
+cfn=(922)
+calls=1 -80 
+* 114
+* 2
+fi=(104)
+586 1
+fe=(10)
+
+fn=(814)
+3994 1
+fi=(56)
+112 1
++22 1
+0 6
+fi=(60)
+250 1
+cfi=(57)
+cfn=(818)
+calls=1 44 
+* 128
+* 3
+fi=(56)
+107 1
+fe=(10)
+3978 3
+fi=(61)
+15 4
+fi=(56)
++97 1
+fi=(61)
+-97 2
+fe=(10)
+3978 1
+fi=(61)
+24 1
+cfn=(826)
+calls=1 +31 
+* 2
+fe=(10)
+
+fl=(108)
+fn=(1180)
+217 1
++1 1
+fi=(107)
+2316 1
+517 2
+2316 2
+fe=(108)
+101 2
+cfn=(1184) core::fmt::float::float_to_decimal_common_shortest::<f64>
+calls=1 -39 
+* 718
+
+fn=(1184)
+62 7
+fi=(146) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/num/f64.rs
+1264 1
+fi=(147) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/ops/bit.rs
+613 2
+fi=(148) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/num/imp/traits.rs
+179 8
+fi=(109) /rustc/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/library/core/src/num/imp/flt2dec/decoder.rs
+71 2
+fi=(146)
+828 14
+fi=(109)
+72 5
++12 10
+-84 2
+fi=(110)
+372 5
+-53 2
+0 1
+319 2
++53 1
+-53 11
+fi=(111)
+464 2
+cfn=(1190)
+calls=1 167 
+* 227
+* 2
++1 5
+fi=(110)
+-60 2
++1 5
+cfn=(1200)
+calls=1 177 
+* 26
+* 1
++1 1
+0 5
+fe=(108)
+84 1
+cfi=(107)
+cfn=(1202)
+calls=1 1981 
+* 362
++1 6
+
+fl=(78)
+fn=(918)
+3995 6
+fi=(101)
+87 6
+fi=(80)
+221 6
+fi=(77)
+0 12
+fi=(80)
+225 12
+fi=(77)
+571 6
+0 6
+fi=(80)
+225 12
++1 36
+cfi=(79)
+cfn=(922)
+calls=6 -80 
+* 1521712
+0 6
+fi=(77)
+586 6
+fe=(78)
+
+ob=(6) /nix/store/7nww4d4yl7jzf66qllvyn61xb21vp7ry-gcc-15.2.0-libgcc/lib/libgcc_s.so.1
+fl=(6) ???
+fn=(464) 0x0000000000005ab0
+0 12
+
+fn=(462) __cpu_indicator_init@GCC_4.8.0
+0 361
+
+fn=(1364) 0x0000000000005a00
+0 5
+
+fn=(1352) btree_destroy
+0 30
+
+fn=(1350) release_registered_frames
+0 4
+cfn=(1352)
+calls=1 0 
+0 15
+0 2
+cfn=(1352)
+calls=1 0 
+0 15
+0 3
+
+fn=(1354) 0x0000000000005a70
+0 9
+cob=(4)
+cfi=(4)
+cfn=(1360)
+calls=1 0 
+0 89
+0 1
+cfn=(1364)
+calls=1 0 
+0 5
+0 3
+
+ob=(1)
+fl=(1)
+fn=(20) _dl_x86_init_cpu_features
+0 5
+cfn=(22) init_cpu_features.constprop.0
+calls=1 0 
+0 7661
+
+fn=(22)
+0 28
+cfn=(24) get_common_indices.constprop.0
+calls=1 0 
+0 79
+0 28
+cfn=(26) update_active.constprop.0
+calls=1 0 
+0 205
+0 98
+cfn=(16)
+calls=1 0 
+0 24
+0 7
+cfn=(16)
+calls=1 0 
+0 24
+0 15
+cfn=(16)
+calls=1 0 
+0 24
+0 10
+cfn=(16)
+calls=1 0 
+0 24
+0 11
+cfn=(16)
+calls=1 0 
+0 24
+0 8
+cfn=(16)
+calls=1 0 
+0 24
+0 14
+cfn=(34) __GI___tunable_set_val
+calls=1 0 
+0 46
+0 12
+cfn=(34)
+calls=1 0 
+0 46
+0 9
+cfn=(34)
+calls=1 0 
+0 46
+0 10
+cfn=(34)
+calls=1 0 
+0 46
+0 11
+cfn=(34)
+calls=1 0 
+0 46
+0 10
+cfn=(34)
+calls=1 0 
+0 46
+0 16
+cfn=(16)
+calls=1 0 
+0 23
+0 4
+cfn=(16)
+calls=1 0 
+0 25
+0 11
+cfn=(16)
+calls=1 0 
+0 23
+0 4
+cfn=(16)
+calls=1 0 
+0 23
+0 12
+cfn=(16)
+calls=1 0 
+0 25
+0 46
+cfn=(28) handle_intel.constprop.0
+calls=1 0 
+0 485
+0 3
+cfn=(28)
+calls=1 0 
+0 550
+0 5
+cfn=(28)
+calls=1 0 
+0 502
+0 3
+cfn=(28)
+calls=1 0 
+0 494
+0 5
+cfn=(28)
+calls=1 0 
+0 475
+0 3
+cfn=(28)
+calls=1 0 
+0 477
+0 3
+cfn=(28)
+calls=1 0 
+0 525
+0 3
+cfn=(28)
+calls=1 0 
+0 515
+0 3
+cfn=(28)
+calls=1 0 
+0 517
+0 4
+cfn=(28)
+calls=1 0 
+0 540
+0 3
+cfn=(28)
+calls=1 0 
+0 542
+0 3
+cfn=(28)
+calls=1 0 
+0 543
+0 7
+cfn=(32) get_common_cache_info.constprop.0
+calls=1 0 
+0 229
+0 35
+
+fn=(42) dl_main
+0 22
+cfn=(44) __tls_pre_init_tp
+calls=1 0 
+0 20
+0 11
+cfn=(46) _dl_next_ld_env_entry
+calls=1 0 
+0 185
+0 6
+cfn=(46)
+calls=3 0 
+0 1314
+0 253
+cfn=(48) _dl_new_object
+calls=1 0 
+0 297
+0 13
+cfn=(56) _dl_add_to_namespace_list
+calls=1 0 
+0 33
+0 423
+cfn=(60) _dl_handle_execstack_tunable
+calls=1 0 
+0 44
+0 15
+cfn=(62) strcmp
+calls=1 0 
+0 25
+0 354
+cfn=(6) _dl_setup_hash
+calls=1 0 
+0 33
+0 10
+cfn=(64) _dl_init_paths
+calls=1 0 
+0 26109
+0 3
+cfn=(106) _dl_debug_initialize
+calls=1 0 
+0 27
+0 152
+cfn=(108) _dl_count_modids
+calls=1 0 
+0 10
+0 9
+cfn=(110) _dl_debug_change_state
+calls=1 0 
+0 11
+0 3
+cfn=(114) _dl_audit_activity_map
+calls=1 0 
+0 10
+0 11
+cfn=(158) access
+calls=1 0 
+0 13
+0 22
+cfn=(160) _dl_map_object_deps
+calls=1 0 
+0 29067
+0 115
+cfn=(182) _dl_receive_error
+calls=1 0 
+0 17457
+0 119
+cfn=(204) _dl_cet_check
+calls=1 0 
+0 32
+0 17
+cfn=(208) _dl_relocate_object
+calls=1 0 
+0 81417
+0 119
+cfn=(208)
+calls=6 0 
+0 134125
+0 30
+cfn=(306) _dl_add_to_slotinfo
+calls=3 0 
+0 102
+0 14
+cfn=(364) _dl_tls_initial_modid_limit_setup
+calls=1 0 
+0 47
+0 10
+cfn=(366) _dl_allocate_tls_init
+calls=1 0 
+0 336
+0 6
+cfn=(368) _dl_find_object_init
+calls=1 0 
+0 1346
+0 12
+cfn=(210) _dl_relocate_object_no_relro
+calls=1 0 
+0 269
+0 6
+cfn=(378) __rtld_mutex_init
+calls=1 0 
+0 474
+0 2
+cfn=(382) __rtld_malloc_init_real
+calls=1 0 
+0 2839
+0 2
+cfn=(386) _dl_debug_post_relocate
+calls=1 0 
+0 714
+0 2
+cfn=(302) _dl_protect_relro
+calls=1 0 
+0 41
+0 3
+cfn=(388) _dl_call_libc_early_init
+calls=1 0 
+0 1881
+0 1
+cfn=(408) _dl_sysdep_start_cleanup
+calls=1 0 
+0 2
+0 2
+cfn=(154) _dl_debug_update
+calls=1 0 
+0 9
+0 3
+cfn=(110)
+calls=1 0 
+0 11
+0 3
+cfn=(410) _dl_audit_activity_nsid
+calls=1 0 
+0 11
+0 1
+cfn=(412) _dl_unload_cache
+calls=1 0 
+0 10
+0 129
+cfn=(192) init_tls
+calls=1 0 
+0 1060
+0 23
+cfn=(116) handle_preload_list
+calls=1 0 
+0 3499
+0 35
+
+fn=(74) index
+0 1514
+
+fn=(88) strdup
+0 98
+cfn=(38) strlen
+calls=14 0 
+0 854
+0 42
+cfn=(52) __minimal_malloc
+calls=14 0 
+0 336
+0 126
+cfn=(54) memcpy
+calls=14 0 
+0 362
+
+fn=(94) expand_dynamic_string_token
+0 117
+cfn=(96) _dl_dst_count
+calls=13 0 
+0 1159
+0 104
+cfn=(88)
+calls=13 0 
+0 1637
+
+fn=(216) check_match
+0 7147
+cfn=(62)
+calls=145 0 
+0 7015
+0 5630
+cfn=(62)
+calls=236 0 
+0 7184
+0 4834
+cfn=(62)
+calls=3 0 
+0 185
+0 36
+cfn=(62)
+calls=3 0 
+0 121
+0 51
+
+fn=(302)
+0 144
+cfn=(304) mprotect
+calls=6 0 
+0 36
+0 66
+
+fn=(306)
+0 102
+
+fn=(370) _dl_find_object_from_map
+0 756
+
+fn=(374) _dlfo_sort_mappings
+0 222
+
+fn=(410)
+0 33
+
+fn=(10) _dl_sysdep_parse_arguments
+0 1045
+
+fn=(98) __minimal_free
+0 141
+cfn=(84) memset
+calls=1 0 
+0 18
+0 8
+
+fn=(104) __is_decorate_maps_enabled
+0 25
+cfn=(16)
+calls=1 0 
+0 25
+0 25
+
+fn=(148) _dl_process_pt_gnu_property
+0 341
+
+fn=(184) version_check_doit
+0 10
+cfn=(186) _dl_check_all_versions
+calls=1 0 
+0 17414
+0 9
+
+fn=(190) strncmp
+0 57
+
+fn=(194) _dl_tls_static_surplus_init
+0 12
+cfn=(16)
+calls=1 0 
+0 24
+0 5
+cfn=(16)
+calls=1 0 
+0 24
+0 26
+
+fn=(24)
+0 79
+
+fn=(28)
+0 420
+cfn=(30) intel_check_word.constprop.0
+calls=12 0 
+0 4236
+0 84
+cfn=(30)
+calls=12 0 
+0 1401
+0 24
+
+fn=(38)
+0 2080
+
+fn=(70) _dl_hwcaps_split_masked
+0 88
+cfn=(72) _dl_hwcaps_split
+calls=11 0 
+0 511
+0 6
+cfn=(72)
+calls=3 0 
+0 204
+0 106
+cfn=(76) _dl_hwcaps_contains
+calls=6 0 
+0 48
+0 78
+
+fn=(120) do_preload
+0 19
+cfn=(122) _dl_catch_error
+calls=1 0 
+0 2937
+0 17
+
+fn=(124) _dl_catch_exception
+0 189
+cfn=(126) __sigsetjmp
+calls=9 0 
+0 207
+0 54
+cfn=(162) openaux
+calls=8 0 
+0 25266
+cfn=(128) map_doit
+calls=1 0 
+0 2834
+0 180
+
+fn=(126)
+0 207
+
+fn=(150) __GI___close_nocancel
+0 36
+
+fn=(368)
+0 10
+cfn=(372) _dlfo_process_initial
+calls=1 0 
+0 138
+0 5
+cfn=(52)
+calls=1 0 
+0 24
+0 8
+cfn=(372)
+calls=1 0 
+0 788
+0 16
+cfn=(370)
+calls=1 0 
+0 126
+0 2
+cfn=(374)
+calls=1 0 
+0 222
+0 7
+
+fn=(376) __x86_cpu_features
+0 6
+
+fn=(382)
+0 86
+cfn=(384) lookup_malloc_symbol
+calls=1 0 
+0 675
+0 5
+cfn=(384)
+calls=1 0 
+0 659
+0 5
+cfn=(384)
+calls=1 0 
+0 685
+0 5
+cfn=(384)
+calls=1 0 
+0 702
+0 17
+
+fn=(12) __GI___tunables_init
+0 72197
+
+fn=(34)
+0 36
+cfn=(36) do_tunable_update_val
+calls=6 0 
+0 240
+
+fn=(54)
+0 860
+
+fn=(58) rtld_mutex_dummy
+0 36
+
+fn=(72)
+0 291
+cfn=(74)
+calls=9 0 
+0 216
+0 138
+cfn=(38)
+calls=3 0 
+0 51
+0 30
+
+fn=(114)
+0 10
+
+fn=(128)
+0 15
+cfn=(130) _dl_map_object
+calls=1 0 
+0 2808
+0 11
+
+fn=(0) 0x000000000001fd40
+0 2
+cfn=(2) _dl_start
+calls=1 0 
+0 386656
+0 8
+cfn=(418) _dl_cet_setup_features
+calls=1 0 
+0 10
+0 10
+cfn=(422) _dl_init
+calls=1 0 
+0 1061
+0 3
+cob=(7)
+cfi=(7)
+cfn=(472)
+calls=1 0 
+0 360927900
+
+fn=(8) _dl_sysdep_start
+0 9
+cfn=(10)
+calls=1 0 
+0 1045
+0 2
+cfn=(12)
+calls=1 0 
+0 72197
+0 1
+cfn=(14) _dl_sort_maps_init
+calls=1 0 
+0 43
+0 2
+cfn=(18) brk
+calls=1 0 
+0 11
+0 1
+cfn=(20)
+calls=1 0 
+0 7666
+0 4
+cfn=(38)
+calls=1 0 
+0 17
+0 3
+cfn=(40) sbrk
+calls=1 0 
+0 16
+0 11
+cfn=(42)
+calls=1 0 
+0 304841
+0 8
+
+fn=(84)
+0 482
+
+fn=(102) __set_vma_name
+0 33
+cfn=(104)
+calls=3 0 
+0 66
+0 48
+
+fn=(134) _dl_name_match_p
+0 648
+cfn=(62)
+calls=72 0 
+0 2602
+0 897
+cfn=(62)
+calls=84 0 
+0 3201
+0 744
+
+fn=(388)
+0 14
+cfn=(380) _dl_lookup_direct
+calls=1 0 
+0 255
+0 12
+cob=(2)
+cfi=(2)
+cfn=(390)
+calls=1 0 
+0 1600
+
+fn=(14)
+0 8
+cfn=(16)
+calls=1 0 
+0 25
+0 10
+
+fn=(18)
+0 11
+
+fn=(32)
+0 229
+
+fn=(80) copy_hwcaps
+0 48
+cfn=(82) mempcpy
+calls=2 0 
+0 26
+0 22
+cfn=(70)
+calls=2 0 
+0 157
+0 4
+cfn=(70)
+calls=2 0 
+0 199
+0 32
+
+fn=(122)
+0 14
+cfn=(124)
+calls=1 0 
+0 2904
+0 19
+
+fn=(138) open_verify.constprop.0
+0 1254
+cfn=(140) __open_nocancel
+calls=66 0 
+0 1968
+0 230
+cfn=(142) __read_nocancel
+calls=4 0 
+0 44
+0 1286
+cfn=(174) __pread64_nocancel
+calls=1 0 
+0 13
+0 10
+
+fn=(154)
+0 45
+
+fn=(170) cache_rpath
+0 48
+
+fn=(172) _dl_assign_tls_modid
+0 40
+
+fn=(2)
+0 684
+cfn=(4) __rtld_malloc_init_stubs
+calls=1 0 
+0 11
+0 11
+cfn=(6)
+calls=1 0 
+0 33
+0 9
+cfn=(8)
+calls=1 0 
+0 385877
+0 31
+
+fn=(16)
+0 950
+
+fn=(48)
+0 97
+cfn=(38)
+calls=4 0 
+0 120
+0 36
+cfn=(50) __minimal_calloc
+calls=4 0 
+0 140
+0 3
+cfn=(50)
+calls=1 0 
+0 41
+0 70
+cfn=(54)
+calls=5 0 
+0 74
+0 364
+cfn=(38)
+calls=4 0 
+0 244
+0 44
+cfn=(82)
+calls=4 0 
+0 116
+0 418
+cfn=(52)
+calls=4 0 
+0 96
+0 34
+
+fn=(50)
+0 132
+cfn=(52)
+calls=12 0 
+0 504
+
+fn=(52)
+0 917
+cfn=(100) mmap
+calls=3 0 
+0 102
+0 21
+cfn=(102)
+calls=3 0 
+0 147
+0 564
+
+fn=(158)
+0 13
+
+fn=(160)
+0 171
+cfn=(52)
+calls=4 0 
+0 96
+0 32
+cfn=(54)
+calls=4 0 
+0 44
+0 24
+cfn=(54)
+calls=4 0 
+0 44
+0 467
+cfn=(96)
+calls=8 0 
+0 400
+0 64
+cfn=(124)
+calls=8 0 
+0 25826
+0 1065
+cfn=(52)
+calls=1 0 
+0 24
+0 108
+cfn=(178) _dl_sort_maps
+calls=1 0 
+0 458
+0 84
+cfn=(176) __libc_scratch_buffer_set_array_size
+calls=4 0 
+0 116
+0 20
+cfn=(54)
+calls=1 0 
+0 19
+0 5
+
+fn=(208)
+0 56
+cfn=(210)
+calls=5 0 
+0 215266
+0 15
+cfn=(302)
+calls=5 0 
+0 205
+
+fn=(366)
+0 18
+cfn=(58)
+calls=1 0 
+0 3
+0 133
+cfn=(82)
+calls=3 0 
+0 55
+0 18
+cfn=(84)
+calls=3 0 
+0 52
+0 37
+cfn=(58)
+calls=1 0 
+0 3
+0 17
+
+fn=(372)
+0 276
+cfn=(370)
+calls=5 0 
+0 630
+0 20
+
+fn=(380)
+0 136
+cfn=(216)
+calls=3 0 
+0 486
+0 57
+
+fn=(422)
+0 33
+cfn=(424) call_init
+calls=1 0 
+0 46
+0 35
+cfn=(424)
+calls=5 0 
+0 828
+0 27
+cfn=(424)
+calls=1 0 
+0 89
+0 3
+
+fn=(86) decompose_rpath
+0 20
+cfn=(88)
+calls=1 0 
+0 181
+0 1644
+cfn=(52)
+calls=1 0 
+0 24
+0 10
+cfn=(90) fillin_rpath.isra.0
+calls=1 0 
+0 3649
+0 2
+cfn=(98)
+calls=1 0 
+0 10
+0 20
+
+fn=(118) strcspn
+0 441
+
+fn=(136) _dl_map_new_object
+0 100
+cfn=(74)
+calls=4 0 
+0 96
+0 13
+cfn=(94)
+calls=1 0 
+0 283
+0 13
+cfn=(138)
+calls=1 0 
+0 122
+0 64
+cfn=(144) _dl_map_object_from_fd
+calls=4 0 
+0 8751
+0 70
+cfn=(38)
+calls=3 0 
+0 51
+0 72
+cfn=(164) open_path
+calls=3 0 
+0 10146
+0 36
+cfn=(170)
+calls=3 0 
+0 48
+0 18
+cfn=(164)
+calls=3 0 
+0 2674
+0 48
+
+fn=(180) dfs_traversal.part.0
+0 510
+
+fn=(186)
+0 50
+cfn=(188) _dl_check_map_versions
+calls=6 0 
+0 17330
+0 34
+
+fn=(200) allocate_dtv
+0 9
+cfn=(50)
+calls=1 0 
+0 141
+0 13
+
+fn=(36)
+0 240
+
+fn=(92) strsep
+0 11966
+
+fn=(144)
+0 124
+cfn=(48)
+calls=4 0 
+0 1600
+0 1743
+cfn=(100)
+calls=4 0 
+0 144
+0 244
+cfn=(84)
+calls=4 0 
+0 371
+0 232
+cfn=(100)
+calls=12 0 
+0 348
+0 36
+cfn=(146) fstat
+calls=4 0 
+0 40
+0 373
+cfn=(174)
+calls=1 0 
+0 13
+0 1788
+cfn=(148)
+calls=4 0 
+0 341
+0 330
+cfn=(150)
+calls=4 0 
+0 36
+0 48
+cfn=(6)
+calls=4 0 
+0 132
+0 93
+cfn=(172)
+calls=2 0 
+0 40
+0 12
+cfn=(56)
+calls=4 0 
+0 196
+0 24
+cfn=(152) _dl_notify_new_object
+calls=4 0 
+0 212
+0 21
+cfn=(100)
+calls=1 0 
+0 29
+0 3
+cfn=(104)
+calls=1 0 
+0 9
+0 53
+cfn=(62)
+calls=3 0 
+0 75
+0 41
+
+fn=(210)
+0 39078
+cfn=(212) _dl_lookup_symbol_x
+calls=241 0 
+0 157200
+0 11361
+cfn=(376)
+calls=1 0 
+0 6
+cob=(3)
+cfi=(3)
+cfn=(362)
+calls=1 0 
+0 9
+cob=(3)
+cfi=(3)
+cfn=(360)
+calls=1 0 
+0 7
+cob=(3)
+cfi=(3)
+cfn=(358)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(356)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(354)
+calls=1 0 
+0 8
+cob=(3)
+cfi=(3)
+cfn=(352)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(350)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(348)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(346)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(344)
+calls=1 0 
+0 9
+cob=(3)
+cfi=(3)
+cfn=(342)
+calls=1 0 
+0 8
+cob=(3)
+cfi=(3)
+cfn=(340)
+calls=1 0 
+0 7
+cob=(3)
+cfi=(3)
+cfn=(338)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(336)
+calls=1 0 
+0 9
+cob=(3)
+cfi=(3)
+cfn=(334)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(332)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(330)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(328)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(326)
+calls=1 0 
+0 9
+cob=(3)
+cfi=(3)
+cfn=(324)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(322)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(320)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(318)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(316)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(314)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(312)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(310)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(308)
+calls=2 0 
+0 22
+cob=(2)
+cfi=(2)
+cfn=(300)
+calls=1 0 
+0 24
+cob=(2)
+cfi=(2)
+cfn=(298)
+calls=1 0 
+0 25
+cob=(2)
+cfi=(2)
+cfn=(296)
+calls=1 0 
+0 21
+cob=(2)
+cfi=(2)
+cfn=(294)
+calls=1 0 
+0 8
+cob=(2)
+cfi=(2)
+cfn=(292)
+calls=1 0 
+0 24
+cob=(2)
+cfi=(2)
+cfn=(290)
+calls=1 0 
+0 25
+cob=(2)
+cfi=(2)
+cfn=(288)
+calls=1 0 
+0 21
+cob=(2)
+cfi=(2)
+cfn=(286)
+calls=1 0 
+0 25
+cob=(2)
+cfi=(2)
+cfn=(284)
+calls=1 0 
+0 28
+cob=(2)
+cfi=(2)
+cfn=(282)
+calls=1 0 
+0 23
+cob=(2)
+cfi=(2)
+cfn=(280)
+calls=1 0 
+0 28
+cob=(2)
+cfi=(2)
+cfn=(278)
+calls=1 0 
+0 21
+cob=(2)
+cfi=(2)
+cfn=(276)
+calls=1 0 
+0 24
+cob=(2)
+cfi=(2)
+cfn=(274)
+calls=1 0 
+0 21
+cob=(2)
+cfi=(2)
+cfn=(272)
+calls=2 0 
+0 42
+cob=(2)
+cfi=(2)
+cfn=(270)
+calls=1 0 
+0 28
+cob=(2)
+cfi=(2)
+cfn=(268)
+calls=1 0 
+0 28
+cob=(2)
+cfi=(2)
+cfn=(266)
+calls=1 0 
+0 24
+cob=(2)
+cfi=(2)
+cfn=(264)
+calls=1 0 
+0 21
+cob=(2)
+cfi=(2)
+cfn=(262)
+calls=1 0 
+0 19
+cob=(2)
+cfi=(2)
+cfn=(260)
+calls=1 0 
+0 8
+cob=(2)
+cfi=(2)
+cfn=(258)
+calls=1 0 
+0 24
+cob=(2)
+cfi=(2)
+cfn=(256)
+calls=1 0 
+0 24
+cob=(2)
+cfi=(2)
+cfn=(254)
+calls=2 0 
+0 48
+cob=(2)
+cfi=(2)
+cfn=(252)
+calls=1 0 
+0 23
+cob=(2)
+cfi=(2)
+cfn=(250)
+calls=1 0 
+0 28
+cob=(2)
+cfi=(2)
+cfn=(248)
+calls=1 0 
+0 28
+cob=(2)
+cfi=(2)
+cfn=(246)
+calls=1 0 
+0 26
+cob=(2)
+cfi=(2)
+cfn=(244)
+calls=1 0 
+0 23
+cob=(2)
+cfi=(2)
+cfn=(242)
+calls=2 0 
+0 56
+cob=(2)
+cfi=(2)
+cfn=(240)
+calls=1 0 
+0 25
+cob=(2)
+cfi=(2)
+cfn=(238)
+calls=1 0 
+0 21
+cob=(2)
+cfi=(2)
+cfn=(236)
+calls=1 0 
+0 28
+cob=(2)
+cfi=(2)
+cfn=(234)
+calls=1 0 
+0 25
+cob=(2)
+cfi=(2)
+cfn=(232)
+calls=1 0 
+0 25
+cob=(2)
+cfi=(2)
+cfn=(230)
+calls=1 0 
+0 22
+cob=(2)
+cfi=(2)
+cfn=(228)
+calls=1 0 
+0 26
+cob=(2)
+cfi=(2)
+cfn=(226)
+calls=1 0 
+0 22
+cob=(2)
+cfi=(2)
+cfn=(224)
+calls=1 0 
+0 22
+cob=(2)
+cfi=(2)
+cfn=(222)
+calls=1 0 
+0 8
+cob=(2)
+cfi=(2)
+cfn=(220)
+calls=2 0 
+0 56
+cob=(2)
+cfi=(2)
+cfn=(218)
+calls=1 0 
+0 32
+0 1654
+cob=(2)
+cfi=(2)
+cfn=(270)
+calls=1 0 
+0 28
+cob=(3)
+cfi=(3)
+cfn=(310)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(338)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(308)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(324)
+calls=1 0 
+0 11
+cob=(3)
+cfi=(3)
+cfn=(362)
+calls=1 0 
+0 9
+cob=(2)
+cfi=(2)
+cfn=(290)
+calls=2 0 
+0 50
+cob=(2)
+cfi=(2)
+cfn=(240)
+calls=2 0 
+0 50
+cob=(2)
+cfi=(2)
+cfn=(228)
+calls=2 0 
+0 52
+cob=(2)
+cfi=(2)
+cfn=(280)
+calls=2 0 
+0 56
+0 866
+cfn=(212)
+calls=6 0 
+0 3490
+0 214
+
+fn=(408)
+0 2
+
+fn=(418)
+0 10
+
+fn=(496)
+0 11
+
+fn=(1306) _dl_call_fini
+0 124
+cob=(3)
+cfi=(3)
+cfn=(1372)
+calls=1 0 
+0 107
+cob=(6)
+cfi=(6)
+cfn=(1350)
+calls=1 0 
+0 39
+cob=(5)
+cfi=(5)
+cfn=(1332)
+calls=1 0 
+0 106
+cob=(7)
+cfi=(7)
+cfn=(1308)
+calls=1 0 
+0 106
+0 1
+cob=(6)
+cfi=(6)
+cfn=(1354)
+calls=1 0 
+0 107
+0 65
+cob=(4)
+cfi=(4)
+cfn=(1388)
+calls=1 0 
+0 4
+cob=(4)
+cfi=(4)
+cfn=(1370)
+calls=1 0 
+0 4
+cob=(4)
+cfi=(4)
+cfn=(1348)
+calls=1 0 
+0 4
+cob=(4)
+cfi=(4)
+cfn=(1328)
+calls=1 0 
+0 4
+0 20
+
+fn=(1330) _dl_audit_objclose
+0 66
+
+fn=(6)
+0 198
+
+fn=(96)
+0 168
+cfn=(74)
+calls=21 0 
+0 1202
+0 189
+
+fn=(140)
+0 1968
+
+fn=(162)
+0 144
+cfn=(130)
+calls=8 0 
+0 25034
+0 88
+
+fn=(56)
+0 45
+cfn=(58)
+calls=5 0 
+0 15
+0 141
+cfn=(58)
+calls=4 0 
+0 12
+0 11
+cfn=(58)
+calls=1 0 
+0 3
+0 2
+
+fn=(60)
+0 8
+cfn=(16)
+calls=1 0 
+0 25
+0 11
+
+fn=(78) bcmp
+0 80
+
+fn=(130)
+0 153
+cfn=(132) _dl_lookup_map
+calls=9 0 
+0 4935
+0 149
+cfn=(136)
+calls=4 0 
+0 22605
+
+fn=(142)
+0 44
+
+fn=(152)
+0 44
+cfn=(154)
+calls=4 0 
+0 36
+0 76
+cfn=(156) _dl_audit_objopen
+calls=4 0 
+0 56
+
+fn=(164)
+0 697
+cfn=(82)
+calls=37 0 
+0 897
+0 858
+cfn=(82)
+calls=65 0 
+0 845
+0 260
+cfn=(82)
+calls=65 0 
+0 845
+0 780
+cfn=(138)
+calls=65 0 
+0 4683
+0 353
+cfn=(52)
+calls=3 0 
+0 72
+0 21
+cfn=(54)
+calls=3 0 
+0 81
+0 1396
+cfn=(166) stat
+calls=35 0 
+0 750
+0 282
+
+fn=(174)
+0 26
+
+fn=(378)
+0 12
+cfn=(380)
+calls=1 0 
+0 220
+0 18
+cfn=(380)
+calls=1 0 
+0 204
+0 20
+
+fn=(384)
+0 60
+cfn=(212)
+calls=4 0 
+0 2541
+0 120
+
+fn=(90)
+0 44
+cfn=(92)
+calls=2 0 
+0 1963
+0 39
+cfn=(92)
+calls=13 0 
+0 10003
+0 107
+cfn=(94)
+calls=12 0 
+0 2734
+0 60
+cfn=(38)
+calls=12 0 
+0 576
+0 589
+cfn=(78)
+calls=3 0 
+0 61
+0 40
+cfn=(98)
+calls=13 0 
+0 157
+0 70
+cfn=(38)
+calls=2 0 
+0 34
+0 12
+cfn=(52)
+calls=2 0 
+0 48
+0 40
+cfn=(52)
+calls=10 0 
+0 383
+0 108
+cfn=(82)
+calls=12 0 
+0 292
+0 383
+cfn=(54)
+calls=2 0 
+0 28
+0 167
+
+fn=(168) fstatat
+0 540
+
+fn=(192)
+0 14
+cfn=(50)
+calls=1 0 
+0 35
+0 5
+cfn=(194)
+calls=1 0 
+0 91
+0 1
+cfn=(196) _dl_determine_tlsoffset
+calls=1 0 
+0 251
+0 1
+cfn=(198) _dl_allocate_tls_storage
+calls=1 0 
+0 528
+0 14
+cfn=(202) __tls_init_tp
+calls=1 0 
+0 110
+0 10
+
+fn=(206) dl_cet_check
+0 30
+
+fn=(46)
+0 1499
+
+fn=(212)
+0 35088
+cfn=(214) do_lookup_x
+calls=252 0 
+0 115391
+0 13427
+
+fn=(304)
+0 36
+
+fn=(64)
+0 16
+cfn=(66) _dl_important_hwcaps
+calls=1 0 
+0 1520
+0 3
+cfn=(52)
+calls=1 0 
+0 24
+0 13
+cfn=(52)
+calls=1 0 
+0 24
+0 58
+cfn=(84)
+calls=2 0 
+0 28
+0 44
+cfn=(86)
+calls=1 0 
+0 5560
+0 8
+cfn=(38)
+calls=1 0 
+0 133
+0 17
+cfn=(54)
+calls=1 0 
+0 143
+0 4174
+cfn=(52)
+calls=1 0 
+0 24
+0 10
+cfn=(90)
+calls=1 0 
+0 14289
+0 21
+
+fn=(106)
+0 27
+
+fn=(176)
+0 116
+
+fn=(40)
+0 16
+
+fn=(110)
+0 12
+cfn=(112) _dl_debug_state
+calls=2 0 
+0 4
+0 6
+
+fn=(116)
+0 30
+cfn=(120)
+calls=1 0 
+0 2973
+0 6
+cfn=(118)
+calls=1 0 
+0 441
+0 8
+cfn=(54)
+calls=1 0 
+0 27
+0 14
+
+fn=(146)
+0 40
+
+fn=(364)
+0 47
+
+fn=(386)
+0 14
+cfn=(212)
+calls=1 0 
+0 675
+0 25
+
+fn=(412)
+0 10
+
+fn=(4)
+0 11
+
+fn=(44)
+0 20
+
+fn=(68) _dl_hwcaps_subdirs_active
+0 39
+
+fn=(82)
+0 3076
+
+fn=(112)
+0 4
+
+fn=(178)
+0 302
+cfn=(180)
+calls=12 0 
+0 510
+0 128
+cfn=(54)
+calls=2 0 
+0 38
+0 2
+
+fn=(188)
+0 474
+cfn=(134)
+calls=40 0 
+0 4558
+0 6052
+cfn=(62)
+calls=34 0 
+0 1431
+0 241
+cfn=(62)
+calls=1 0 
+0 60
+0 854
+cfn=(50)
+calls=5 0 
+0 279
+0 3322
+cfn=(190)
+calls=1 0 
+0 57
+0 2
+
+fn=(202)
+0 33
+cfn=(16)
+calls=1 0 
+0 25
+0 29
+cfn=(84)
+calls=1 0 
+0 13
+0 10
+
+fn=(62)
+0 22280
+
+fn=(66)
+0 18
+cfn=(68)
+calls=1 0 
+0 39
+0 8
+cfn=(70)
+calls=1 0 
+0 27
+0 24
+cfn=(70)
+calls=2 0 
+0 157
+0 2
+cfn=(70)
+calls=1 0 
+0 172
+0 12
+cfn=(52)
+calls=1 0 
+0 24
+0 13
+cfn=(72)
+calls=1 0 
+0 11
+0 40
+cfn=(70)
+calls=2 0 
+0 157
+0 2
+cfn=(70)
+calls=1 0 
+0 172
+0 39
+cfn=(78)
+calls=1 0 
+0 19
+0 31
+cfn=(52)
+calls=1 0 
+0 24
+0 14
+cfn=(80)
+calls=1 0 
+0 58
+0 5
+cfn=(80)
+calls=1 0 
+0 430
+0 22
+
+fn=(76)
+0 48
+
+fn=(100)
+0 623
+
+fn=(108)
+0 10
+
+fn=(156)
+0 56
+
+fn=(166)
+0 210
+cfn=(168)
+calls=35 0 
+0 540
+
+fn=(214)
+0 80323
+cfn=(216)
+calls=247 0 
+0 31717
+0 3351
+
+fn=(424)
+0 212
+cob=(4)
+cfi=(4)
+cfn=(458)
+calls=1 0 
+0 7
+cob=(4)
+cfi=(4)
+cfn=(448)
+calls=1 0 
+0 7
+cob=(4)
+cfi=(4)
+cfn=(426)
+calls=1 0 
+0 7
+0 74
+cob=(6)
+cfi=(6)
+cfn=(464)
+calls=1 0 
+0 12
+cob=(2)
+cfi=(2)
+cfn=(446)
+calls=1 0 
+0 24
+cob=(2)
+cfi=(2)
+cfn=(444)
+calls=1 0 
+0 14
+0 16
+cob=(6)
+cfi=(6)
+cfn=(462)
+calls=1 0 
+0 361
+cob=(3)
+cfi=(3)
+cfn=(452)
+calls=1 0 
+0 12
+cob=(2)
+cfi=(2)
+cfn=(436)
+calls=1 0 
+0 91
+cob=(5)
+cfi=(5)
+cfn=(430)
+calls=1 0 
+0 12
+0 114
+
+fn=(1298)
+0 21
+cob=(2)
+cfi=(2)
+cfn=(1300)
+calls=1 0 
+0 45
+0 40
+cfn=(410)
+calls=1 0 
+0 11
+0 110
+cfn=(178)
+calls=1 0 
+0 522
+0 2
+cob=(2)
+cfi=(2)
+cfn=(1302)
+calls=1 0 
+0 40
+0 72
+cfn=(1306)
+calls=6 0 
+0 691
+0 12
+cfn=(1330)
+calls=6 0 
+0 66
+0 23
+cfn=(410)
+calls=1 0 
+0 11
+0 2
+
+fn=(26)
+0 205
+
+fn=(30)
+0 5637
+
+fn=(132)
+0 545
+cfn=(134)
+calls=32 0 
+0 3534
+0 355
+cfn=(62)
+calls=13 0 
+0 381
+0 120
+
+fn=(182)
+0 13
+cfn=(184)
+calls=1 0 
+0 17433
+0 11
+
+fn=(196)
+0 138
+cfn=(16)
+calls=1 0 
+0 25
+0 17
+cfn=(16)
+calls=1 0 
+0 25
+0 46
+
+fn=(198)
+0 11
+cfn=(52)
+calls=1 0 
+0 24
+0 318
+cfn=(200)
+calls=1 0 
+0 163
+0 12
+
+fn=(204)
+0 2
+cfn=(206)
+calls=1 0 
+0 30
+
+totals: 361315650

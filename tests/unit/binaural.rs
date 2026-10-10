@@ -1,6 +1,6 @@
 //! End-to-end impulse checks distinguish elevation coloration from simple gain/pan.
 
-use super::{BinauralParams, BinauralProcessor, DATA, RECORD_BYTES};
+use super::{BinauralParams, BinauralProcessor, DATA, Position, RECORD_BYTES, TAPS, integer, ring};
 use std::sync::Arc;
 
 /// Renders one impulse, including both ears and the full FIR response.
@@ -174,4 +174,109 @@ fn convolution_matches_scalar_reference() {
             }
         }
     }
+}
+
+/// Sparse stereo fallback matches the full FIR, including non-finite input history and transitions.
+#[test]
+fn sparse_fallback_matches_full_filter_and_transitions() {
+    let params = Arc::new(BinauralParams::new(1.));
+    params.set_position([0.5, 0.2, -1.]);
+    params.set_enabled(false);
+    let mut fast = BinauralProcessor::new(params.clone(), 48_000);
+    let mut reference = BinauralProcessor::new(params.clone(), 48_000);
+    reference.smoothing_active = true;
+    for step in 0..1024_u16 {
+        if step == 512 {
+            params.set_enabled(true);
+        }
+        let input = if step == 32 {
+            f32::NAN
+        } else {
+            f32::from(step % 17) * 0.01
+        };
+        let actual = fast.process_frame(input, 0.1);
+        let expected = reference.process_frame(input, 0.1);
+        for (a, b) in actual.into_iter().zip(expected) {
+            assert!((a.is_nan() && b.is_nan()) || (a - b).abs() < 1e-6);
+        }
+    }
+}
+
+/// Fused reference for coefficient interpolation, retained to bound numerical changes.
+fn fused_response(position: Position) -> [[f32; 2]; TAPS] {
+    let mut lower = -40;
+    let mut upper = 90;
+    for elevation in (-40..=90).step_by(10) {
+        if f32::from(elevation) <= position.elevation {
+            lower = elevation;
+        }
+        if f32::from(elevation) >= position.elevation {
+            upper = elevation;
+            break;
+        }
+    }
+    let blend = if upper > lower {
+        (position.elevation - f32::from(lower)) / f32::from(upper - lower)
+    } else {
+        0.0
+    };
+    let low = ring(lower, position.azimuth.abs(), 1.0 - blend);
+    let high = ring(upper, position.azimuth.abs(), blend);
+    let mut taps = [[0.0; 2]; TAPS];
+    for record in low.into_iter().chain(high) {
+        for (tap, output) in taps.iter_mut().enumerate() {
+            for (ear, sample) in output.iter_mut().enumerate() {
+                let measured_ear = if (position.azimuth < 0.0) == record.swap_ears {
+                    ear
+                } else {
+                    1 - ear
+                };
+                let offset = record.index * RECORD_BYTES + 4 + tap * 4 + measured_ear * 2;
+                *sample = f32::from(integer(offset)).mul_add(record.weight / 32_768.0, *sample);
+            }
+        }
+    }
+    taps
+}
+
+/// Coefficient error stays below one millionth across rates and listener-relative directions.
+#[test]
+fn unfused_interpolation_matches_fused_reference() {
+    for rate in [22_050, 44_100, 48_000, 96_000] {
+        for x in -4..=4_i16 {
+            let params = Arc::new(BinauralParams::new(1.));
+            params.set_position([f32::from(x) * 0.3, 0.6, -0.8]);
+            let processor = BinauralProcessor::new(params, rate);
+            let native = fused_response(processor.position);
+            for (actual, resample) in processor.target.iter().zip(&processor.resampler) {
+                let mut expected = [0_f32; 2];
+                for &(index, weight) in &resample.weights {
+                    for (sample, value) in expected.iter_mut().zip(native.get(index).unwrap()) {
+                        *sample =
+                            (value * weight).mul_add(core::f32::consts::FRAC_1_SQRT_2, *sample);
+                    }
+                }
+                for (a, b) in actual.iter().zip(expected) {
+                    assert!((*a - b).abs() < 1e-6);
+                }
+            }
+        }
+    }
+}
+
+/// Invalid resampler indices are ignored instead of indexing beyond the measurement table.
+#[test]
+fn resampler_ignores_an_out_of_range_weight() {
+    let params = Arc::new(BinauralParams::new(1.));
+    params.set_position([1., 0., -1.]);
+    let mut processor = BinauralProcessor::new(params, 48_000);
+    let expected = processor.target.clone();
+    processor
+        .resampler
+        .first_mut()
+        .unwrap()
+        .weights
+        .push((TAPS, 1.));
+    processor.update_response();
+    assert_eq!(processor.target, expected);
 }

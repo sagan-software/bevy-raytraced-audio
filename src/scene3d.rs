@@ -1,6 +1,6 @@
 //! CPU acoustic propagation over material-bearing triangles in 3D.
 
-use crate::bvh::{BoundingVolumeHierarchy, Bounds, SceneDimensions};
+use crate::bvh::{BoundingVolumeHierarchy, Bounds, Ray, SceneDimensions};
 use crate::math3d::Vector3;
 use crate::{
     AcousticResponse, BandEnergy, BandGain, Emitter3d, Listener3d, PathResponse, ReflectionPath3d,
@@ -100,6 +100,13 @@ impl AcousticScene3d {
         let receiver = Vector3::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
 
+        if self.triangles.is_empty() {
+            return AcousticResponse::new(
+                PathResponse::new(direct_distance, BandGain::UNITY, false),
+                BandEnergy::ZERO,
+            );
+        }
+
         let (direct_gain, direct_occluded) = self.direct_transmission(source, receiver);
         let direct = PathResponse::new(direct_distance, direct_gain, direct_occluded);
 
@@ -142,7 +149,12 @@ impl AcousticScene3d {
         let mut direct_gain = BandGain::UNITY;
         let mut crossings: Vec<(f64, Vector3, BandGain)> = Vec::new();
         if receiver.subtract(source).length() > 0.0 {
-            let _traversal_completed = acceleration.hierarchy.visit_candidates_until(
+            let offset = receiver.subtract(source);
+            let _traversal_completed = acceleration.hierarchy.visit_segment_candidates(
+                Ray::new(
+                    (source.x, source.y, source.z),
+                    (offset.x, offset.y, offset.z),
+                ),
                 Bounds::path_3d(
                     (source.x, source.y, source.z),
                     (receiver.x, receiver.y, receiver.z),
@@ -184,8 +196,15 @@ impl AcousticScene3d {
         direct_distance: f64,
     ) -> impl Iterator<Item = ReflectionPath3d> + '_ {
         let acceleration = self.acceleration();
-        acceleration
-            .triangles
+        let candidates = if acceleration.hierarchy.may_have_reflections(Bounds::path_3d(
+            (source.x, source.y, source.z),
+            (receiver.x, receiver.y, receiver.z),
+        )) {
+            acceleration.triangles.as_slice()
+        } else {
+            &[]
+        };
+        candidates
             .iter()
             .enumerate()
             .filter_map(move |(index, reflector)| {
@@ -224,11 +243,13 @@ impl AcousticScene3d {
         skipped_index: Option<usize>,
     ) -> bool {
         let acceleration = self.acceleration();
-        acceleration.hierarchy.any_intersection(
+        let offset = end.subtract(start);
+        !acceleration.hierarchy.visit_segment_candidates(
+            Ray::new((start.x, start.y, start.z), (offset.x, offset.y, offset.z)),
             Bounds::path_3d((start.x, start.y, start.z), (end.x, end.y, end.z)),
             skipped_index,
             |index| {
-                acceleration
+                !acceleration
                     .triangles
                     .get(index)
                     .is_some_and(|triangle| path_intersects_triangle(start, end, triangle))

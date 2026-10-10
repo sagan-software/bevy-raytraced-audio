@@ -1010,3 +1010,75 @@ fn dsp_control_readback_and_bounds() -> Result<(), GeometryError> {
     assert_eq!(params.wet_gain(), 0.);
     Ok(())
 }
+
+/// Public queries retain exact results for empty, parallel and oblique reflection groups.
+#[test]
+fn reflection_broad_phase_public_query_boundaries() -> Result<(), GeometryError> {
+    let emitter2 = Emitter2d::new(Point2::try_new(-1., -1.)?);
+    let listener2 = Listener2d::new(Point2::try_new(1., -1.)?);
+    assert_eq!(
+        AcousticScene2d::default()
+            .reflection_paths(emitter2, listener2)
+            .count(),
+        0
+    );
+    for horizontal in [false, true] {
+        let mut scene = AcousticScene2d::default();
+        for value in 2_u16..10 {
+            let value = f32::from(value);
+            let (start, end) = if horizontal {
+                ((-2., value), (2., value))
+            } else {
+                ((value, -2.), (value, 2.))
+            };
+            scene.add_segment(Segment2d::try_new(
+                Point2::try_new(start.0, start.1)?,
+                Point2::try_new(end.0, end.1)?,
+                AcousticMaterial::default(),
+            )?);
+        }
+        assert!(scene.reflection_paths(emitter2, listener2).count() > 0);
+        let distant = Emitter2d::new(Point2::try_new(100., 100.)?);
+        let receiver = Listener2d::new(Point2::try_new(101., 101.)?);
+        assert_eq!(scene.reflection_paths(distant, receiver).count(), 0);
+    }
+    let emitter3 = Emitter3d::new(Point3::try_new(-1., -1., -1.)?);
+    let listener3 = Listener3d::new(Point3::try_new(0., 0., 0.)?);
+    assert_eq!(
+        AcousticScene3d::default()
+            .reflection_paths(emitter3, listener3)
+            .count(),
+        0
+    );
+    for axis in 0..3 {
+        let mut scene = AcousticScene3d::default();
+        for value in 2_u16..10 {
+            let value = f32::from(value);
+            let points = match axis {
+                0 => [(value, -3., -3.), (value, 3., -3.), (value, 0., 3.)],
+                1 => [(-3., value, -3.), (3., value, -3.), (0., value, 3.)],
+                _ => [(-3., -3., value), (3., -3., value), (0., 3., value)],
+            };
+            scene.add_triangle(Triangle3d::try_new(
+                points.map(|(x, y, z)| Point3::try_new(x, y, z).expect("finite triangle")),
+                AcousticMaterial::default(),
+            )?);
+        }
+        assert!(scene.reflection_paths(emitter3, listener3).count() > 0);
+        let distant = Emitter3d::new(Point3::try_new(100., 100., 100.)?);
+        let receiver = Listener3d::new(Point3::try_new(101., 101., 101.)?);
+        assert_eq!(scene.reflection_paths(distant, receiver).count(), 0);
+    }
+    let estimate = bevy_raytraced_audio::ReverbEstimate::from_parameters(
+        f32::NAN,
+        f32::INFINITY,
+        f32::NEG_INFINITY,
+    );
+    let estimate = estimate.with_band_decay(f32::NAN, f32::INFINITY);
+    assert_eq!(estimate.decay_low_s(), 0.05);
+    assert_eq!(estimate.decay_high_s(), 0.05);
+    assert_eq!(estimate.wet_gain(), 0.);
+    assert_eq!(estimate.decay_time_s(), 0.05);
+    assert_eq!(estimate.reflections_delay_s(), 0.);
+    Ok(())
+}

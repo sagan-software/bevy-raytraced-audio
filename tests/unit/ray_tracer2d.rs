@@ -1,6 +1,8 @@
 //! Behavior checks for the listener ray tracer against small reference rooms.
 
 use super::ListenerTrace2d;
+use crate::math2d::Vector2;
+use crate::ray_trace::{EchoStatistics, TraceRng};
 use crate::{
     AcousticMaterial, AcousticScene2d, BandAbsorption, BandGain, Emitter2d, Listener2d, Point2,
     RayKind, RayTraceSettings, Segment2d,
@@ -250,4 +252,35 @@ fn cache_invalidates_for_all_inputs_and_scene_clone_mutation() {
         assert_eq!(cached.ambient_focus(), fresh.ambient_focus(), "step {step}");
         assert_eq!(cached.segments(), fresh.segments(), "step {step}");
     }
+}
+
+/// Degenerate arrival paths do not invent an ambience direction or produce NaN scattering.
+#[test]
+fn escape_and_scatter_boundaries_are_finite() {
+    let zero = Vector2::default();
+    let normal = Vector2 { x: 0., y: 1. };
+    let mut statistics = EchoStatistics::default();
+    let mut output = ListenerTrace2d::default();
+    for (bounce, last_echo) in [(1, None), (0, Some(zero))] {
+        assert_eq!(
+            AcousticScene2d::escape(
+                (zero, zero, normal),
+                (bounce, 0., 1.),
+                last_echo,
+                RayTraceSettings::default().with_recorded_rays(true),
+                &mut statistics,
+                &mut output
+            ),
+            None
+        );
+    }
+    let scene = AcousticScene2d::default();
+    assert!(!scene.segment_is_blocked(zero, zero, None));
+    let mut rng = TraceRng::new(7);
+    assert_eq!(super::scatter(normal, normal, 0., &mut rng), normal);
+    let diffuse = super::scatter(normal, normal, 1., &mut TraceRng::new(7));
+    assert_eq!(
+        super::scatter(diffuse.scale(-1.), normal, 0.5, &mut TraceRng::new(7)),
+        normal
+    );
 }

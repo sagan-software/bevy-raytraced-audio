@@ -1,0 +1,41 @@
+{
+  "tool": "Valgrind 3.26.0",
+  "scope": "Whole process including fixture construction, initial warmup and stdout; instruction/allocation metrics, not wall-clock speedups.",
+  "changing_scene": {
+    "case": "churn/3d/128",
+    "iterations": 5,
+    "checksum_before": 640,
+    "checksum_after": 640,
+    "instructions_before": 361315650,
+    "instructions_after": 359181320,
+    "allocated_bytes_before": 395396,
+    "allocated_bytes_after": 441841,
+    "allocation_blocks_before": 110,
+    "allocation_blocks_after": 123,
+    "peak_bytes_before": 81464,
+    "peak_bytes_after": 86712
+  },
+  "changing_dsp": {
+    "case": "dsp/48000/changing64",
+    "iterations": [
+      1,
+      10
+    ],
+    "allocation_blocks": [
+      796,
+      796
+    ],
+    "allocated_bytes": [
+      5497849,
+      5497850
+    ],
+    "peak_bytes": [
+      5492848,
+      5492848
+    ]
+  },
+  "binaries": {
+    "profile-final": "54c27b70d5a8a65e52fbfd6707bfa308fe40571e72ff0bee207d35952dddb06d",
+    "profile-reference/profiling/acoustic-performance": "d9332b4b5062f3b1ccc26c18ab0b3c477c743b42b8286563ab60868d39f17e37"
+  }
+}

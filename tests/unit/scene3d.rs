@@ -228,3 +228,84 @@ fn image_reflection_rejects_a_near_parallel_ray() {
         .is_none()
     );
 }
+
+/// A nonfinite private image-source intermediate cannot produce a reflection path.
+#[test]
+fn image_reflection_rejects_nonfinite_parameter() {
+    let triangle = Triangle3d::try_new(vertices(), AcousticMaterial::default()).unwrap();
+    assert!(
+        first_reflection(
+            vector(f64::NAN, 0.0, 0.0),
+            vector(1.0, 0.0, 0.0),
+            &TriangleGeometry::new(triangle)
+        )
+        .is_none()
+    );
+}
+
+/// Every planar orientation's broad phase retains each exact image-source hit.
+#[test]
+fn reflection_broad_phase_has_no_false_negatives() {
+    for axis in 0..3 {
+        let mut scene = AcousticScene3d::default();
+        for normal in [-5., -3., -1., 1., 3., 5.] {
+            let points = match axis {
+                0 => [(normal, -2., -2.), (normal, 2., -2.), (normal, 0., 2.)],
+                1 => [(-2., normal, -2.), (2., normal, -2.), (0., normal, 2.)],
+                _ => [(-2., -2., normal), (2., -2., normal), (0., 2., normal)],
+            };
+            scene.add_triangle(
+                Triangle3d::try_new(
+                    points.map(|(x, y, z)| Point3::try_new(x, y, z).unwrap()),
+                    AcousticMaterial::default(),
+                )
+                .unwrap(),
+            );
+        }
+        let acceleration = scene.acceleration();
+        for i in -8..=8 {
+            for j in -8..=8 {
+                let source = vector(f64::from(i), f64::from(j), f64::from(i + j));
+                let receiver = vector(f64::from(j) + 0.25, f64::from(i) - 0.25, f64::from(i - j));
+                if !acceleration.hierarchy.may_have_reflections(Bounds::path_3d(
+                    (source.x, source.y, source.z),
+                    (receiver.x, receiver.y, receiver.z),
+                )) {
+                    assert!(
+                        acceleration
+                            .triangles
+                            .iter()
+                            .all(|wall| first_reflection(source, receiver, wall).is_none())
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// A full triangle query rejects distant parallel groups and preserves the direct response.
+#[test]
+fn distant_parallel_walls_have_no_reflection_output() {
+    let mut scene = AcousticScene3d::default();
+    for x in 0..8 {
+        let x = f32::from(u16::try_from(x).unwrap());
+        scene.add_triangle(
+            Triangle3d::try_new(
+                [
+                    Point3::try_new(x, 100., 0.).unwrap(),
+                    Point3::try_new(x, 101., 0.).unwrap(),
+                    Point3::try_new(x, 100., 1.).unwrap(),
+                ],
+                AcousticMaterial::default(),
+            )
+            .unwrap(),
+        );
+    }
+    let emitter = Emitter3d::new(Point3::try_new(-1., -1., 0.).unwrap());
+    let listener = Listener3d::new(Point3::try_new(-2., 1., 0.).unwrap());
+    assert_eq!(scene.reflection_paths(emitter, listener).count(), 0);
+    assert_eq!(
+        scene.trace(emitter, listener),
+        AcousticScene3d::default().trace(emitter, listener)
+    );
+}

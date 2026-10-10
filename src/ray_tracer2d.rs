@@ -557,20 +557,16 @@ impl AcousticScene2d {
         }
         let direction = offset.scale(length.recip());
         let mut blocked = false;
-        self.acceleration().visit_ray(
+        let acceleration = self.acceleration();
+        acceleration.hierarchy.visit_ray(
             Ray::new((start.x, start.y, 0.0), (direction.x, direction.y, 0.0)),
             limit,
             |index| {
                 if blocked || skipped_segment == Some(index) {
                     return None;
                 }
-                let segment = self.segments().get(index)?;
-                let distance = ray_segment_distance(
-                    start,
-                    direction,
-                    Vector2::from_point(segment.start()),
-                    Vector2::from_point(segment.end()),
-                )?;
+                let segment = acceleration.segments.get(index)?;
+                let distance = ray_segment_distance(start, direction, segment.start, segment.end)?;
                 blocked = distance < limit;
                 // A negative hit parameter prunes every remaining node.
                 blocked.then_some(-1.0)
@@ -588,28 +584,24 @@ impl AcousticScene2d {
         skipped_segment: Option<usize>,
     ) -> Option<Hit> {
         let mut best: Option<Hit> = None;
-        self.acceleration().visit_ray(
+        let acceleration = self.acceleration();
+        acceleration.hierarchy.visit_ray(
             Ray::new((origin.x, origin.y, 0.0), (direction.x, direction.y, 0.0)),
             maximum_distance_m,
             |index| {
                 if skipped_segment == Some(index) {
                     return None;
                 }
-                let segment = self.segments().get(index)?;
-                let start = Vector2::from_point(segment.start());
-                let end = Vector2::from_point(segment.end());
+                let segment = acceleration.segments.get(index)?;
+                let start = segment.start;
+                let end = segment.end;
                 let distance = ray_segment_distance(origin, direction, start, end)?;
                 if distance > maximum_distance_m
                     || best.is_some_and(|current| current.distance_m <= distance)
                 {
                     return None;
                 }
-                let wall = end.subtract(start);
-                let mut normal = Vector2 {
-                    x: -wall.y,
-                    y: wall.x,
-                };
-                normal = normal.scale(normal.length().recip());
+                let mut normal = segment.normal.scale(segment.length.recip());
                 if normal.dot(direction) > 0.0 {
                     normal = normal.scale(-1.0);
                 }
