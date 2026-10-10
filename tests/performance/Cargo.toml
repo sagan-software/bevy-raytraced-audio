@@ -19,8 +19,18 @@ path = "src/main.rs"
 bench = false
 test = false
 
+[[bin]]
+name = "cache-statistics"
+path = "src/cache_statistics.rs"
+bench = false
+test = false
+
 [[bench]]
 name = "workloads"
+harness = false
+
+[[bench]]
+name = "cache_behavior"
 harness = false
 
 [dependencies]

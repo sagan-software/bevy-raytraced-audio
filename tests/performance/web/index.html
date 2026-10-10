@@ -32,6 +32,8 @@ td, th {
 </p>
 <label>Build <input id="build" value="baseline"></label>
 <button id="run" disabled>Run suite</button>
+<button id="cache-run" disabled>Compare cache on/off</button>
+<button id="cache-save" disabled>Download cache JSON</button>
 <button id="save" disabled>Download JSON</button>
 <p id="status">Loading WebAssembly…</p>
 <table>
@@ -45,3 +47,5 @@ td, th {
   <tbody id="results"></tbody>
 </table>
 <script type="module" src="runner.mjs"></script>
+
+<script type="module" src="./cache-runner.mjs"></script>

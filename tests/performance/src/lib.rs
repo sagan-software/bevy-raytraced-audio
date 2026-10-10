@@ -12,6 +12,8 @@ use bevy_raytraced_audio::{
     Segment2d, Triangle3d,
 };
 use std::{hint::black_box, sync::Arc};
+mod cache;
+pub use cache::{CACHE_CASES, CacheWorkload, cache_case_names};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 

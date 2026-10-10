@@ -1,5 +1,8 @@
 //! Exercises the 2D adapter with 16 moving sources and 32 explicit wall segments.
 
+#[path = "frame_benchmark.rs"]
+mod frame_benchmark;
+
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, SpatialScale, Volume},
@@ -63,6 +66,7 @@ fn main() {
         .insert_resource(WinitSettings::continuous())
         .add_systems(Startup, setup)
         .add_systems(Update, (animate_emitters, update_fps))
+        .add_plugins(frame_benchmark::FrameBenchmarkPlugin("stress_2d"))
         .run();
 }
 
@@ -158,10 +162,15 @@ struct FpsReadout;
 /// Moves all 16 sources together while preserving their fixed spacing.
 fn animate_emitters(
     time: Res<'_, Time>,
+    benchmark: Option<Res<'_, frame_benchmark::FrameBenchmark>>,
     mut emitters: Query<'_, '_, (&mut Transform, &OrbitPhase)>,
 ) {
+    let seconds = benchmark.as_deref().map_or_else(
+        || time.elapsed_secs(),
+        frame_benchmark::FrameBenchmark::seconds,
+    );
     for (mut transform, phase) in &mut emitters {
-        let angle = time.elapsed_secs().mul_add(0.15, phase.radians);
+        let angle = seconds.mul_add(0.15, phase.radians);
         transform.translation.x = 5.0 * angle.cos();
         transform.translation.y = 5.0 * angle.sin();
     }

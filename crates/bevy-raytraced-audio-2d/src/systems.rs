@@ -85,10 +85,21 @@ pub(super) fn update_raytraced_audio(
     let due = tracing.is_changed()
         || scene_changed
         || (trace_scratch.since_trace_s >= tracing.interval_s
-            && (trace_scratch.listener != listener
+            && (!tracing.settings.reuses_results()
+                || trace_scratch.listener != listener
                 || source_positions_changed(&emitters, &trace_scratch)))
         || has_untraced_emitter(&emitters, &trace_scratch.indices)
         || listener_trace.valid != listener.is_some();
+    // Diagnostics must not advertise a changed acoustic result to downstream systems.
+    let scheduling = &mut listener_trace.bypass_change_detection().scheduling;
+    scheduling.scene_refreshes += u64::from(scene_changed);
+    if due {
+        scheduling.scheduled += 1;
+    } else if trace_scratch.since_trace_s >= tracing.interval_s {
+        scheduling.unchanged += 1;
+    } else {
+        scheduling.throttled += 1;
+    }
     if due {
         trace_scratch.since_trace_s = 0.0;
         trace_listener(

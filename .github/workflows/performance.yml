@@ -29,3 +29,5 @@ jobs:
         run: cargo check --locked -p acoustic-performance --lib --target wasm32-unknown-unknown
       - name: Smoke every shared workload (no timing claim on hosted CI)
         run: cargo bench --locked -p acoustic-performance --bench workloads -- --test
+      - name: Smoke both cache policies under every mutation workload
+        run: cargo bench --locked -p acoustic-performance --bench cache_behavior -- --test

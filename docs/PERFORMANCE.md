@@ -124,3 +124,111 @@ Portable generic native code, a separately paired CPU-native build, single/multi
 worker configurations and real browser WASM provide different execution
 conditions. They do not establish Windows, macOS, ARM or physical audio-device
 performance unless those systems were actually measured.
+
+## Result-cache policy and invalidation measurements
+
+`RayTraceSettings::with_result_reuse(false)` disables completed listener-result reuse.
+Use the same setting on `RaytracedAudioTracing2d.settings` or
+`RaytracedAudioTracing3d.settings` to force every _eligible_ adapter update to trace.
+The adapter's `interval_s` still applies; use `0.0` when comparing every-frame work.
+Surface changes and newly encountered emitters continue to request immediate updates.
+The default is `true` for compatibility.
+
+A cached listener result is reusable only when the scene revision, listener position,
+trace settings, and ordered source positions match exactly. The cache contains one
+previous result, not a history of scenes or approximate positions. Moving either
+endpoint invalidates that result; inserting/removing a source also invalidates it.
+Listener orientation independently updates binaural processing each frame. Movement
+therefore defeats completed-result reuse, but unchanged geometry can still reuse its
+spatial acceleration structure. Both policies retain that structure and scratch buffers.
+Disabling result reuse skips comparisons and does not allocate or retain result revision
+keys. It still collects the same diagnostic counters as the enabled path.
+
+`ListenerTrace2d::cache_statistics()` and its 3D equivalent expose hits, computations,
+forced computations, cold starts, and invalidation reasons. Reasons identify the **first**
+difference, in scene/listener/settings/source order. They do not purport to count every
+simultaneous mutation. Adapter `scheduling_statistics()` separately records scheduled,
+unchanged, and throttled updates, plus geometry refreshes. A geometry refresh is not an
+exact count of lazy BVH construction. Diagnostic changes do not mark acoustic result
+resources as changed.
+
+The `cache_behavior` Criterion suite pairs both policies on sixteen fixed workloads:
+2D/3D static controls; listener movement; joint listener/source movement; movement of
+the last of 1,024 sources; spawning/removal; geometry changes; simultaneous movement,
+spawning/removal and geometry changes; and nine unchanged frames between movements.
+Every other case has 64 sources (up to 67 during churn) and 128 interior surfaces plus
+an enclosing room. Input sequences, quality, and mutation costs match between policies.
+The tests compare every frame's acoustic checksum between policies; core regression
+tests additionally compare complete response vectors, reverb, ambience and recorded rays.
+
+```sh
+nix develop .#performance
+cargo bench --locked -p acoustic-performance --bench cache_behavior -- \
+  --save-baseline cache-baseline --sample-size 30 --warm-up-time 1 --measurement-time 3
+# Repeat in the opposite policy order to detect order/thermal bias.
+CACHE_BENCH_REVERSE=1 cargo bench --locked -p acoustic-performance --bench cache_behavior -- \
+  --save-baseline cache-reverse --sample-size 30 --warm-up-time 1 --measurement-time 3
+cargo run --locked --release -p acoustic-performance --bin cache-statistics -- 1000 > cache-counts.json
+python3 scripts/compare-cache.py --criterion target/criterion/cache_behavior \
+  --baseline cache-baseline --output cache-comparison.json
+scripts/benchmark-web-build.sh target/performance/cache-web
+```
+
+The browser laboratory's **Compare cache on/off** button alternates the policies within
+each sample. Download its raw JSON and run `scripts/compare-cache.py --browser FILE
+--output REPORT`. Positive reported overhead means caching was slower. Static controls
+are reported individually, rather than averaged into dynamic-scene results. Counter
+runs have a fixed frame count independent of Criterion's adaptive iteration counts.
+
+## Actual application frame measurements
+
+Showcase, `stress_2d`, and `stress_3d` accept opt-in benchmark configuration through
+`ACOUSTIC_FRAME_BENCH` JSON natively or a `frame_bench` JSON query parameter in browsers.
+Ordinary interactive launches retain their existing behavior. The fixed `active-v1`
+workload moves both endpoints, replaces four processed sound voices each second, and
+changes geometry. Stress runs add 240 sources to the existing sixteen, plus four
+transient voices, for 260 traced sources. Showcase moves the player, keeps its moving
+NPCs, toggles the real doors, and replaces transient voices. Audio stays enabled.
+
+The harness preserves each application's ray count, bounce count, rendering assets,
+and resolution, uses a trace interval of zero for both policies, and requests
+`AutoNoVsync`. This intentionally measures every-frame acoustic updates rather than
+the slower default application cadence. Animation/churn follow elapsed wall time.
+The default warm-up is 15 seconds followed by 20 measured seconds. Raw frame intervals,
+main-update durations, completed render schedules, cache/scheduling deltas, source
+counts, the minimum/maximum live processed-sink counts, quality settings, resolution and selected GPU are retained. FPS is frames
+per measured wall-clock duration, not the rolling HUD value. It includes rendering
+and presentation backpressure; it does not prove that a display presents more frames
+than its refresh rate. Browser presentation may remain vsync limited.
+
+```sh
+cargo build --locked -p bevy-raytraced-audio-examples --profile application-bench \
+  --features frame-profile --example showcase --example stress_2d --example stress_3d
+python3 scripts/benchmark-frames.py target/performance/frames-baseline --label baseline
+scripts/benchmark-frame-web-build.sh target/performance/frame-web-baseline
+# Set this as the browser query's frame_bench value, URL-encoded:
+# {"cache":false,"warmup_s":15,"duration_s":20,"interval_s":0,"label":"baseline"}
+```
+
+Run each native suite serially with no compiler/profiler running concurrently. The
+runner alternates cache-policy order across three repetitions and archives startup
+logs, including audio/driver errors. On Linux the performance shell includes Mesa
+Vulkan drivers and PipeWire ALSA plugins built against the Nix runtime; it does not
+change the host's driver configuration. `VK_DRIVER_FILES` can select a specific ICD.
+Measured-window native audio underruns invalidate the timing, while startup errors remain in the log.
+In browsers, activate audio before the measurement window and retain
+`window.acousticFrameReport`; suspended audio or hidden tabs invalidate a timing run.
+
+`compare-frames.py BEFORE AFTER --output REPORT` requires all three applications,
+at least three repetitions each, matching quality/environment, active audio, completed
+render schedules, and **disabled result caching**. It gives applications equal weight
+using the geometric mean of their median-FPS ratios. The acceptance gate requires at
+least 1.5× even using the slowest new/best old whole-run ratios. That conservative
+range is not a joint statistical confidence interval. Profiling runs are rejected.
+Each accepted round must use the previous accepted result as its baseline; an
+unaccepted candidate does not count toward the four requested rounds.
+
+For a separate native flamegraph run, enable `frame-profile` at build time and add
+`"flamegraph":"OUTPUT.svg"` to the JSON configuration. Sampling starts after warm-up.
+Never use a profiled run as FPS acceptance evidence. Earlier kernel benchmark gains,
+particularly warm result-cache hits, do not establish application-FPS gains.

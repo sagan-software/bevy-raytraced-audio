@@ -1,0 +1,43 @@
+{
+  "source_base": "f385d5e",
+  "scope": "production code; tests, benches and examples excluded as in existing strict runner",
+  "totals": {
+    "branches": {
+      "count": 0,
+      "covered": 0,
+      "notcovered": 0,
+      "percent": 0
+    },
+    "functions": {
+      "count": 949,
+      "covered": 949,
+      "percent": 100
+    },
+    "instantiations": {
+      "count": 1734,
+      "covered": 1568,
+      "percent": 90.42675893886967
+    },
+    "lines": {
+      "count": 9453,
+      "covered": 9453,
+      "percent": 100
+    },
+    "mcdc": {
+      "count": 0,
+      "covered": 0,
+      "notcovered": 0,
+      "percent": 0
+    },
+    "regions": {
+      "count": 13269,
+      "covered": 13167,
+      "notcovered": 102,
+      "percent": 99.23129097897355
+    }
+  },
+  "passed_tests": 305,
+  "failed_tests": 0,
+  "command": "scripts/coverage-strict.sh target/performance/cache-coverage",
+  "note": "100% line/function coverage; regions are reported independently and branch coverage is not instrumented."
+}

@@ -216,13 +216,16 @@ pub(super) fn setup(
 /// Back-and-forth runners keep their sounds at foot height, never on the listener's floor.
 pub(super) fn runners(
     time: Res<'_, Time<Real>>,
+    benchmark: Option<Res<'_, super::frame_benchmark::FrameBenchmark>>,
     mix: Res<'_, Mix>,
     mut runners: Query<'_, '_, (&mut Runner, &mut Transform, &Children)>,
     children: Query<'_, '_, &Children>,
     mut legs: Query<'_, '_, (&Leg, &mut Transform), Without<Runner>>,
 ) {
     for (mut runner, mut transform, body_children) in &mut runners {
-        if !mix.paused {
+        if let Some(benchmark) = &benchmark {
+            runner.phase = benchmark.seconds();
+        } else if !mix.paused {
             runner.phase += time.delta_secs().min(0.1);
         }
         let cycle = (runner.phase * 1.65).rem_euclid(8.0);

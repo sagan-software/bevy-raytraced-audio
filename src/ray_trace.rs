@@ -60,6 +60,8 @@ pub struct RayTraceSettings {
     seed: u64,
     /// Whether the trace records every ray segment for visualization.
     record_rays: bool,
+    /// Whether identical inputs may reuse the last completed result.
+    reuse_results: bool,
 }
 
 impl Default for RayTraceSettings {
@@ -73,6 +75,7 @@ impl Default for RayTraceSettings {
             permeation_ray_count: 16,
             seed: 0x5EED_A0D1_0000_0001,
             record_rays: false,
+            reuse_results: true,
         }
     }
 }
@@ -151,6 +154,20 @@ impl RayTraceSettings {
     pub const fn with_recorded_rays(mut self, record_rays: bool) -> Self {
         self.record_rays = record_rays;
         self
+    }
+
+    /// Enables completed-result reuse, or forces fresh work for diagnostics and benchmarking.
+    /// Geometry acceleration and allocated scratch storage are unaffected.
+    #[must_use]
+    pub const fn with_result_reuse(mut self, enabled: bool) -> Self {
+        self.reuse_results = enabled;
+        self
+    }
+
+    /// Returns whether identical inputs may reuse a completed listener trace.
+    #[must_use]
+    pub const fn reuses_results(self) -> bool {
+        self.reuse_results
     }
 
     /// Returns the primary ray count.

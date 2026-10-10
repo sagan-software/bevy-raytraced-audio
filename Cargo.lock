@@ -564,7 +564,10 @@ dependencies = [
  "bevy-raytraced-audio",
  "bevy-raytraced-audio-2d",
  "bevy-raytraced-audio-3d",
+ "pprof",
  "rodio 0.22.2",
+ "serde_json",
+ "wasm-bindgen",
 ]
 
 [[package]]

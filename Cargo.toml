@@ -78,6 +78,14 @@ codegen-units = 1
 lto = "thin"
 strip = "debuginfo"
 
+# Optimized application measurements with practical full-renderer rebuild times.
+[profile.application-bench]
+inherits = "release"
+lto = false
+codegen-units = 16
+debug = "line-tables-only"
+strip = "none"
+
 [profile.wasm-release]
 inherits = "release"
 opt-level = "s"

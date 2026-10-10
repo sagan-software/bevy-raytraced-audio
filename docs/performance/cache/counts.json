@@ -1,0 +1,514 @@
+[
+  {
+    "name": "2d/static",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128607.7561378479,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/static",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128607.7561378479,
+    "statistics": {
+      "hits": 999,
+      "computations": 1,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/static",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128694.05037164688,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/static",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128694.05037164688,
+    "statistics": {
+      "hits": 999,
+      "computations": 1,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/listener",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128610.21329408884,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/listener",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128610.21329408884,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 999,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/listener",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128691.6743991971,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/listener",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128691.6743991971,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 999,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/joint",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128610.21329408884,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/joint",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128610.21329408884,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 999,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/joint",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128691.6743991971,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/joint",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128691.6743991971,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 999,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/last_source",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 2048607.756137848,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/last_source",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 2048607.756137848,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 999
+    }
+  },
+  {
+    "name": "3d/last_source",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 2048694.0503716469,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/last_source",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 2048694.0503716469,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 999
+    }
+  },
+  {
+    "name": "2d/spawn",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 131607.7561378479,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/spawn",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 131607.7561378479,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 999
+    }
+  },
+  {
+    "name": "3d/spawn",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 131694.05037164688,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/spawn",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 131694.05037164688,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 999
+    }
+  },
+  {
+    "name": "2d/geometry",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128604.86554676294,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/geometry",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128604.86554676294,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 999,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/geometry",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128690.16657555103,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/geometry",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128690.16657555103,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 999,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/active",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 131604.86554676294,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/active",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 131604.86554676294,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 999,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/active",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 131690.16657555103,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/active",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 131690.16657555103,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 999,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/mixed_idle",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128610.1767578721,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "2d/mixed_idle",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128610.1767578721,
+    "statistics": {
+      "hits": 899,
+      "computations": 101,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 100,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/mixed_idle",
+    "cache": false,
+    "iterations": 1000,
+    "checksum": 128691.64325112104,
+    "statistics": {
+      "hits": 0,
+      "computations": 1000,
+      "forced": 1000,
+      "cold": 0,
+      "scene_changes": 0,
+      "listener_changes": 0,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  },
+  {
+    "name": "3d/mixed_idle",
+    "cache": true,
+    "iterations": 1000,
+    "checksum": 128691.64325112104,
+    "statistics": {
+      "hits": 899,
+      "computations": 101,
+      "forced": 0,
+      "cold": 1,
+      "scene_changes": 0,
+      "listener_changes": 100,
+      "settings_changes": 0,
+      "source_changes": 0
+    }
+  }
+]

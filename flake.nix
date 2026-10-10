@@ -145,6 +145,8 @@
           pkgs.gdb
           pkgs.strace
           pkgs.sysstat
+          pkgs.mesa
+          pkgs.pipewire
         ];
 
         bevyBrpMcp =
@@ -760,6 +762,11 @@
           shellHook = ''
             export PKG_CONFIG_PATH="${pkgConfigPath}:''${PKG_CONFIG_PATH:-}"
             export LD_LIBRARY_PATH="${runtimeLibraryPath}:''${LD_LIBRARY_PATH:-}"
+          ''
+          + pkgs.lib.optionalString pkgs.stdenv.isLinux ''
+            # Use drivers and ALSA plugins built against the shell's libc on non-NixOS hosts.
+            export XDG_DATA_DIRS="${pkgs.mesa}/share:''${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+            export ALSA_PLUGIN_DIR="${pkgs.pipewire}/lib/alsa-lib"
           '';
         };
 

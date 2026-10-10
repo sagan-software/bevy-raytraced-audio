@@ -1,6 +1,7 @@
 //! Listener-centred stochastic ray tracing over 3D triangles.
 
 use crate::bvh::Ray;
+use crate::cache_statistics::{TraceCacheMiss, TraceCacheStatistics};
 use crate::math3d::Vector3;
 use crate::ray_trace::{EchoStatistics, SourceAccumulator, TraceRng, narrow};
 use crate::scene3d::TriangleGeometry;
@@ -114,9 +115,17 @@ pub struct ListenerTrace3d {
     source_points: Vec<Vector3>,
     /// Exact deterministic input key for the last completed trace.
     cached_input: Option<(std::sync::Arc<()>, Listener3d, RayTraceSettings)>,
+    /// Cache decisions accumulated across calls, including forced computations.
+    cache_statistics: TraceCacheStatistics,
 }
 
 impl ListenerTrace3d {
+    /// Returns cumulative result-cache decisions for this output, including cloned history.
+    #[must_use]
+    pub const fn cache_statistics(&self) -> TraceCacheStatistics {
+        self.cache_statistics
+    }
+
     /// Returns one response per traced source, in input order.
     #[must_use]
     pub fn sources(&self) -> &[SourceRayResponse] {
@@ -220,21 +229,32 @@ impl AcousticScene3d {
         settings: RayTraceSettings,
         output: &mut ListenerTrace3d,
     ) {
-        let revision = self.revision();
-        if output
-            .cached_input
-            .as_ref()
-            .is_some_and(|(previous, receiver, config)| {
-                std::sync::Arc::ptr_eq(previous, revision)
-                    && *receiver == listener
-                    && *config == settings
-            })
-            && sources.len() == output.source_points.len()
-            && sources
-                .iter()
-                .zip(&output.source_points)
-                .all(|(source, previous)| Vector3::from_point(source.position()) == *previous)
-        {
+        let revision = settings.reuses_results().then(|| self.revision());
+        let miss = if let Some(revision) = revision {
+            match &output.cached_input {
+                None => Some(TraceCacheMiss::Cold),
+                Some((previous, _, _)) if !std::sync::Arc::ptr_eq(previous, revision) => {
+                    Some(TraceCacheMiss::Scene)
+                }
+                Some((_, receiver, _)) if *receiver != listener => Some(TraceCacheMiss::Listener),
+                Some((_, _, config)) if *config != settings => Some(TraceCacheMiss::Settings),
+                Some(_)
+                    if sources.len() != output.source_points.len()
+                        || !sources.iter().zip(&output.source_points).all(
+                            |(source, previous)| {
+                                Vector3::from_point(source.position()) == *previous
+                            },
+                        ) =>
+                {
+                    Some(TraceCacheMiss::Sources)
+                }
+                Some(_) => None,
+            }
+        } else {
+            Some(TraceCacheMiss::Forced)
+        };
+        output.cache_statistics.record(miss);
+        if miss.is_none() {
             return;
         }
         // Invalidate before recomputing so unwinding cannot leave a partially refreshed cache.
@@ -316,7 +336,8 @@ impl AcousticScene3d {
         );
         output.accumulators = accumulators;
         output.source_points = source_points;
-        output.cached_input = Some((std::sync::Arc::clone(revision), listener, settings));
+        output.cached_input =
+            revision.map(|revision| (std::sync::Arc::clone(revision), listener, settings));
     }
 
     /// Follows one primary ray and returns its ambience direction if it escaped.

@@ -414,6 +414,7 @@ fn cache_invalidates_for_all_inputs_and_scene_clone_mutation() {
         .with_max_bounces(2)
         .with_recorded_rays(true);
     let mut cached = ListenerTrace3d::default();
+    let mut fresh = ListenerTrace3d::default();
     for step in 0..13 {
         match step {
             2 => *sources.first_mut().unwrap() = Emitter3d::new(point(1.5, 0.5, 0.)),
@@ -446,8 +447,13 @@ fn cache_invalidates_for_all_inputs_and_scene_clone_mutation() {
             _ => {}
         }
         scene.trace_listener(listener, &sources, settings, &mut cached);
-        let mut fresh = ListenerTrace3d::default();
-        scene.trace_listener(listener, &sources, settings, &mut fresh);
+        scene.trace_listener(
+            listener,
+            &sources,
+            settings.with_result_reuse(false),
+            &mut fresh,
+        );
+        assert!(fresh.cached_input.is_none());
         assert_eq!(cached.sources(), fresh.sources(), "step {step}");
         assert_eq!(cached.reverb(), fresh.reverb(), "step {step}");
         assert_eq!(
@@ -458,6 +464,21 @@ fn cache_invalidates_for_all_inputs_and_scene_clone_mutation() {
         assert_eq!(cached.ambient_focus(), fresh.ambient_focus(), "step {step}");
         assert_eq!(cached.segments(), fresh.segments(), "step {step}");
     }
+    assert_eq!(fresh.cache_statistics().forced, 13);
+    assert_eq!(fresh.cache_statistics().hits, 0);
+    assert_eq!(
+        cached.cache_statistics(),
+        crate::TraceCacheStatistics {
+            hits: 2,
+            computations: 11,
+            cold: 1,
+            scene_changes: 3,
+            listener_changes: 1,
+            settings_changes: 2,
+            source_changes: 4,
+            forced: 0,
+        }
+    );
 }
 
 /// Degenerate arrival paths do not invent an ambience direction or produce NaN scattering.

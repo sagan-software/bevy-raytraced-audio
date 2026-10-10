@@ -775,3 +775,43 @@ fn spatial_sink_volume_tracks_occlusion() {
         );
     });
 }
+
+/// Runtime cache policy toggles retain exact results and expose independent scheduling counts.
+#[test]
+fn result_reuse_policy_and_statistics_are_observable() {
+    use super::{RaytracedAudioListenerTrace3d, RaytracedAudioTracing3d};
+    let mut app = App::new();
+    app.add_plugins((TransformPlugin, RaytracedAudio3dPlugin::default()));
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::default()));
+    app.world_mut()
+        .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(2., 0., 0.)));
+    app.update();
+    app.update();
+    let trace = app.world().resource::<RaytracedAudioListenerTrace3d>();
+    assert_eq!(trace.scheduling_statistics().scheduled, 1);
+    assert_eq!(trace.scheduling_statistics().unchanged, 1);
+    assert_eq!(trace.trace().unwrap().cache_statistics().computations, 1);
+    let expected = trace.trace().unwrap().sources().to_vec();
+    {
+        let mut settings = app.world_mut().resource_mut::<RaytracedAudioTracing3d>();
+        settings.settings = settings.settings.with_result_reuse(false);
+    }
+    app.update();
+    app.update();
+    let trace = app.world().resource::<RaytracedAudioListenerTrace3d>();
+    assert_eq!(trace.scheduling_statistics().scheduled, 3);
+    assert_eq!(trace.trace().unwrap().cache_statistics().forced, 2);
+    assert_eq!(trace.trace().unwrap().sources(), expected);
+    {
+        let mut settings = app.world_mut().resource_mut::<RaytracedAudioTracing3d>();
+        settings.settings = settings.settings.with_result_reuse(true);
+    }
+    app.update();
+    app.update();
+    let trace = app.world().resource::<RaytracedAudioListenerTrace3d>();
+    assert_eq!(trace.scheduling_statistics().scheduled, 4);
+    assert_eq!(trace.scheduling_statistics().unchanged, 2);
+    assert_eq!(trace.trace().unwrap().cache_statistics().cold, 2);
+    assert_eq!(trace.trace().unwrap().sources(), expected);
+}

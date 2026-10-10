@@ -16,6 +16,9 @@ mod tests;
 #[path = "showcase/world.rs"]
 mod world;
 
+#[path = "frame_benchmark.rs"]
+mod frame_benchmark;
+
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, SpatialScale},
@@ -102,11 +105,13 @@ fn main() {
                     interface::controls,
                     controller::look,
                     controller::walk,
+                    benchmark_walk,
                     controller::camera,
                     controller::head_pose,
                     world::room_treatment,
                     world::interact,
                     world::animate_gates,
+                    benchmark_gates,
                     world::cutaway,
                 )
                     .chain(),
@@ -121,5 +126,39 @@ fn main() {
                 world::markers,
             ),
         )
+        .add_plugins(frame_benchmark::FrameBenchmarkPlugin("showcase"))
         .run();
+}
+
+/// Drives the real player and doors along a repeatable path during frame measurements.
+fn benchmark_walk(
+    benchmark: Option<Res<'_, frame_benchmark::FrameBenchmark>>,
+    mut player: Query<'_, '_, &mut Transform, With<controller::Player>>,
+) {
+    let Some(benchmark) = benchmark else {
+        return;
+    };
+    let seconds = benchmark.seconds();
+    for mut transform in &mut player {
+        transform.translation.x = 3.0 * (seconds * 0.2).sin();
+        transform.translation.z = 2.0f32.mul_add((seconds * 0.2).cos(), 2.0);
+    }
+}
+
+/// Uses absolute time for door poses, so a slow run cannot reduce geometry churn.
+fn benchmark_gates(
+    benchmark: Option<Res<'_, frame_benchmark::FrameBenchmark>>,
+    mut gates: Query<'_, '_, (&mut world::Gate, &mut Transform)>,
+) {
+    let Some(benchmark) = benchmark else {
+        return;
+    };
+    let fraction = 0.5f32.mul_add((benchmark.seconds() * 0.5).sin(), 0.5);
+    for (mut gate, mut pose) in &mut gates {
+        gate.angle = fraction * gate.open_angle;
+        gate.open = fraction > 0.5;
+        *pose = gate
+            .closed
+            .with_rotation(gate.closed.rotation * Quat::from_rotation_y(gate.angle));
+    }
 }
