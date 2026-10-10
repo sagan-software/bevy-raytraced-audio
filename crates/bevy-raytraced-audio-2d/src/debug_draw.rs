@@ -278,24 +278,5 @@ const fn narrow(value: f64) -> f32 {
 }
 
 #[cfg(test)]
-mod tests {
-    //! Trail window arithmetic used by the animated ray drawing.
-
-    use super::visible_fractions;
-
-    /// The wavefront reveals a segment progressively, and a finite trail hides its tail.
-    #[test]
-    fn trail_window_follows_the_wavefront() {
-        assert_eq!(visible_fractions(2.0, 4.0, 1.0, 3.0), None);
-        assert_eq!(
-            visible_fractions(2.0, 4.0, 4.0, f32::INFINITY),
-            Some((0.0, 0.5))
-        );
-        assert_eq!(visible_fractions(2.0, 4.0, 5.0, 2.0), Some((0.25, 0.75)));
-        assert_eq!(visible_fractions(2.0, 4.0, 9.0, 2.0), None);
-        assert_eq!(
-            visible_fractions(2.0, 4.0, 9.0, f32::INFINITY),
-            Some((0.0, 1.0))
-        );
-    }
-}
+#[path = "../../../tests/unit/2d_debug_draw.rs"]
+mod tests;

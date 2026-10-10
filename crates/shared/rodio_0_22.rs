@@ -83,3 +83,7 @@ impl Decodable for RaytracedAudioSource {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/unit/rodio_0_22.rs"]
+mod tests;

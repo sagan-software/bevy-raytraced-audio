@@ -14,6 +14,111 @@ use bevy_raytraced_audio_3d::{
 };
 use std::num::{NonZeroU16, NonZeroU32};
 
+/// Thousands of live emitters survive simultaneous movement, replacement and geometry edits.
+#[test]
+fn four_thousand_emitters_remain_current_under_simultaneous_churn() -> Result<(), GeometryError> {
+    use bevy_raytraced_audio::RayTraceSettings;
+    use bevy_raytraced_audio_3d::RaytracedAudioListenerTrace3d;
+    let mut app = App::new();
+    app.add_plugins((
+        TaskPoolPlugin::default(),
+        TransformPlugin,
+        RaytracedAudio3dPlugin::default().with_ray_tracing(
+            RayTraceSettings::default()
+                .try_with_ray_count(8)?
+                .with_max_bounces(2),
+        ),
+    ));
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::default()));
+    let mut emitters = Vec::new();
+    for i in 0..4096_u16 {
+        emitters.push(
+            app.world_mut()
+                .spawn((
+                    RaytracedAudioEmitter3d,
+                    Transform::from_xyz(
+                        f32::from(i % 64).mul_add(0.1, 1.),
+                        0.5,
+                        f32::from(i / 64) * 0.1,
+                    ),
+                ))
+                .id(),
+        );
+    }
+    let mut walls = Vec::new();
+    for i in 0..128_u16 {
+        walls.push(
+            app.world_mut()
+                .spawn((
+                    RaytracedAudioSurface3d::new(
+                        [
+                            Vec3::new(0., -1., -1.),
+                            Vec3::new(0., 1., -1.),
+                            Vec3::new(0., 0., 1.),
+                        ],
+                        AcousticMaterial::default(),
+                    )?,
+                    Transform::from_xyz(20. + f32::from(i), 0., 0.),
+                ))
+                .id(),
+        );
+    }
+    app.update();
+    for frame in 1..=4_u16 {
+        for entity in emitters.iter_mut().take(1024) {
+            app.world_mut().despawn(*entity);
+            *entity = app
+                .world_mut()
+                .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(1., 0.5, 0.)))
+                .id();
+        }
+        for entity in &emitters {
+            app.world_mut()
+                .get_mut::<Transform>(*entity)
+                .unwrap()
+                .translation
+                .x += 0.125;
+        }
+        for entity in &walls {
+            app.world_mut()
+                .get_mut::<Transform>(*entity)
+                .unwrap()
+                .translation
+                .y = f32::from(frame) * 0.1;
+        }
+        app.update();
+        assert_eq!(
+            app.world()
+                .resource::<RaytracedAudioListenerTrace3d>()
+                .trace()
+                .unwrap()
+                .sources()
+                .len(),
+            4096
+        );
+        for entity in &emitters {
+            let position = app
+                .world()
+                .get::<GlobalTransform>(*entity)
+                .unwrap()
+                .translation();
+            let distance = app
+                .world()
+                .get::<RaytracedAudioResponse3d>(*entity)
+                .unwrap()
+                .response()
+                .direct
+                .distance_m();
+            let expected = f64::from(position.x)
+                .hypot(f64::from(position.y))
+                .hypot(f64::from(position.z));
+            assert!((distance - expected).abs() < 1e-10);
+        }
+    }
+    Ok(())
+}
+
 /// The public 2D plugin traces one registered segment after Bevy propagates transforms.
 #[test]
 fn public_2d_plugin_publishes_an_occluded_response() -> Result<(), GeometryError> {

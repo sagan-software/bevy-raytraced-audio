@@ -135,12 +135,12 @@ fn candidate_visitation_propagates_a_nested_stop() {
 
     let completed = hierarchy.visit_candidates_until(query_bounds, None, |surface_index| {
         visited.push(surface_index);
-        surface_index != 0
+        surface_index != 2
     });
 
     assert!(!completed);
     assert!(visited.len() > 1, "the stop must originate below the root");
-    assert_eq!(visited.last(), Some(&0));
+    assert_eq!(visited.last(), Some(&2));
     assert!(
         !visited.contains(&5),
         "the right sibling must not be visited after the stop"
@@ -240,4 +240,39 @@ fn negative_ray_hit_stops_all_remaining_primitives() {
         Some(-1.)
     });
     assert_eq!(calls, 1);
+}
+
+/// Tall surfaces with coincident y centers retain exact nearest hits after centroid partitioning.
+#[test]
+fn ray_queries_match_exhaustive_bounds_on_tall_surfaces() {
+    use super::Ray;
+    let surfaces: Vec<_> = (0..127)
+        .map(|i| {
+            let x = fixture_x(i % 17) - 8.;
+            let z = fixture_x(i / 17) - 3.;
+            Bounds::path_3d((x, -100., z), (x + 0.25, 100., z + 0.25))
+        })
+        .collect();
+    let hierarchy = BoundingVolumeHierarchy::build(
+        surfaces.iter().copied().enumerate(),
+        SceneDimensions::Three,
+    );
+    for x in -12..12 {
+        for z in -6..6 {
+            for direction in [(1., 0., 0.), (-1., 0., 0.), (0., 0., 1.), (0.3, 0.7, -0.2)] {
+                let ray = Ray::new((f64::from(x), 0., f64::from(z)), direction);
+                let expected = surfaces
+                    .iter()
+                    .filter_map(|b| b.ray_entry(ray, 1000.))
+                    .min_by(f64::total_cmp);
+                let mut nearest: Option<f64> = None;
+                hierarchy.visit_ray(ray, 1000., |index| {
+                    let distance = surfaces.get(index).unwrap().ray_entry(ray, 1000.)?;
+                    nearest = Some(nearest.map_or(distance, |old| old.min(distance)));
+                    Some(distance)
+                });
+                assert_eq!(nearest, expected);
+            }
+        }
+    }
 }

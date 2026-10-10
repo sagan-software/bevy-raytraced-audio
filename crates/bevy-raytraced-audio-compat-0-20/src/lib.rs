@@ -13,4 +13,5 @@ pub mod audio_2d;
 pub mod audio_3d;
 
 #[cfg(test)]
+#[path = "../../../tests/unit/bevy_0_20_support.rs"]
 mod test_support;

@@ -16,6 +16,7 @@ bevy_ecs = "0.17.3"
 log = "0.4"
 
 [dev-dependencies]
+bevy = { version = "0.17.3", default-features = false, features = ["wav"] }
 rodio = { version = "0.20", default-features = false }
 
 [lints]

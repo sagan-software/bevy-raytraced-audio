@@ -7,11 +7,13 @@ the collaborative Chromium 152 / Electron 44 browser, which reports 32 logical
 processors; it runs on a different host. Cross-platform absolute times are not
 compared. Each before/after ratio uses the same environment and workload.
 
-| Candidate                                        | Native geometric mean vs starting code | Conservative lower bound | Browser geometric mean | Accepted round |
+| Candidate                                        | Native ratio vs compared baseline | Conservative lower bound | Browser geometric mean | Accepted round |
 | ------------------------------------------------ | -------------------------------------: | -----------------------: | ---------------------: | -------------- |
 | Math and DSP arithmetic                          |                                 1.463× |                   1.430× |                 1.324× | No             |
 | Above, plus FIR lanes and visibility termination |                                 1.720× |                   1.684× |                 1.721× | Round 1        |
 | Reuse unchanged Bevy traces (vs Round 1) | 1.539× | 1.506× | Shared kernel unchanged | Round 2 |
+| Geometry tree only (vs Round 2) | 1.017× | 0.999× | 0.960× vs Round 1 | No |
+| Above, plus exact shared trace reuse (vs Round 2) | 5.194× | 5.103× | 52.135× vs Round 1 | Round 3 |
 
 The accepted round retains ray counts, reflection depths, FIR lengths, materials,
 source counts and update workloads. It uses a fast norm with scaled-hypot
@@ -41,6 +43,21 @@ cache invalidation checks, and adapter Clippy passed.
 The first round also passed the [Linux, macOS and Windows CI matrix](https://github.com/sagan-software/bevy-raytraced-audio/actions/runs/38074008460).
 These are correctness/build/smoke checks, not hosted-runner timing comparisons.
 
+Round 3 adds exact deterministic reuse to the shared listener-tracing API.
+The output retains a scene revision identity, listener, settings and ordered
+source positions. A geometry mutation replaces the identity; a changed source,
+listener or setting retraces. Unchanged scene clones share the identity safely.
+Tests compare the complete cached result with a fresh trace after each input
+changes, including scene/output clones and recording changes.
+
+This produces very large warm-cache gains in eight shared cases. It is **not**
+a 52× increase in ray-intersection speed. Changing-scene cases still execute the
+solver. The geometry-only attempt did not reach the gate, despite improving the
+largest native 2D/3D churn cases by 35%/16%. Its failed comparison is retained.
+The cumulative native ratio through three accepted rounds is approximately 13.74×;
+the shared browser suite is approximately 89.7× its original baseline, dominated
+by repeated-input reuse. These are suite ratios, not application frame rates.
+
 ## Profiling evidence
 
 Userspace pprof sampling produced actual flame graphs without changing host
@@ -68,6 +85,14 @@ members. Selecting all packages explicitly reports 92.85% lines (952 uncovered),
 including shared adapter sources instantiated by each Bevy compatibility crate.
 The strict coverage command fails unless all selected lines execute. This is
 not a 100% coverage result.
+
+The expanded tests also exercise 4,096 simultaneously changing emitters, actual
+decoding and internal looping on all four Bevy versions, and finite gizmo output
+without a GPU. Unit tests now live under `tests/unit` so coverage exclusions apply
+to test code consistently. Old instrumented feature binaries were found in the
+report directory; the strict script now cleans workspace coverage artifacts
+before collecting a fresh report. A fresh production-only report supersedes the
+intermediate percentages above; no 100% result is claimed.
 
 Four successful 50% rounds are required by the request; only measured rounds
 that pass the complete-suite gate count. This report does not claim four rounds

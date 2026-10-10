@@ -201,13 +201,13 @@ impl Bounds {
     }
 
     /// Returns the midpoint coordinate on one split axis without overflowing on finite inputs.
-    fn center(self, axis: Axis) -> f64 {
+    const fn center(self, axis: Axis) -> f64 {
         let (minimum, maximum) = match axis {
             Axis::X => (self.min_x, self.max_x),
             Axis::Y => (self.min_y, self.max_y),
             Axis::Z => (self.min_z, self.max_z),
         };
-        maximum.mul_add(0.5, minimum * 0.5)
+        f64::midpoint(minimum, maximum)
     }
 
     /// Returns the length of one stored axis.
@@ -318,7 +318,7 @@ impl BoundingVolumeHierarchy {
         }
     }
 
-    /// Visits one node the ray already reaches: its stored primitives, then children nearest-first.
+    /// Visits a reached leaf or descends into children nearest-first.
     ///
     /// Each child's slab entry is computed once here; a child is skipped when an earlier hit has
     /// moved the limit in front of its entry, which matches re-running the full slab test.
@@ -356,15 +356,7 @@ impl BoundingVolumeHierarchy {
                     }
                 }
             }
-            NodeKind::Branch {
-                surface_index,
-                left,
-                right,
-            } => {
-                record(*surface_index, maximum_parameter);
-                if *maximum_parameter < 0.0 {
-                    return;
-                }
+            NodeKind::Branch { left, right } => {
                 let left_entry = self
                     .nodes
                     .get(*left)
@@ -421,25 +413,35 @@ impl BoundingVolumeHierarchy {
             return Some(node_index);
         }
 
-        // A total comparator makes equal-centroid partitioning deterministic across queries.
-        let axis = bounds.widest_axis(dimensions);
+        // Split by centroid spread, not surface extent: tall/long walls must not force
+        // every interior partition onto an axis where all primitive centers coincide.
+        let centers = primitives
+            .iter()
+            .map(|primitive| {
+                let center = (
+                    primitive.bounds.center(Axis::X),
+                    primitive.bounds.center(Axis::Y),
+                    primitive.bounds.center(Axis::Z),
+                );
+                Bounds::path_3d(center, center)
+            })
+            .reduce(Bounds::union)
+            .expect("nonempty node");
+        let axis = centers.widest_axis(dimensions);
         let midpoint = primitives.len() / 2;
-        let (_, median, _) = primitives.select_nth_unstable_by(midpoint, |left, right| {
+        primitives.select_nth_unstable_by(midpoint, |left, right| {
             left.bounds
                 .center(axis)
                 .total_cmp(&right.bounds.center(axis))
                 .then_with(|| left.surface_index.cmp(&right.surface_index))
         });
-        let surface_index = median.surface_index;
         let (left_primitives, right_primitives) = primitives.split_at_mut(midpoint);
-        let (_, right_primitives) = right_primitives.split_first_mut()?;
         let left_node = Self::build_node(left_primitives, dimensions, nodes, surface_indices)?;
         let right_node = Self::build_node(right_primitives, dimensions, nodes, surface_indices)?;
         let node_index = nodes.len();
         nodes.push(Node {
             bounds,
             kind: NodeKind::Branch {
-                surface_index,
                 left: left_node,
                 right: right_node,
             },
@@ -476,13 +478,8 @@ impl BoundingVolumeHierarchy {
                         })
                     })
             }
-            NodeKind::Branch {
-                surface_index,
-                left,
-                right,
-            } => {
-                Self::surface_intersects(*surface_index, skipped_surface, intersects_surface)
-                    || self.intersects_node(*left, path_bounds, skipped_surface, intersects_surface)
+            NodeKind::Branch { left, right } => {
+                self.intersects_node(*left, path_bounds, skipped_surface, intersects_surface)
                     || self.intersects_node(
                         *right,
                         path_bounds,
@@ -520,14 +517,7 @@ impl BoundingVolumeHierarchy {
                 }
                 true
             }
-            NodeKind::Branch {
-                surface_index,
-                left,
-                right,
-            } => {
-                if skipped_surface != Some(*surface_index) && !visit_surface(*surface_index) {
-                    return false;
-                }
+            NodeKind::Branch { left, right } => {
                 if !self.visit_candidate_node(*left, path_bounds, skipped_surface, visit_surface) {
                     return false;
                 }
@@ -583,7 +573,7 @@ struct PrimitiveBounds {
 struct Node {
     /// Combined bounds for this node and all descendants.
     bounds: Bounds,
-    /// Closed node shape, with one primitive stored at each branch median.
+    /// Closed node shape, with primitives stored only in leaves.
     kind: NodeKind,
 }
 
@@ -595,10 +585,8 @@ enum NodeKind {
         /// Range in `BoundingVolumeHierarchy::surface_indices`.
         indices: Range<usize>,
     },
-    /// A median surface and its two recursively balanced children.
+    /// Two recursively balanced children; exact tests occur only in reached leaves.
     Branch {
-        /// Original surface index stored at the median.
-        surface_index: usize,
         /// Left child node index.
         left: usize,
         /// Right child node index.

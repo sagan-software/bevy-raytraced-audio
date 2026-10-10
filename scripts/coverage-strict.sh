@@ -7,6 +7,8 @@ mkdir -p "$out"
 mapfile -t members < <(cargo metadata --no-deps --format-version 1 | python3 -c 'import json,sys; d=json.load(sys.stdin); ids=set(d["workspace_members"]); print("\n".join(p["name"] for p in d["packages"] if p["id"] in ids))')
 packages=()
 for member in "${members[@]}"; do packages+=(-p "$member"); done
+# Discard old feature/version binaries and profiles before collecting a fresh report.
+cargo llvm-cov clean --workspace
 cargo llvm-cov --workspace --locked --profile coverage --no-report
 cargo llvm-cov report "${packages[@]}" --profile coverage --json --output-path "$out/coverage.json" \
   --ignore-filename-regex '(^|/)(tests|benches|examples)/'

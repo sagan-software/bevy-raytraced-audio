@@ -184,3 +184,7 @@ fn draw_segment(
 const fn narrow(value: f64) -> f32 {
     value as f32
 }
+
+#[cfg(test)]
+#[path = "../../../tests/unit/3d_debug_draw.rs"]
+mod tests;
