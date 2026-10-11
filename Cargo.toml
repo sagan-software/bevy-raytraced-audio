@@ -19,9 +19,17 @@ bench = false
 name = "core_public_api"
 path = "tests/core_public_api.rs"
 
+[[test]]
+name = "source_clearance"
+path = "tests/source_clearance.rs"
+
 [[example]]
 name = "trace_2d"
 path = "examples/trace_2d.rs"
+
+[[example]]
+name = "source_clearance"
+path = "examples/source_clearance.rs"
 
 [[bench]]
 name = "propagation"

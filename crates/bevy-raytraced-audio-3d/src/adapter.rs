@@ -1,5 +1,6 @@
 //! Public facade for the Bevy 3D acoustic adapter.
 
+mod clearance;
 #[cfg(feature = "debug_draw")]
 mod debug_draw;
 mod emitter;
@@ -20,6 +21,7 @@ pub use crate::processed_audio::{
     RaytracedAudioPlayer, RaytracedAudioPrepareSystems, RaytracedAudioPrepared,
     RaytracedAudioProcessingPlugin, RaytracedAudioSource,
 };
+pub use clearance::RaytracedAudioClearance3d;
 #[cfg(feature = "debug_draw")]
 pub use debug_draw::RaytracedAudioDebugDraw3d;
 pub use emitter::RaytracedAudioEmitter3d;

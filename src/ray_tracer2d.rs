@@ -4,8 +4,9 @@ use crate::bvh::Ray;
 use crate::cache_statistics::{TraceCacheMiss, TraceCacheStatistics};
 use crate::math2d::Vector2;
 use crate::ray_trace::{EchoStatistics, SourceAccumulator, TraceRng, narrow};
+use crate::scene2d::clear_of_source;
 use crate::{
-    AcousticScene2d, Emitter2d, Listener2d, RayKind, RayTraceSettings, ReverbEstimate,
+    AcousticScene2d, BandGain, Emitter2d, Listener2d, RayKind, RayTraceSettings, ReverbEstimate,
     SolverPoint2d, SourceRayResponse,
 };
 use core::f64::consts::TAU;
@@ -102,8 +103,9 @@ pub struct ListenerTrace2d {
     accumulators: Vec<SourceAccumulator>,
     /// Scratch per-source index of the last primary ray that discovered the source.
     discovered_by_ray: Vec<u32>,
-    /// Reused solver-space source positions; retained across changing emitter counts.
-    source_points: Vec<Vector2>,
+    /// Reused solver-space source positions and clearances in meters; retained across changing
+    /// emitter counts.
+    source_points: Vec<(Vector2, f64)>,
     /// Exact deterministic input key for the last completed trace.
     cached_input: Option<(std::sync::Arc<()>, Listener2d, RayTraceSettings)>,
     /// Cache decisions accumulated across calls, including forced computations.
@@ -231,11 +233,10 @@ impl AcousticScene2d {
                 Some((_, _, config)) if *config != settings => Some(TraceCacheMiss::Settings),
                 Some(_)
                     if sources.len() != output.source_points.len()
-                        || !sources.iter().zip(&output.source_points).all(
-                            |(source, previous)| {
-                                Vector2::from_point(source.position()) == *previous
-                            },
-                        ) =>
+                        || !sources
+                            .iter()
+                            .zip(&output.source_points)
+                            .all(|(source, previous)| source_point(*source) == *previous) =>
                 {
                     Some(TraceCacheMiss::Sources)
                 }
@@ -255,15 +256,15 @@ impl AcousticScene2d {
         let origin = Vector2::from_point(listener.position());
         let mut source_points = core::mem::take(&mut output.source_points);
         source_points.clear();
-        source_points.extend(
-            sources
-                .iter()
-                .map(|source| Vector2::from_point(source.position())),
-        );
+        source_points.extend(sources.iter().map(|source| source_point(*source)));
 
         // Straight lines from the listener decide direct visibility and seed permeation.
-        for (index, source) in source_points.iter().copied().enumerate() {
-            let (gain, occluded) = self.direct_transmission(origin, source);
+        for (index, (source, clearance_m)) in source_points.iter().copied().enumerate() {
+            // Crossings inside the source clearance are skipped by ending the path before it.
+            let (gain, occluded) = clear_of_source(source, origin, clearance_m)
+                .map_or((BandGain::UNITY, false), |end| {
+                    self.direct_transmission(origin, end)
+                });
             if let Some(accumulator) = output.accumulators.get_mut(index) {
                 accumulator.direct_visible = !occluded;
                 accumulator.add_permeation(gain, 1.0);
@@ -340,7 +341,7 @@ impl AcousticScene2d {
     fn follow_ray(
         &self,
         ray: PrimaryRay,
-        sources: &[Vector2],
+        sources: &[(Vector2, f64)],
         settings: RayTraceSettings,
         rng: &mut TraceRng,
         statistics: &mut EchoStatistics,
@@ -435,7 +436,7 @@ impl AcousticScene2d {
 
             if bounce == 0 && ray.casts_permeation {
                 let start = hit_point.subtract(direction.scale(PERMEATION_BACKOFF_M));
-                for (index, source) in sources.iter().copied().enumerate() {
+                for (index, (source, clearance_m)) in sources.iter().copied().enumerate() {
                     let direct_visible = output
                         .accumulators
                         .get(index)
@@ -443,7 +444,10 @@ impl AcousticScene2d {
                     if direct_visible {
                         continue;
                     }
-                    let (gain, _) = self.direct_transmission(start, source);
+                    let (gain, _) = clear_of_source(source, start, clearance_m)
+                        .map_or((BandGain::UNITY, false), |end| {
+                            self.direct_transmission(start, end)
+                        });
                     if let Some(accumulator) = output.accumulators.get_mut(index) {
                         accumulator.add_permeation(gain, 1.0);
                     }
@@ -525,11 +529,11 @@ impl AcousticScene2d {
     fn discover_sources(
         &self,
         (ray_index, hit_point, hit, travelled_m, energy): (u32, Vector2, Hit, f64, f64),
-        sources: &[Vector2],
+        sources: &[(Vector2, f64)],
         record: bool,
         output: &mut ListenerTrace2d,
     ) {
-        for (index, source) in sources.iter().copied().enumerate() {
+        for (index, (source, clearance_m)) in sources.iter().copied().enumerate() {
             let already_discovered = output
                 .discovered_by_ray
                 .get(index)
@@ -537,7 +541,10 @@ impl AcousticScene2d {
             let faces_source = source.subtract(hit_point).dot(hit.normal) > 0.0;
             if already_discovered
                 || !faces_source
-                || self.segment_is_blocked(hit_point, source, Some(hit.segment_index))
+                // A hit point inside the source clearance is a reflector the clearance ignores.
+                || clear_of_source(source, hit_point, clearance_m).is_none_or(|end| {
+                    self.segment_is_blocked(hit_point, end, Some(hit.segment_index))
+                })
             {
                 continue;
             }
@@ -636,6 +643,14 @@ impl AcousticScene2d {
         );
         best
     }
+}
+
+/// Converts one emitter into its solver position and clearance in meters.
+fn source_point(source: Emitter2d) -> (Vector2, f64) {
+    (
+        Vector2::from_point(source.position()),
+        f64::from(source.clearance_m()),
+    )
 }
 
 /// Inputs that identify one primary ray.

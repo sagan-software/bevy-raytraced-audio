@@ -1,5 +1,6 @@
 //! Transform conversion, propagation queries, and Bevy sink updates for 2d.
 
+use super::clearance::RaytracedAudioClearance2d;
 use super::emitter::RaytracedAudioEmitter2d;
 use super::listener::RaytracedAudioListener2d;
 use super::ray_tracing::{
@@ -35,6 +36,7 @@ type EmitterQueryData = (
     Option<&'static mut RaytracedAudioReflectionPaths2d>,
     Option<&'static mut RaytracedAudioRayResponse2d>,
     Option<&'static RaytracedAudioPlayer>,
+    Option<&'static RaytracedAudioClearance2d>,
 );
 
 /// Selects entities marked as 2D emitters and their adapter state.
@@ -150,7 +152,7 @@ fn has_untraced_emitter(emitters: &EmitterQuery<'_, '_>, indices: &EntityHashMap
 /// Compares current finite sources with cached input, including removals and invalid transforms.
 fn source_positions_changed(emitters: &EmitterQuery<'_, '_>, scratch: &TraceScratch) -> bool {
     let mut valid_count = 0;
-    for (entity, transform, ..) in emitters {
+    for (entity, transform, .., clearance) in emitters {
         let translation = transform.translation();
         if let Ok(position) = Point2::try_new(translation.x, translation.y) {
             valid_count += 1;
@@ -158,7 +160,7 @@ fn source_positions_changed(emitters: &EmitterQuery<'_, '_>, scratch: &TraceScra
                 .indices
                 .get(&entity)
                 .and_then(|index| scratch.sources.get(*index));
-            if previous != Some(&Emitter2d::new(position)) {
+            if previous != Some(&RaytracedAudioClearance2d::emitter(clearance, position)) {
                 return true;
             }
         } else if scratch.indices.contains_key(&entity) {
@@ -210,11 +212,13 @@ fn trace_listener(
         listener_trace.valid = false;
         return;
     };
-    for (entity, transform, ..) in emitters {
+    for (entity, transform, .., clearance) in emitters {
         let translation = transform.translation();
         if let Ok(position) = Point2::try_new(translation.x, translation.y) {
             scratch.indices.insert(entity, scratch.sources.len());
-            scratch.sources.push(Emitter2d::new(position));
+            scratch
+                .sources
+                .push(RaytracedAudioClearance2d::emitter(clearance, position));
         }
     }
     scene.trace_listener(
@@ -337,6 +341,7 @@ fn update_emitter(
         mut reflection_paths,
         ray_response_state,
         player,
+        clearance,
     ): QueryItem<'_, '_, EmitterQueryData>,
 ) {
     let translation = transform.translation();
@@ -352,7 +357,7 @@ fn update_emitter(
             {
                 return cached.response;
             }
-            let emitter = Emitter2d::new(position);
+            let emitter = RaytracedAudioClearance2d::emitter(clearance, position);
             if let Some(paths) = reflection_paths.as_deref_mut() {
                 scene.trace_with_reflection_paths(emitter, *listener, &mut paths.paths)
             } else {

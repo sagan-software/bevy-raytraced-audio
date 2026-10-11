@@ -96,6 +96,28 @@ while traced scalar playback uses the mean low/high muffle gains.
 reflection leg still blocks that reflection, even when its direct transmission
 is nonzero.
 
+A source placed inside or flush against geometry, such as a sound attached
+inside a prop, is occluded by that geometry. Add a clearance radius in meters to
+ignore surfaces near the source:
+
+```rust,ignore
+commands.spawn((
+    RaytracedAudioPlayer::new(asset_server.load("engine.ogg")),
+    RaytracedAudioEmitter3d,
+    RaytracedAudioClearance3d::try_new(0.8)?,
+    Transform::from_xyz(2.0, 0.5, 0.0),
+));
+```
+
+Within the clearance, a surface crossing on the direct path or on the
+source-to-reflection-point leg neither attenuates nor blocks the path, and a
+reflector whose reflection point lies inside the clearance forms no reflection
+path. Surfaces farther away behave as before, so a wall beyond the clearance
+still occludes the source. Emitters without the component use a clearance of
+`0`. The core crate exposes the same option as `Emitter3d::try_with_clearance`
+and `Emitter2d::try_with_clearance`; `cargo run --example source_clearance`
+compares an enclosed source with and without it.
+
 For headphone elevation cues, opt a 3D player into measured binaural rendering:
 `RaytracedAudioPlayer::new(audio).with_binaural(0.22)`. The scale controls distance
 rolloff and replaces Bevy's spatial scale for that voice. The adapter follows

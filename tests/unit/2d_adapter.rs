@@ -691,3 +691,73 @@ fn result_reuse_policy_and_statistics_are_observable() {
     assert_eq!(trace.trace().unwrap().cache_statistics().cold, 2);
     assert_eq!(trace.trace().unwrap().sources(), expected);
 }
+
+/// A clearance component lets an emitter flush against a wall bypass that wall only.
+#[test]
+fn clearance_component_ignores_nearby_surfaces() -> Result<(), bevy_raytraced_audio::GeometryError>
+{
+    use super::{RaytracedAudioClearance2d, RaytracedAudioRayResponse2d};
+    use bevy_raytraced_audio::GeometryError;
+
+    assert_eq!(
+        RaytracedAudioClearance2d::try_new(f32::NAN),
+        Err(GeometryError::NonFiniteValue)
+    );
+    assert_eq!(
+        RaytracedAudioClearance2d::try_new(-1.0),
+        Err(GeometryError::CoefficientOutOfRange)
+    );
+    assert_eq!(RaytracedAudioClearance2d::default().clearance_m(), 0.0);
+    let clearance = RaytracedAudioClearance2d::try_new(1.5)?;
+    assert_eq!(clearance.clearance_m(), 1.5);
+
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(RaytracedAudio2dPlugin::default());
+    app.world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::from_xyz(4.0, 0.0, 0.0)));
+    let plain = app
+        .world_mut()
+        .spawn((RaytracedAudioEmitter2d, Transform::from_xyz(-1.0, 0.0, 0.0)))
+        .id();
+    let cleared = app
+        .world_mut()
+        .spawn((
+            RaytracedAudioEmitter2d,
+            clearance,
+            Transform::from_xyz(-1.0, 0.0, 0.0),
+        ))
+        .id();
+    app.world_mut().spawn((
+        RaytracedAudioSurface2d::new(
+            Vec2::new(0.0, -1.0),
+            Vec2::new(0.0, 1.0),
+            AcousticMaterial::default(),
+        )?,
+        Transform::default(),
+    ));
+
+    // The second update compares the cached sources, including their clearance.
+    app.update();
+    app.update();
+
+    let direct = |entity| {
+        app.world()
+            .get::<RaytracedAudioResponse2d>(entity)
+            .expect("adapter inserts a response component")
+            .response()
+            .direct
+    };
+    assert!(direct(plain).is_occluded());
+    assert!(!direct(cleared).is_occluded());
+    let traced = |entity| {
+        app.world()
+            .get::<RaytracedAudioRayResponse2d>(entity)
+            .expect("the adapter publishes a traced response")
+            .response()
+            .is_direct_visible()
+    };
+    assert!(!traced(plain));
+    assert!(traced(cleared));
+    Ok(())
+}

@@ -73,6 +73,8 @@ bevy-raytraced-audio-examples --example showcase` (or any name in the table).
 Native examples need a display, graphics adapter, and audio output to play.
 The core-only `cargo run --example trace_2d` prints direct transmission and
 first-order reflection geometry without those devices.
+`cargo run --example source_clearance` compares a source enclosed in a box
+with and without a source clearance radius.
 
 ## Build browser examples
 

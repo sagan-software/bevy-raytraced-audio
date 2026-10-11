@@ -69,7 +69,8 @@ impl AcousticScene3d {
         let source = Vector3::from_point(emitter.position());
         let receiver = Vector3::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
-        self.reflection_paths_between(source, receiver, direct_distance)
+        let clearance_m = f64::from(emitter.clearance_m());
+        self.reflection_paths_between(source, receiver, direct_distance, clearance_m)
     }
 
     /// Traces a response while writing first-order paths into caller-owned reusable storage.
@@ -99,6 +100,7 @@ impl AcousticScene3d {
         let source = Vector3::from_point(emitter.position());
         let receiver = Vector3::from_point(listener.position());
         let direct_distance = receiver.subtract(source).length();
+        let clearance_m = f64::from(emitter.clearance_m());
 
         if self.triangles.is_empty() {
             return AcousticResponse::new(
@@ -107,14 +109,18 @@ impl AcousticScene3d {
             );
         }
 
-        let (direct_gain, direct_occluded) = self.direct_transmission(source, receiver);
+        // Crossings inside the source clearance are skipped by starting the path past it.
+        let (direct_gain, direct_occluded) = clear_of_source(source, receiver, clearance_m)
+            .map_or((BandGain::UNITY, false), |start| {
+                self.direct_transmission(start, receiver)
+            });
         let direct = PathResponse::new(direct_distance, direct_gain, direct_occluded);
 
         // Fused accumulation preserves the existing aggregate result for every visible path.
         let mut reflected_low = 0.0;
         let mut reflected_mid = 0.0;
         let mut reflected_high = 0.0;
-        for path in self.reflection_paths_between(source, receiver, direct_distance) {
+        for path in self.reflection_paths_between(source, receiver, direct_distance, clearance_m) {
             let (distance_ratio_squared, reflected_fraction) = path.accumulation_terms();
             // Fused accumulation adds each reflected path with one rounding per band.
             reflected_low = distance_ratio_squared.mul_add(reflected_fraction.low(), reflected_low);
@@ -194,6 +200,7 @@ impl AcousticScene3d {
         source: Vector3,
         receiver: Vector3,
         direct_distance: f64,
+        clearance_m: f64,
     ) -> impl Iterator<Item = ReflectionPath3d> + '_ {
         let acceleration = self.acceleration();
         let candidates = if acceleration.hierarchy.may_have_reflections(Bounds::path_3d(
@@ -216,8 +223,11 @@ impl AcousticScene3d {
                 let (reflection_point, reflected_distance, image_source) =
                     first_reflection(source, receiver, reflector)?;
 
+                // If the reflection point lies inside the source clearance, the reflector is ignored.
+                let leg_start = clear_of_source(source, reflection_point, clearance_m)?;
+
                 // If another triangle crosses either leg, this reflected candidate is omitted.
-                if self.segment_is_occluded(source, reflection_point, Some(index))
+                if self.segment_is_occluded(leg_start, reflection_point, Some(index))
                     || self.segment_is_occluded(reflection_point, receiver, Some(index))
                 {
                     return None;
@@ -399,6 +409,19 @@ pub(crate) struct SceneAcceleration3d {
     pub(crate) hierarchy: BoundingVolumeHierarchy,
     /// Triangles with cached coordinates and material properties.
     pub(crate) triangles: Vec<TriangleGeometry>,
+}
+
+/// Moves a path start out of the source clearance along the path toward `end`.
+///
+/// Returns `source` unchanged for a zero clearance, so queries without clearance keep their
+/// exact results. Returns `None` when `end` lies at or within the clearance.
+pub(crate) fn clear_of_source(source: Vector3, end: Vector3, clearance_m: f64) -> Option<Vector3> {
+    if clearance_m == 0.0 {
+        return Some(source);
+    }
+    let offset = end.subtract(source);
+    let length = offset.length();
+    (length > clearance_m).then(|| source.add(offset.scale(clearance_m / length)))
 }
 
 /// Finds one valid image-source reflection and returns its point and path length.

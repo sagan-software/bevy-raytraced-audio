@@ -1,5 +1,6 @@
 //! Transform conversion, propagation queries, and Bevy sink updates for 3d.
 
+use super::clearance::RaytracedAudioClearance3d;
 use super::emitter::RaytracedAudioEmitter3d;
 use super::listener::RaytracedAudioListener3d;
 use super::ray_tracing::{
@@ -35,6 +36,7 @@ type EmitterQueryData = (
     Option<&'static mut RaytracedAudioReflectionPaths3d>,
     Option<&'static mut RaytracedAudioRayResponse3d>,
     Option<&'static RaytracedAudioPlayer>,
+    Option<&'static RaytracedAudioClearance3d>,
 );
 
 /// Selects entities marked as 3D emitters and their adapter state.
@@ -74,7 +76,7 @@ pub(super) fn update_raytraced_audio(
     // Pose updates run every frame, independently of the more expensive ray-tracing cadence.
     // Ignore transform scale: direction is in head coordinates, distance stays in world units.
     let head = listeners.single().ok().filter(|_| listener.is_some());
-    for (_, transform, _, _, _, _, _, _, player) in &emitters {
+    for (_, transform, _, _, _, _, _, _, player, _) in &emitters {
         if let Some(params) = player.and_then(RaytracedAudioPlayer::binaural_params) {
             if let Some(head) = head {
                 let (_, rotation, translation) = head.to_scale_rotation_translation();
@@ -164,7 +166,7 @@ fn has_untraced_emitter(emitters: &EmitterQuery<'_, '_>, indices: &EntityHashMap
 /// Compares current finite sources with cached input, including removals and invalid transforms.
 fn source_positions_changed(emitters: &EmitterQuery<'_, '_>, scratch: &TraceScratch) -> bool {
     let mut valid_count = 0;
-    for (entity, transform, ..) in emitters {
+    for (entity, transform, .., clearance) in emitters {
         let translation = transform.translation();
         if let Ok(position) = Point3::try_new(translation.x, translation.y, translation.z) {
             valid_count += 1;
@@ -172,7 +174,7 @@ fn source_positions_changed(emitters: &EmitterQuery<'_, '_>, scratch: &TraceScra
                 .indices
                 .get(&entity)
                 .and_then(|index| scratch.sources.get(*index));
-            if previous != Some(&Emitter3d::new(position)) {
+            if previous != Some(&RaytracedAudioClearance3d::emitter(clearance, position)) {
                 return true;
             }
         } else if scratch.indices.contains_key(&entity) {
@@ -224,11 +226,13 @@ fn trace_listener(
         listener_trace.valid = false;
         return;
     };
-    for (entity, transform, ..) in emitters {
+    for (entity, transform, .., clearance) in emitters {
         let translation = transform.translation();
         if let Ok(position) = Point3::try_new(translation.x, translation.y, translation.z) {
             scratch.indices.insert(entity, scratch.sources.len());
-            scratch.sources.push(Emitter3d::new(position));
+            scratch
+                .sources
+                .push(RaytracedAudioClearance3d::emitter(clearance, position));
         }
     }
     scene.trace_listener(
@@ -351,6 +355,7 @@ fn update_emitter(
         mut reflection_paths,
         ray_response_state,
         player,
+        clearance,
     ): QueryItem<'_, '_, EmitterQueryData>,
 ) {
     let translation = transform.translation();
@@ -366,7 +371,7 @@ fn update_emitter(
             {
                 return cached.response;
             }
-            let emitter = Emitter3d::new(position);
+            let emitter = RaytracedAudioClearance3d::emitter(clearance, position);
             if let Some(paths) = reflection_paths.as_deref_mut() {
                 scene.trace_with_reflection_paths(emitter, *listener, &mut paths.paths)
             } else {
