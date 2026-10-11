@@ -862,6 +862,9 @@ fn terrain(
     village: &mut Village,
 ) {
     let grass = Color::srgb(0.34, 0.48, 0.28);
+    // Identical tiles share assets so the renderer can batch them into instanced draws.
+    let tile_mesh = meshes.add(Cuboid::new(2.0, 0.3, 2.0));
+    let tile_material = materials.add(grass);
     // Tiled ground omits the basement footprint instead of sealing its stairs with terrain.
     for x in -11_i16..11 {
         for z in -9_i16..9 {
@@ -876,14 +879,13 @@ fn terrain(
             {
                 continue;
             }
-            let root = cuboid(
-                commands,
-                meshes,
-                materials,
-                center,
-                Vec3::new(2.0, 0.3, 2.0),
-                grass,
-            );
+            let root = commands
+                .spawn((
+                    Mesh3d(tile_mesh.clone()),
+                    MeshMaterial3d(tile_material.clone()),
+                    Transform::from_translation(center),
+                ))
+                .id();
             acoustic_box(
                 commands,
                 root,

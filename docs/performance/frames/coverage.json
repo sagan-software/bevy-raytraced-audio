@@ -36,6 +36,9 @@
   },
   "scope": "Native production Rust core/adapters/compatibility modules in the strict feature matrix; examples, tests and benchmarks excluded consistently.",
   "note": "100% native production line/function coverage; regions reported separately; branch coverage not instrumented.",
-  "base_revision": "ebf5812df35e8fa5642cb305e559484e7ee6fe42",
-  "binaural_source_sha256": "606f1b963c7294a137477eff51d0262437439e909162fb03687c0594229933a5"
+  "base_revision": "29c44ad16447367c559cc3db1b9e99a7916dac46",
+  "production_source_sha256": {
+    "src/binaural.rs": "606f1b963c7294a137477eff51d0262437439e909162fb03687c0594229933a5",
+    "src/bvh.rs": "b39e59495a19288b47eb0199d5eeee82b97ecf0dd04819cc565a6b78e5f6d5c0"
+  }
 }

@@ -126,6 +126,7 @@ impl Bounds {
     }
 
     /// Returns the ray parameter where a ray enters these closed bounds, if before the limit.
+    #[inline]
     fn ray_entry(self, ray: Ray, maximum_parameter: f64) -> Option<f64> {
         let mut entry = 0.0_f64;
         let mut exit = maximum_parameter;

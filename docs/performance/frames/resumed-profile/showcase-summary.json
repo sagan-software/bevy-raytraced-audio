@@ -1,0 +1,17 @@
+{
+  "source_revision": "0bc70a9",
+  "kernel": "7.0.0-38-generic",
+  "profiled": true,
+  "interpretation": "Profiling only; bounded diagnostic tails are not full-window averages; do not use profiled FPS for acceptance.",
+  "gpu_tail_ms": {
+    "showcase": {
+      "render/main_opaque_pass_3d/elapsed_gpu": 15.680185200743484,
+      "render/upscaling/elapsed_gpu": 0.4524604304746628,
+      "render/ui/elapsed_gpu": 0.8040486356487274,
+      "render/bin_unpacking/elapsed_gpu": 0.055116668348693845,
+      "render/clustering/elapsed_gpu": 0.22502361797828674,
+      "render/main_transparent_pass_3d/elapsed_gpu": 0.09441736399250031,
+      "render/early_mesh_preprocessing/elapsed_gpu": 0.08533264149303436
+    }
+  }
+}

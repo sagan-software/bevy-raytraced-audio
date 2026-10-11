@@ -345,3 +345,34 @@ runner records executable hashes and toolchain, alternates reference/candidate o
 checks every measured pair's output, refuses to overwrite evidence, and marks partial
 reports incomplete. Without `--prefix`, it measures the full shared kernel inventory;
 those kernels are distinct from the rendered application workloads.
+
+## Further uncached experiments
+
+The [fresh eighteen-run native comparison](performance/frames/batching-comparison.json)
+on kernel 7.0.0-38 found median FPS ratios of 1.023 (Showcase), 0.994 (2D stress),
+and 0.981 (3D stress). The geometric mean was 0.999, with a conservative repetition
+range of 0.992–1.012. Audio remained active with no measured underruns; result reuse
+was disabled throughout. The old executable was remeasured beside the new one on
+this kernel, rather than comparing with older-kernel results. This failed the 1.5×
+gate, and **zero uncached application-FPS rounds have been accepted**.
+
+Marking the bounds slab test inline changed browser code generation. A focused
+four-case churn run improved by 7.6–16.0%; the repeat within the full twenty-one-case
+browser suite improved those cases by 2.5–10.4%. The full-suite geometric mean was
+1.012×, including individual regressions. All paired checksums matched. These
+[browser samples](performance/frames/inlined-bounds-browser-full.json) measure
+synchronous WASM, with the preview hidden, and establish no browser FPS improvement.
+The matched native drivers had **byte-identical machine-code sections**, so their
+near-unity ratios are measurement variation rather than a native optimization.
+
+The [reflection-projection trial](performance/frames/rejected-projections.json)
+regressed the sixteen propagation Criterion cases to a geometric mean of 0.913×
+(conservative interval 0.900–0.926). Its source patch and the separate 3D application
+preflight are retained, and the production changes were reverted. Correct numerical
+outputs alone do not make an optimization worth retaining.
+
+When building reference and candidate revisions in different worktrees, use separate
+Cargo target/build directories. A shared-target attempt in this experiment incorrectly
+reused the baseline executable for the candidate. Binary hashes caught it before
+measurement; both executables were then rebuilt in isolated directories. The retained
+Criterion results use those corrected builds.

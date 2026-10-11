@@ -1,0 +1,297 @@
+diff --git a/src/bvh.rs b/src/bvh.rs
+index 8aea76a..ae3d01d 100644
+--- a/src/bvh.rs
++++ b/src/bvh.rs
+@@ -126,6 +126,7 @@ impl Bounds {
+     }
+ 
+     /// Returns the ray parameter where a ray enters these closed bounds, if before the limit.
++    #[inline]
+     fn ray_entry(self, ray: Ray, maximum_parameter: f64) -> Option<f64> {
+         let mut entry = 0.0_f64;
+         let mut exit = maximum_parameter;
+@@ -247,6 +248,8 @@ pub(crate) struct BoundingVolumeHierarchy {
+     root: Option<usize>,
+     /// Common plane normal for parallel axis-aligned surfaces, if the scene has one.
+     parallel_axis: Option<Axis>,
++    /// Axes left unchanged by reflection in every scene plane, derived from exact normals.
++    reflection_tangents: u8,
+ }
+ 
+ impl BoundingVolumeHierarchy {
+@@ -299,7 +302,23 @@ impl BoundingVolumeHierarchy {
+         hierarchy
+     }
+ 
+-    /// Rejects parallel wall groups whose tangential bounds cannot contain an image reflection.
++    /// Records coordinates left unchanged by every plane reflection, even for tilted walls.
++    pub(crate) fn with_reflection_normals(
++        mut self,
++        normals: impl IntoIterator<Item = (f64, f64, f64)>,
++    ) -> Self {
++        let mut tangents = 0b111;
++        for (x, y, z) in normals {
++            tangents &= u8::from(x == 0.0) | (u8::from(y == 0.0) << 1) | (u8::from(z == 0.0) << 2);
++            if tangents == 0 {
++                break;
++            }
++        }
++        self.reflection_tangents = tangents;
++        self
++    }
++
++    /// Rejects wall groups whose tangential bounds cannot contain an image reflection.
+     /// A valid image ray is a convex combination of the two tangential endpoint coordinates.
+     /// Other orientations keep the exact per-surface path; padding permits arithmetic rounding.
+     pub(crate) fn may_have_reflections(&self, path: Bounds) -> bool {
+@@ -310,9 +329,6 @@ impl BoundingVolumeHierarchy {
+         if self.surface_indices.len() <= MAX_LEAF_SURFACES {
+             return true;
+         }
+-        let Some(axis) = self.parallel_axis else {
+-            return true;
+-        };
+         let bounds = root.bounds;
+         let overlaps = |minimum: f64, maximum: f64, low: f64, high: f64| {
+             let padding = 64.0
+@@ -324,6 +340,18 @@ impl BoundingVolumeHierarchy {
+                     .max(high.abs());
+             minimum - padding <= high && low <= maximum + padding
+         };
++        if (self.reflection_tangents & 1 != 0
++            && !overlaps(path.min_x, path.max_x, bounds.min_x, bounds.max_x))
++            || (self.reflection_tangents & 2 != 0
++                && !overlaps(path.min_y, path.max_y, bounds.min_y, bounds.max_y))
++            || (self.reflection_tangents & 4 != 0
++                && !overlaps(path.min_z, path.max_z, bounds.min_z, bounds.max_z))
++        {
++            return false;
++        }
++        let Some(axis) = self.parallel_axis else {
++            return true;
++        };
+         match axis {
+             Axis::X => {
+                 overlaps(path.min_y, path.max_y, bounds.min_y, bounds.max_y)
+diff --git a/src/scene2d.rs b/src/scene2d.rs
+index 6a2b5da..f285c59 100644
+--- a/src/scene2d.rs
++++ b/src/scene2d.rs
+@@ -356,8 +356,10 @@ fn first_reflection_geometry(
+     let wall = geometry.edge;
+     let normal = geometry.normal;
+     let normal_squared = geometry.normal_squared;
+-    let source_offset = source.subtract(wall_start).dot(normal);
+-    let receiver_offset = receiver.subtract(wall_start).dot(normal);
++    let source_delta = source.subtract(wall_start);
++    let receiver_delta = receiver.subtract(wall_start);
++    let source_offset = source_delta.dot(normal);
++    let receiver_offset = receiver_delta.dot(normal);
+ 
+     // If either endpoint lies on the surface or they lie on opposite sides, no image-source reflection exists.
+     if source_offset == 0.0
+@@ -367,6 +369,31 @@ fn first_reflection_geometry(
+         return None;
+     }
+ 
++    // Reflection leaves the wall's tangential coordinate unchanged. Its hit point is
++    // between the endpoint projections; two projections beyond the same end cannot hit.
++    // Keep the narrow-phase endpoint tolerance and a generous rounding margin in dot units.
++    let source_tangent = source_delta.dot(wall);
++    let receiver_tangent = receiver_delta.dot(wall);
++    let coordinate_scale = source
++        .x
++        .abs()
++        .max(source.y.abs())
++        .max(receiver.x.abs())
++        .max(receiver.y.abs())
++        .max(wall_start.x.abs())
++        .max(wall_start.y.abs())
++        .max(geometry.end.x.abs())
++        .max(geometry.end.y.abs());
++    let endpoint_padding = PARAMETER_EPSILON * normal_squared;
++    let rounding_padding = 256.0 * f64::EPSILON * coordinate_scale * geometry.length;
++    let lower = -endpoint_padding - rounding_padding;
++    let upper = normal_squared + endpoint_padding + rounding_padding;
++    if (source_tangent < lower && receiver_tangent < lower)
++        || (source_tangent > upper && receiver_tangent > upper)
++    {
++        return None;
++    }
++
+     let image_source = source.subtract(normal.scale(2.0 * source_offset / normal_squared));
+     let image_to_receiver = receiver.subtract(image_source);
+     let denominator = image_to_receiver.cross(wall);
+diff --git a/src/scene3d.rs b/src/scene3d.rs
+index b5bea4e..5b41a40 100644
+--- a/src/scene3d.rs
++++ b/src/scene3d.rs
+@@ -272,6 +272,11 @@ impl AcousticScene3d {
+                     .enumerate()
+                     .map(|(index, triangle)| (index, triangle.bounds)),
+                 SceneDimensions::Three,
++            )
++            .with_reflection_normals(
++                triangles
++                    .iter()
++                    .map(|triangle| (triangle.normal.x, triangle.normal.y, triangle.normal.z)),
+             );
+             SceneAcceleration3d {
+                 hierarchy,
+diff --git a/tests/unit/bvh.rs b/tests/unit/bvh.rs
+index b101441..543dce0 100644
+--- a/tests/unit/bvh.rs
++++ b/tests/unit/bvh.rs
+@@ -415,6 +415,36 @@ fn reflection_bounds_handle_every_axis_and_fallback() {
+     assert!(oblique.may_have_reflections(Bounds::path_3d((100., 100., 100.), (101., 101., 101.))));
+ }
+ 
++/// Exact zero normal coordinates permit conservative projection rejection for tilted groups.
++#[test]
++fn exact_common_tangents_reject_only_impossible_projections() {
++    let build = || {
++        BoundingVolumeHierarchy::build(
++            (0..8).map(|i| (i, Bounds::path_3d((-1., -1., -1.), (1., 1., 1.)))),
++            SceneDimensions::Three,
++        )
++    };
++    for (axis, normal) in [(0, (0., 1., 1.)), (1, (1., 0., 1.)), (2, (1., 1., 0.))] {
++        let tree = build().with_reflection_normals([normal; 8]);
++        assert!(
++            !tree.may_have_reflections(Bounds::path_3d((100., 100., 100.), (101., 101., 101.)))
++        );
++        let mut point = [100.; 3];
++        point[axis] = 0.;
++        assert!(tree.may_have_reflections(Bounds::path_3d(
++            (point[0], point[1], point[2]),
++            (point[0], point[1], point[2])
++        )));
++    }
++    // Near-zero normals do not justify this exact conservative rejection.
++    let tree = build().with_reflection_normals([(1., f64::EPSILON, 1.); 8]);
++    assert!(tree.may_have_reflections(Bounds::path_3d((100., 100., 100.), (101., 101., 101.))));
++    let tree = build().with_reflection_normals([(1., 1., 1.)].into_iter().chain(
++        core::iter::once_with(|| panic!("no common tangent remains")),
++    ));
++    assert!(tree.may_have_reflections(Bounds::path_3d((100., 100., 100.), (101., 101., 101.))));
++}
++
+ /// The same dynamic input type supports empty, planar, oblique and mixed geometry.
+ #[test]
+ fn dynamic_surface_lists_cover_orientation_changes() {
+diff --git a/tests/unit/scene2d.rs b/tests/unit/scene2d.rs
+index 51f9ff3..36e5e75 100644
+--- a/tests/unit/scene2d.rs
++++ b/tests/unit/scene2d.rs
+@@ -312,6 +312,44 @@ fn cached_geometry_matches_scalar_reference() {
+     }
+ }
+ 
++/// Tangent rejection preserves endpoint tolerances and the unpruned scalar oracle at every scale.
++#[test]
++fn tangent_rejection_matches_unpruned_reflections() {
++    let start = point(0., 0.);
++    let end = point(1., 0.);
++    for (a, b) in [
++        (-3., -2.),
++        (2., 3.),
++        (-2., 3.),
++        (-0.5 * PARAMETER_EPSILON, -0.5 * PARAMETER_EPSILON),
++        (1. + 0.5 * PARAMETER_EPSILON, 1. + 0.5 * PARAMETER_EPSILON),
++    ] {
++        let source = point(a, 1.);
++        let receiver = point(b, 2.);
++        assert_eq!(
++            first_reflection(source, receiver, start, end),
++            reference_first_reflection(source, receiver, start, end)
++        );
++    }
++    let mut rng = crate::ray_trace::TraceRng::new(792);
++    for scale in [1.0e-30, 1.0e-10, 1., 1.0e10, 1.0e30] {
++        for _ in 0..1024 {
++            let mut vector = || Vector2 {
++                x: (rng.next_unit() * 20. - 10.) * scale,
++                y: (rng.next_unit() * 20. - 10.) * scale,
++            };
++            let source = vector();
++            let receiver = vector();
++            let start = vector();
++            let end = vector();
++            assert_eq!(
++                first_reflection(source, receiver, start, end),
++                reference_first_reflection(source, receiver, start, end)
++            );
++        }
++    }
++}
++
+ /// Near-parallel image rays and zero-length paths inside surface bounds remain rejected.
+ #[test]
+ fn cached_geometry_parallel_and_zero_length_boundaries() {
+diff --git a/tests/unit/scene3d.rs b/tests/unit/scene3d.rs
+index 565d875..b91cbef 100644
+--- a/tests/unit/scene3d.rs
++++ b/tests/unit/scene3d.rs
+@@ -309,3 +309,62 @@ fn distant_parallel_walls_have_no_reflection_output() {
+         AcousticScene3d::default().trace(emitter, listener)
+     );
+ }
++
++/// Rotating vertical walls preserve their height tangent; adding a horizontal plane invalidates it.
++#[test]
++fn rotating_walls_preserve_exact_reflections_across_scene_mutations() {
++    for phase in 0..8_u16 {
++        let mut scene = AcousticScene3d::default();
++        for i in 0..8_u16 {
++            let angle = f32::from(i + phase) * 0.13;
++            let x = 10. + f32::from(i);
++            let (s, c) = angle.sin_cos();
++            scene.add_triangle(
++                Triangle3d::try_new(
++                    [
++                        Point3::try_new(x - c, 2., -s).unwrap(),
++                        Point3::try_new(x - c, 4., -s).unwrap(),
++                        Point3::try_new(x + c, 4., s).unwrap(),
++                    ],
++                    AcousticMaterial::default(),
++                )
++                .unwrap(),
++            );
++        }
++        let acceleration = scene.acceleration();
++        for y in [-3., 0., 3., 6.] {
++            let source = vector(-1., y, -0.5);
++            let receiver = vector(-2., y + 0.25, 0.5);
++            let may_reflect = acceleration.hierarchy.may_have_reflections(Bounds::path_3d(
++                (source.x, source.y, source.z),
++                (receiver.x, receiver.y, receiver.z),
++            ));
++            if !may_reflect {
++                assert!(
++                    acceleration
++                        .triangles
++                        .iter()
++                        .all(|t| first_reflection(source, receiver, t).is_none())
++                );
++            }
++            if y == 0. {
++                assert!(!may_reflect);
++            }
++        }
++        let source = Emitter3d::new(Point3::try_new(-1., 0., -0.5).unwrap());
++        let receiver = Listener3d::new(Point3::try_new(-2., 0., 0.5).unwrap());
++        assert_eq!(scene.reflection_paths(source, receiver).count(), 0);
++        scene.add_triangle(
++            Triangle3d::try_new(
++                [
++                    Point3::try_new(-4., 6., -4.).unwrap(),
++                    Point3::try_new(4., 6., -4.).unwrap(),
++                    Point3::try_new(0., 6., 4.).unwrap(),
++                ],
++                AcousticMaterial::default(),
++            )
++            .unwrap(),
++        );
++        assert!(scene.reflection_paths(source, receiver).count() > 0);
++    }
++}

@@ -1,0 +1,1658 @@
+{
+  "propagation_reflection_path_iteration/3d_single_reflector/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 105.1340181225288,
+        "upper_bound": 106.20167103163361
+      },
+      "point_estimate": 105.6725488588336,
+      "standard_error": 0.2731034917300759
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 104.31708792750027,
+        "upper_bound": 107.14142669296515
+      },
+      "point_estimate": 105.81097456575682,
+      "standard_error": 0.9890919306392377
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.21013858657882964,
+        "upper_bound": 2.5124577469582294
+      },
+      "point_estimate": 2.1056534153467137,
+      "standard_error": 0.7191215612228273
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 105.05806737909833,
+        "upper_bound": 106.44731054995066
+      },
+      "point_estimate": 105.71649276119217,
+      "standard_error": 0.3550534081830184
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.34222042962939,
+        "upper_bound": 1.6306565730456055
+      },
+      "point_estimate": 1.5254947692609069,
+      "standard_error": 0.07352972842535825
+    }
+  },
+  "propagation_reflection_path_iteration/3d_single_reflector/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 104.49581446710461,
+        "upper_bound": 105.23468323110562
+      },
+      "point_estimate": 104.8372582794737,
+      "standard_error": 0.1890856505965348
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 104.2775830366532,
+        "upper_bound": 104.52451099111697
+      },
+      "point_estimate": 104.3572489459563,
+      "standard_error": 0.0679493179156321
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.11296489894020183,
+        "upper_bound": 0.4842535162207218
+      },
+      "point_estimate": 0.23291052406621238,
+      "standard_error": 0.1001951038835807
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 104.40586171766978,
+        "upper_bound": 105.33794971567613
+      },
+      "point_estimate": 104.79716176907864,
+      "standard_error": 0.23946440239936104
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.6088805450746532,
+        "upper_bound": 1.3264794895843945
+      },
+      "point_estimate": 1.0538710773985,
+      "standard_error": 0.19006458449994124
+    }
+  },
+  "propagation_reflection_path_iteration/3d_single_reflector_with_path_output/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 117.12510465967063,
+        "upper_bound": 117.47464591432637
+      },
+      "point_estimate": 117.28020011656699,
+      "standard_error": 0.08971850278179594
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 117.06315993087864,
+        "upper_bound": 117.32797940532126
+      },
+      "point_estimate": 117.15663248073295,
+      "standard_error": 0.06527026841631837
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.13617281424168756,
+        "upper_bound": 0.39497721100857386
+      },
+      "point_estimate": 0.2524989418467594,
+      "standard_error": 0.06490850104823634
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 117.12634032530273,
+        "upper_bound": 117.35401060027046
+      },
+      "point_estimate": 117.23649926154457,
+      "standard_error": 0.05820455243654771
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.2360288217825981,
+        "upper_bound": 0.7391088679927341
+      },
+      "point_estimate": 0.5024198174567357,
+      "standard_error": 0.1426374846868946
+    }
+  },
+  "propagation_reflection_path_iteration/3d_single_reflector_with_path_output/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 116.08535094717764,
+        "upper_bound": 116.52486226367051
+      },
+      "point_estimate": 116.26412252727503,
+      "standard_error": 0.1154666066001744
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 116.0278435356225,
+        "upper_bound": 116.19647156249752
+      },
+      "point_estimate": 116.10720328237801,
+      "standard_error": 0.046855405660701836
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.10210505726530848,
+        "upper_bound": 0.3496965888600616
+      },
+      "point_estimate": 0.18172097780225735,
+      "standard_error": 0.06319420016109299
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 116.10986509396673,
+        "upper_bound": 116.71577914537785
+      },
+      "point_estimate": 116.32487491220424,
+      "standard_error": 0.16507812922014958
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.20132216489255172,
+        "upper_bound": 1.0125601531270034
+      },
+      "point_estimate": 0.6413737272807211,
+      "standard_error": 0.25241123225580503
+    }
+  },
+  "propagation_reflection_path_iteration/2d_single_reflector_with_path_output/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 116.49443550117499,
+        "upper_bound": 117.38521139816719
+      },
+      "point_estimate": 116.91810282860415,
+      "standard_error": 0.22801948932782073
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 116.2554796541915,
+        "upper_bound": 117.11537661442449
+      },
+      "point_estimate": 116.66032147046052,
+      "standard_error": 0.19795823136813606
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.5382551021774729,
+        "upper_bound": 1.4380759220977457
+      },
+      "point_estimate": 0.9465631431961598,
+      "standard_error": 0.22906590627779697
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 116.61132035421184,
+        "upper_bound": 117.35186423551424
+      },
+      "point_estimate": 116.93006201167196,
+      "standard_error": 0.1889447329992565
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.7783586862649008,
+        "upper_bound": 1.5930268254269346
+      },
+      "point_estimate": 1.2649279096954837,
+      "standard_error": 0.2032779439017674
+    }
+  },
+  "propagation_reflection_path_iteration/2d_single_reflector_with_path_output/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 102.74448478051714,
+        "upper_bound": 104.99768620829582
+      },
+      "point_estimate": 103.72185326937282,
+      "standard_error": 0.5808816781337411
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 102.08660048545045,
+        "upper_bound": 104.64436601251903
+      },
+      "point_estimate": 102.98678897998889,
+      "standard_error": 0.8426160229865286
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.0033648418844117,
+        "upper_bound": 3.0691608627626694
+      },
+      "point_estimate": 2.5656533160750543,
+      "standard_error": 0.5199637085214533
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 101.78059449744079,
+        "upper_bound": 102.91849549225839
+      },
+      "point_estimate": 102.26315053694852,
+      "standard_error": 0.29194412128780345
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.5138206391699838,
+        "upper_bound": 4.920466542571668
+      },
+      "point_estimate": 3.2445885769855236,
+      "standard_error": 1.0444962631012942
+    }
+  },
+  "propagation_reflection_path_iteration/2d_single_reflector/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 75.91336483531565,
+        "upper_bound": 76.53458066029944
+      },
+      "point_estimate": 76.20901233920947,
+      "standard_error": 0.15925611657753191
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 75.65246208710062,
+        "upper_bound": 76.05348366636359
+      },
+      "point_estimate": 75.8330147123148,
+      "standard_error": 0.12632048991836192
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.18888144526164494,
+        "upper_bound": 0.8544543277337328
+      },
+      "point_estimate": 0.41852854324182726,
+      "standard_error": 0.16965512566450713
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 75.80171478639416,
+        "upper_bound": 76.426192141724
+      },
+      "point_estimate": 76.06640933429449,
+      "standard_error": 0.16016429728301546
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.6167303675393688,
+        "upper_bound": 1.0522601061658317
+      },
+      "point_estimate": 0.8900105751542187,
+      "standard_error": 0.11274667261365072
+    }
+  },
+  "propagation_reflection_path_iteration/2d_single_reflector/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 61.649575065831634,
+        "upper_bound": 61.918036523797724
+      },
+      "point_estimate": 61.77446304606613,
+      "standard_error": 0.06844393680270423
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 61.626934751655966,
+        "upper_bound": 61.82236472246706
+      },
+      "point_estimate": 61.676174047436504,
+      "standard_error": 0.05835464098890351
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.13940787750840403,
+        "upper_bound": 0.36719086234537646
+      },
+      "point_estimate": 0.23780081432944875,
+      "standard_error": 0.05603461235322645
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 61.65858181719634,
+        "upper_bound": 61.95180704721484
+      },
+      "point_estimate": 61.78220493459765,
+      "standard_error": 0.07851793712268094
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.22018553820244544,
+        "upper_bound": 0.510114616846098
+      },
+      "point_estimate": 0.3808317185051825,
+      "standard_error": 0.07551749471974332
+    }
+  },
+  "propagation_2d_stress_miss/32/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.20470068618984,
+        "upper_bound": 41.57812086372352
+      },
+      "point_estimate": 41.38531234423215,
+      "standard_error": 0.09562346888542934
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.096487562722096,
+        "upper_bound": 41.3121889546757
+      },
+      "point_estimate": 41.12820663916716,
+      "standard_error": 0.08015095696022417
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.07029681813913558,
+        "upper_bound": 0.6373462929824969
+      },
+      "point_estimate": 0.18658580711415287,
+      "standard_error": 0.1301757152220978
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.43251011864007,
+        "upper_bound": 41.939819897444536
+      },
+      "point_estimate": 41.71368551277381,
+      "standard_error": 0.13027823936296623
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.40084290782093973,
+        "upper_bound": 0.6128502325973876
+      },
+      "point_estimate": 0.5317549035394017,
+      "standard_error": 0.053306606792599985
+    }
+  },
+  "propagation_2d_stress_miss/32/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 45.20733405478926,
+        "upper_bound": 48.483975881844216
+      },
+      "point_estimate": 46.8185021577091,
+      "standard_error": 0.8357416396972706
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 43.220639954122476,
+        "upper_bound": 49.11030509700586
+      },
+      "point_estimate": 45.76274889971559,
+      "standard_error": 1.4137116855800935
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2.528639112667938,
+        "upper_bound": 7.221669083867125
+      },
+      "point_estimate": 5.43321876677232,
+      "standard_error": 1.2506093401304377
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 44.63868562000506,
+        "upper_bound": 47.917400088958246
+      },
+      "point_estimate": 46.01570481171945,
+      "standard_error": 0.8394108455760037
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 3.6543679585256705,
+        "upper_bound": 5.387550369285872
+      },
+      "point_estimate": 4.649093128939653,
+      "standard_error": 0.4420225325383002
+    }
+  },
+  "propagation_2d_stress_miss/256/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.30554228506956,
+        "upper_bound": 41.74750364729202
+      },
+      "point_estimate": 41.519291062315006,
+      "standard_error": 0.11328092933021212
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.070176185074374,
+        "upper_bound": 41.747156026765964
+      },
+      "point_estimate": 41.085140774208824,
+      "standard_error": 0.17778026246633016
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.04838737271259995,
+        "upper_bound": 0.9139327344945977
+      },
+      "point_estimate": 0.09891742095086116,
+      "standard_error": 0.21192452643391768
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.0722548442799,
+        "upper_bound": 41.19560253485976
+      },
+      "point_estimate": 41.118379485611975,
+      "standard_error": 0.031691475551170745
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.48432647782565813,
+        "upper_bound": 0.7269961428031662
+      },
+      "point_estimate": 0.6343452184438984,
+      "standard_error": 0.06178310860993085
+    }
+  },
+  "propagation_2d_stress_miss/256/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 40.28097490175923,
+        "upper_bound": 40.38454361763701
+      },
+      "point_estimate": 40.33417011657484,
+      "standard_error": 0.026201339706737877
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 40.305429814765574,
+        "upper_bound": 40.37078659347559
+      },
+      "point_estimate": 40.34497241604675,
+      "standard_error": 0.016829565540557805
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.03330786366528906,
+        "upper_bound": 0.10458756918473275
+      },
+      "point_estimate": 0.06564662081508829,
+      "standard_error": 0.01775636328436638
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 40.32335786130721,
+        "upper_bound": 40.374909931998936
+      },
+      "point_estimate": 40.34833745229617,
+      "standard_error": 0.013077139528380107
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.06323683794166028,
+        "upper_bound": 0.2102335120549845
+      },
+      "point_estimate": 0.14520783416855523,
+      "standard_error": 0.038018872481471976
+    }
+  },
+  "propagation_2d_stress_miss/1024/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.35606686817188,
+        "upper_bound": 41.99007759191565
+      },
+      "point_estimate": 41.638095666415666,
+      "standard_error": 0.16263848034452558
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.13533420692451,
+        "upper_bound": 41.6627935493146
+      },
+      "point_estimate": 41.16411929506079,
+      "standard_error": 0.1465522550123116
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.054558553249723904,
+        "upper_bound": 0.8531324689758945
+      },
+      "point_estimate": 0.17997278935888256,
+      "standard_error": 0.18869908474749372
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.130321346023585,
+        "upper_bound": 42.29937009197178
+      },
+      "point_estimate": 41.533227494057456,
+      "standard_error": 0.33875977615482294
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.4693047383990261,
+        "upper_bound": 1.3001011711951516
+      },
+      "point_estimate": 0.909733292679323,
+      "standard_error": 0.23899820323763168
+    }
+  },
+  "propagation_2d_stress_miss/1024/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 40.64266226169011,
+        "upper_bound": 41.32949891579115
+      },
+      "point_estimate": 40.936308896341345,
+      "standard_error": 0.17719337505302732
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 40.472729523705475,
+        "upper_bound": 40.82837008745498
+      },
+      "point_estimate": 40.53294664170103,
+      "standard_error": 0.08748023729203311
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.08626415057805914,
+        "upper_bound": 0.6353124551816133
+      },
+      "point_estimate": 0.20681915003225282,
+      "standard_error": 0.13632638671535222
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 40.841312774911756,
+        "upper_bound": 42.014318324258944
+      },
+      "point_estimate": 41.34370270708044,
+      "standard_error": 0.30754514698971824
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.3961414165412479,
+        "upper_bound": 1.4744152916483673
+      },
+      "point_estimate": 0.9823101758270201,
+      "standard_error": 0.31748384994960244
+    }
+  },
+  "propagation_3d_stress_miss/32/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.72933949715542,
+        "upper_bound": 39.124932969087475
+      },
+      "point_estimate": 38.9330265240935,
+      "standard_error": 0.1009117413807718
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.98633719311919,
+        "upper_bound": 39.235596053262924
+      },
+      "point_estimate": 39.05299636387076,
+      "standard_error": 0.07561963106540327
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.18495915682896427,
+        "upper_bound": 0.6656700340883226
+      },
+      "point_estimate": 0.36616977611810114,
+      "standard_error": 0.12106532584529922
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.418595202125374,
+        "upper_bound": 38.94623943367071
+      },
+      "point_estimate": 38.68436021400866,
+      "standard_error": 0.13498450687864905
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.40046004825701564,
+        "upper_bound": 0.6726123381129047
+      },
+      "point_estimate": 0.5617366421812875,
+      "standard_error": 0.06914335593833205
+    }
+  },
+  "propagation_3d_stress_miss/32/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.65469318434589,
+        "upper_bound": 39.08496131454577
+      },
+      "point_estimate": 38.86968868696658,
+      "standard_error": 0.11026121691736926
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.36780892801977,
+        "upper_bound": 39.344034256684864
+      },
+      "point_estimate": 38.75835495829472,
+      "standard_error": 0.31585357177936546
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.29485764313126783,
+        "upper_bound": 0.9679805304207084
+      },
+      "point_estimate": 0.8599580394129541,
+      "standard_error": 0.19711374060762596
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.57560181224208,
+        "upper_bound": 39.10052857048937
+      },
+      "point_estimate": 38.83142277085399,
+      "standard_error": 0.1339373000688307
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.5296845682717716,
+        "upper_bound": 0.6650306164709706
+      },
+      "point_estimate": 0.6135017188896894,
+      "standard_error": 0.03452118613256384
+    }
+  },
+  "propagation_3d_stress_miss/256/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.630621407586275,
+        "upper_bound": 39.2679322346339
+      },
+      "point_estimate": 38.92724645196892,
+      "standard_error": 0.1625321368032324
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.31867859449122,
+        "upper_bound": 39.29070166415558
+      },
+      "point_estimate": 39.02989610921826,
+      "standard_error": 0.22255670499352126
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.3011415601954563,
+        "upper_bound": 1.1559914704240688
+      },
+      "point_estimate": 0.7122298978044094,
+      "standard_error": 0.24559556817859457
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.24620918274818,
+        "upper_bound": 38.77246594533774
+      },
+      "point_estimate": 38.49390444763806,
+      "standard_error": 0.1346309375287574
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.5656854069735954,
+        "upper_bound": 1.2750352763461876
+      },
+      "point_estimate": 0.9055046358773474,
+      "standard_error": 0.2039879471749724
+    }
+  },
+  "propagation_3d_stress_miss/256/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 39.06047703234268,
+        "upper_bound": 39.50148844651066
+      },
+      "point_estimate": 39.286784220532375,
+      "standard_error": 0.11247433977975364
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 39.23344537968415,
+        "upper_bound": 39.55713668727403
+      },
+      "point_estimate": 39.513801996569555,
+      "standard_error": 0.08416141883186883
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.09582763493045256,
+        "upper_bound": 0.6623957702144397
+      },
+      "point_estimate": 0.3863365588687646,
+      "standard_error": 0.13245554485155392
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.792382713849356,
+        "upper_bound": 39.517479929743615
+      },
+      "point_estimate": 39.14718326759764,
+      "standard_error": 0.185427449194105
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.43139016528431146,
+        "upper_bound": 0.7603201415269292
+      },
+      "point_estimate": 0.6239837621774689,
+      "standard_error": 0.08312870811794565
+    }
+  },
+  "propagation_3d_stress_miss/1024/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 42.60527571070599,
+        "upper_bound": 43.876390009490585
+      },
+      "point_estimate": 43.227336268442635,
+      "standard_error": 0.3256459719386633
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 42.16108537489272,
+        "upper_bound": 43.57014772047541
+      },
+      "point_estimate": 43.23084026585785,
+      "standard_error": 0.38419043518233603
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.9759117762636765,
+        "upper_bound": 2.446036757957748
+      },
+      "point_estimate": 1.9562052707991286,
+      "standard_error": 0.37730667432925347
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.98021618052085,
+        "upper_bound": 44.145827937611756
+      },
+      "point_estimate": 42.96027378984655,
+      "standard_error": 0.5543324406212123
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.3178380025513174,
+        "upper_bound": 2.212762757327577
+      },
+      "point_estimate": 1.8160981779587744,
+      "standard_error": 0.22919257716694594
+    }
+  },
+  "propagation_3d_stress_miss/1024/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.897296397101705,
+        "upper_bound": 39.32309352342777
+      },
+      "point_estimate": 39.107919253656156,
+      "standard_error": 0.1092628637348771
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.64108749100769,
+        "upper_bound": 39.59197446890118
+      },
+      "point_estimate": 38.9203848376856,
+      "standard_error": 0.29067270562492203
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.2804531149043268,
+        "upper_bound": 0.9452409875823196
+      },
+      "point_estimate": 0.7252475345427167,
+      "standard_error": 0.18962550708066206
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 38.640010854255145,
+        "upper_bound": 39.10171587601111
+      },
+      "point_estimate": 38.85237270247061,
+      "standard_error": 0.11852314314551453
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.5127419343131134,
+        "upper_bound": 0.6728462537855583
+      },
+      "point_estimate": 0.6094577597756806,
+      "standard_error": 0.04078466580965615
+    }
+  },
+  "propagation_single_source_listener/2d_direct_occluded/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 119.3347971479854,
+        "upper_bound": 120.51561289096546
+      },
+      "point_estimate": 119.9264204507219,
+      "standard_error": 0.3008516661091208
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 118.49818377875202,
+        "upper_bound": 121.11822832030627
+      },
+      "point_estimate": 120.42278249260747,
+      "standard_error": 0.7642085847095355
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.9024717311298036,
+        "upper_bound": 2.7064335298022706
+      },
+      "point_estimate": 2.3233147150935745,
+      "standard_error": 0.464940317528382
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 118.63532242989598,
+        "upper_bound": 120.22921438269027
+      },
+      "point_estimate": 119.32360658539957,
+      "standard_error": 0.40771090136395904
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.416114300833884,
+        "upper_bound": 1.8354457012207481
+      },
+      "point_estimate": 1.6690866639516129,
+      "standard_error": 0.10670843752286004
+    }
+  },
+  "propagation_single_source_listener/2d_direct_occluded/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 92.04825586410223,
+        "upper_bound": 92.91376319523819
+      },
+      "point_estimate": 92.46364821069001,
+      "standard_error": 0.22012129029587782
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 92.14898950314286,
+        "upper_bound": 92.77484514336855
+      },
+      "point_estimate": 92.47364525639287,
+      "standard_error": 0.15373964493401412
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.4026023445943502,
+        "upper_bound": 1.1527647472573264
+      },
+      "point_estimate": 0.6677880158890016,
+      "standard_error": 0.1873620812559944
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 92.43081776305792,
+        "upper_bound": 92.95894303440836
+      },
+      "point_estimate": 92.70063042956217,
+      "standard_error": 0.13465517954681758
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.6575459139393194,
+        "upper_bound": 1.7043440569039057
+      },
+      "point_estimate": 1.224748481978948,
+      "standard_error": 0.27153096884371264
+    }
+  },
+  "propagation_single_source_listener/2d_direct_open/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 10.163567771218716,
+        "upper_bound": 10.265800906134091
+      },
+      "point_estimate": 10.215274562725549,
+      "standard_error": 0.026381868298565647
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 10.215106630541921,
+        "upper_bound": 10.28638990824713
+      },
+      "point_estimate": 10.257268793049441,
+      "standard_error": 0.02033192126765553
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.03619017958892893,
+        "upper_bound": 0.20471370793042235
+      },
+      "point_estimate": 0.09368417916255092,
+      "standard_error": 0.04173979368863137
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 10.194772646800729,
+        "upper_bound": 10.286973418570643
+      },
+      "point_estimate": 10.247051281808828,
+      "standard_error": 0.024016140880145195
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.11060549334631906,
+        "upper_bound": 0.1731230772819552
+      },
+      "point_estimate": 0.14718976745166068,
+      "standard_error": 0.01591943496591509
+    }
+  },
+  "propagation_single_source_listener/2d_direct_open/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 9.167961703288102,
+        "upper_bound": 9.453633730652589
+      },
+      "point_estimate": 9.302002627949118,
+      "standard_error": 0.07310280307610656
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 9.027263788571489,
+        "upper_bound": 9.327389750009111
+      },
+      "point_estimate": 9.107191604847037,
+      "standard_error": 0.08983578009420837
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.07098906752174973,
+        "upper_bound": 0.4610874995741435
+      },
+      "point_estimate": 0.21595915760191842,
+      "standard_error": 0.10842821426050514
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 9.038823606134905,
+        "upper_bound": 9.149424582985262
+      },
+      "point_estimate": 9.087644281625206,
+      "standard_error": 0.02849285613960731
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.2719207671136548,
+        "upper_bound": 0.5007658753824856
+      },
+      "point_estimate": 0.4080654590011558,
+      "standard_error": 0.05849952022415718
+    }
+  },
+  "propagation_single_source_listener/2d_first_order_reflection/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 117.35446129105779,
+        "upper_bound": 118.03170039762631
+      },
+      "point_estimate": 117.66902559256292,
+      "standard_error": 0.17427453233481485
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 117.2644511048425,
+        "upper_bound": 117.47299858956276
+      },
+      "point_estimate": 117.37120219032606,
+      "standard_error": 0.06938622907820421
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.15826915652808526,
+        "upper_bound": 0.4823431247230193
+      },
+      "point_estimate": 0.24115774607120052,
+      "standard_error": 0.08509906417538604
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 117.37680459859006,
+        "upper_bound": 118.30984307773667
+      },
+      "point_estimate": 117.79435122796052,
+      "standard_error": 0.2392636428078565
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.5358426435121987,
+        "upper_bound": 1.2562653717493855
+      },
+      "point_estimate": 0.967005823027841,
+      "standard_error": 0.183431675311872
+    }
+  },
+  "propagation_single_source_listener/2d_first_order_reflection/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 88.96071077413227,
+        "upper_bound": 89.54854690633964
+      },
+      "point_estimate": 89.25142265616729,
+      "standard_error": 0.1501053592029209
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 88.73843908042775,
+        "upper_bound": 89.54398500978144
+      },
+      "point_estimate": 89.05695144901648,
+      "standard_error": 0.23068306663222965
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.29781606420471984,
+        "upper_bound": 1.1226544927525626
+      },
+      "point_estimate": 0.6651824169901128,
+      "standard_error": 0.2193715227995713
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 89.02176990070659,
+        "upper_bound": 89.65097534775188
+      },
+      "point_estimate": 89.31844825969199,
+      "standard_error": 0.1618264088587211
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.599100171221149,
+        "upper_bound": 1.0246925847153823
+      },
+      "point_estimate": 0.8351648758999465,
+      "standard_error": 0.10901999371423665
+    }
+  },
+  "propagation_single_source_listener/3d_first_order_reflection/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 116.75506820757127,
+        "upper_bound": 117.84553173438472
+      },
+      "point_estimate": 117.30133049369464,
+      "standard_error": 0.27719771473059185
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 117.28540551203292,
+        "upper_bound": 117.63391528059118
+      },
+      "point_estimate": 117.45993365454052,
+      "standard_error": 0.111524162007416
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.2609820491343235,
+        "upper_bound": 0.9105574788089167
+      },
+      "point_estimate": 0.5878680265657631,
+      "standard_error": 0.16986661938003003
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 116.16702857151118,
+        "upper_bound": 118.35620100143692
+      },
+      "point_estimate": 117.20094329958683,
+      "standard_error": 0.5633944382280103
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.8738645247237681,
+        "upper_bound": 2.075070448728257
+      },
+      "point_estimate": 1.5466149775364035,
+      "standard_error": 0.30940734644594103
+    }
+  },
+  "propagation_single_source_listener/3d_first_order_reflection/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 99.24085338405378,
+        "upper_bound": 99.7634889713214
+      },
+      "point_estimate": 99.49308552266537,
+      "standard_error": 0.13329183265260078
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 99.0945583049297,
+        "upper_bound": 99.63065896155678
+      },
+      "point_estimate": 99.44422365784855,
+      "standard_error": 0.12871060890573652
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.31791901279765217,
+        "upper_bound": 1.0555371109679703
+      },
+      "point_estimate": 0.6897794073429511,
+      "standard_error": 0.18506166356196538
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 99.16757523365648,
+        "upper_bound": 99.85157104565698
+      },
+      "point_estimate": 99.47020758128586,
+      "standard_error": 0.17772732077878928
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.5257771727956436,
+        "upper_bound": 0.8981852423288239
+      },
+      "point_estimate": 0.7399586641916405,
+      "standard_error": 0.09495397163652683
+    }
+  },
+  "propagation_single_source_listener/3d_direct_open/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 13.51556892461887,
+        "upper_bound": 13.681893019556945
+      },
+      "point_estimate": 13.598387962622375,
+      "standard_error": 0.042400320155894726
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 13.525251972935294,
+        "upper_bound": 13.688913873417299
+      },
+      "point_estimate": 13.607308494173925,
+      "standard_error": 0.0425815810228776
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.11424558452827557,
+        "upper_bound": 0.43688914063057116
+      },
+      "point_estimate": 0.2630524280282556,
+      "standard_error": 0.08110370058237275
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 13.445485816678762,
+        "upper_bound": 13.666056633647058
+      },
+      "point_estimate": 13.554857020863734,
+      "standard_error": 0.05620954621860837
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.1868992216134013,
+        "upper_bound": 0.2714114864373365
+      },
+      "point_estimate": 0.23582661057350696,
+      "standard_error": 0.02156764833072004
+    }
+  },
+  "propagation_single_source_listener/3d_direct_open/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 12.45744273046626,
+        "upper_bound": 12.595212712518538
+      },
+      "point_estimate": 12.524245405610426,
+      "standard_error": 0.0351244812256413
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 12.390318201072855,
+        "upper_bound": 12.595661923939424
+      },
+      "point_estimate": 12.532050431384315,
+      "standard_error": 0.04949713973008709
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.09957965297079588,
+        "upper_bound": 0.31839239321000534
+      },
+      "point_estimate": 0.20019764604838236,
+      "standard_error": 0.052628788574423366
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 12.378237488357513,
+        "upper_bound": 12.514128633962633
+      },
+      "point_estimate": 12.438847531822198,
+      "standard_error": 0.03495953779498727
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.1414705046631697,
+        "upper_bound": 0.2346330464863863
+      },
+      "point_estimate": 0.19498040251501045,
+      "standard_error": 0.023841062420786544
+    }
+  },
+  "propagation_single_source_listener/3d_direct_occluded/projection-after/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 121.09597501484701,
+        "upper_bound": 127.57255934160636
+      },
+      "point_estimate": 124.15775140773103,
+      "standard_error": 1.6715756774872956
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 118.22391492350195,
+        "upper_bound": 121.0160218035163
+      },
+      "point_estimate": 119.13051940891046,
+      "standard_error": 1.1241345402588647
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.051721743536621,
+        "upper_bound": 5.799369862854472
+      },
+      "point_estimate": 2.1420769910839064,
+      "standard_error": 1.5453446631167924
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 125.71996446378047,
+        "upper_bound": 134.16441104090237
+      },
+      "point_estimate": 130.34654762524036,
+      "standard_error": 2.1545903842229617
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 6.385097691131174,
+        "upper_bound": 11.111054079922376
+      },
+      "point_estimate": 9.328704472651875,
+      "standard_error": 1.2163558840788908
+    }
+  },
+  "propagation_single_source_listener/3d_direct_occluded/projection-before/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 99.16032764192013,
+        "upper_bound": 99.72284549291534
+      },
+      "point_estimate": 99.43554593778312,
+      "standard_error": 0.14343744974080283
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 99.02151114282431,
+        "upper_bound": 99.54989442174573
+      },
+      "point_estimate": 99.28960487225193,
+      "standard_error": 0.12885993105835328
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.26763956601016126,
+        "upper_bound": 0.8505315711590539
+      },
+      "point_estimate": 0.49344177451396204,
+      "standard_error": 0.15538791734550497
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 99.19688112494974,
+        "upper_bound": 99.54032126182435
+      },
+      "point_estimate": 99.3535330278116,
+      "standard_error": 0.08781792938953932
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.5032950708115659,
+        "upper_bound": 1.035942996089082
+      },
+      "point_estimate": 0.797798945065288,
+      "standard_error": 0.13542412847774593
+    }
+  },
+  "comparison": {
+    "case_count": 16,
+    "geomean_speedup": 0.9127497228872256,
+    "conservative_lower": 0.9001575575407863,
+    "conservative_upper": 0.9256473636353713,
+    "cases": [
+      {
+        "case": "propagation_2d_stress_miss/1024",
+        "before_ns": 40.936308896341345,
+        "after_ns": 41.638095666415666,
+        "speedup": 0.9831455603614369,
+        "lower": 0.9679111016816755,
+        "upper": 0.9993575802925017
+      },
+      {
+        "case": "propagation_2d_stress_miss/256",
+        "before_ns": 40.33417011657484,
+        "after_ns": 41.519291062315006,
+        "speedup": 0.9714561372456612,
+        "lower": 0.9648714625448528,
+        "upper": 0.9777027823269745
+      },
+      {
+        "case": "propagation_2d_stress_miss/32",
+        "before_ns": 46.8185021577091,
+        "after_ns": 41.38531234423215,
+        "speedup": 1.131283044774076,
+        "lower": 1.0872866092953275,
+        "upper": 1.176661280738149
+      },
+      {
+        "case": "propagation_3d_stress_miss/1024",
+        "before_ns": 39.107919253656156,
+        "after_ns": 43.227336268442635,
+        "speedup": 0.9047034268037055,
+        "lower": 0.886519980077853,
+        "upper": 0.922963010272142
+      },
+      {
+        "case": "propagation_3d_stress_miss/256",
+        "before_ns": 39.286784220532375,
+        "after_ns": 38.92724645196892,
+        "speedup": 1.0092361469493374,
+        "lower": 0.9947169308266187,
+        "upper": 1.0225434385260332
+      },
+      {
+        "case": "propagation_3d_stress_miss/32",
+        "before_ns": 38.86968868696658,
+        "after_ns": 38.9330265240935,
+        "speedup": 0.9983731591714885,
+        "lower": 0.9879810711723616,
+        "upper": 1.0091822329533007
+      },
+      {
+        "case": "propagation_reflection_path_iteration/2d_single_reflector",
+        "before_ns": 61.77446304606613,
+        "after_ns": 76.20901233920947,
+        "speedup": 0.8105926208714718,
+        "lower": 0.8055126785036524,
+        "upper": 0.8156407854943725
+      },
+      {
+        "case": "propagation_reflection_path_iteration/2d_single_reflector_with_path_output",
+        "before_ns": 103.72185326937282,
+        "after_ns": 116.91810282860415,
+        "speedup": 0.8871325377339012,
+        "lower": 0.8752762256568323,
+        "upper": 0.9013107429258866
+      },
+      {
+        "case": "propagation_reflection_path_iteration/3d_single_reflector",
+        "before_ns": 104.8372582794737,
+        "after_ns": 105.6725488588336,
+        "speedup": 0.9920954818599508,
+        "lower": 0.9839375732231097,
+        "upper": 1.0009574932108036
+      },
+      {
+        "case": "propagation_reflection_path_iteration/3d_single_reflector_with_path_output",
+        "before_ns": 116.26412252727503,
+        "after_ns": 117.28020011656699,
+        "speedup": 0.9913363245604795,
+        "lower": 0.9881736611646232,
+        "upper": 0.9948752029059506
+      },
+      {
+        "case": "propagation_single_source_listener/2d_direct_occluded",
+        "before_ns": 92.46364821069001,
+        "after_ns": 119.9264204507219,
+        "speedup": 0.7710031522927309,
+        "lower": 0.7637869787658251,
+        "upper": 0.7785974034046176
+      },
+      {
+        "case": "propagation_single_source_listener/2d_direct_open",
+        "before_ns": 9.302002627949118,
+        "after_ns": 10.215274562725549,
+        "speedup": 0.9105974167244743,
+        "lower": 0.8930585920295804,
+        "upper": 0.9301491310387554
+      },
+      {
+        "case": "propagation_single_source_listener/2d_first_order_reflection",
+        "before_ns": 89.25142265616729,
+        "after_ns": 117.66902559256292,
+        "speedup": 0.7584954681719425,
+        "lower": 0.7537018485240878,
+        "upper": 0.7630604403205853
+      },
+      {
+        "case": "propagation_single_source_listener/3d_direct_occluded",
+        "before_ns": 99.43554593778312,
+        "after_ns": 124.15775140773103,
+        "speedup": 0.8008806925895364,
+        "lower": 0.7772857121757226,
+        "upper": 0.82350256051606
+      },
+      {
+        "case": "propagation_single_source_listener/3d_direct_open",
+        "before_ns": 12.524245405610426,
+        "after_ns": 13.598387962622375,
+        "speedup": 0.9210095667247894,
+        "lower": 0.91050578400661,
+        "upper": 0.9319039977352426
+      },
+      {
+        "case": "propagation_single_source_listener/3d_first_order_reflection",
+        "before_ns": 99.49308552266537,
+        "after_ns": 117.30133049369464,
+        "speedup": 0.8481837768073183,
+        "lower": 0.8421265696160246,
+        "upper": 0.8544681657327144
+      }
+    ],
+    "required_speedup": 1.5,
+    "passed": false
+  },
+  "metadata": {
+    "scope": "Sixteen propagation Criterion cases only; not the complete kernel inventory or FPS suite.",
+    "accepted": false,
+    "baseline_revision": "2b48a18",
+    "candidate_base_revision": "29c44ad",
+    "sample_size": 30,
+    "warmup_s": 1,
+    "measurement_s": 1,
+    "artifact_isolation": "Separate Cargo target/build directories; shared-target attempt was rejected before measurements.",
+    "binary_sha256": {
+      "projection-reference-propagation": "3bfdc7caaa4edaf8f4064bfd210404a17a7afab2f915e47006495ff1ce3b12d8",
+      "projection-candidate-propagation": "9596b4d5de4fbc073065bffe719b2016005215cb2aa640869beb7d3d31e8e35c"
+    }
+  }
+}
