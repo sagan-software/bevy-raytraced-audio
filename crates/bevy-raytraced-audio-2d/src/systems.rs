@@ -19,7 +19,7 @@ use bevy::prelude::*;
 use bevy::tasks::ComputeTaskPool;
 use bevy_raytraced_audio::{
     AcousticResponse, AcousticScene2d, BandGain, Emitter2d, Listener2d, MuffleFilter, Point2,
-    ReverbEstimate, Segment2d, SourceRayResponse,
+    ReverbEstimate, Segment2d, SourceRayResponse, TraceResume, frame_ray_budget,
 };
 
 /// Source count at and above which tracing uses the compute task pool.
@@ -92,18 +92,21 @@ pub(super) fn update_raytraced_audio(
                 || source_positions_changed(&emitters, &trace_scratch)))
         || has_untraced_emitter(&emitters, &trace_scratch.indices)
         || listener_trace.valid != listener.is_some();
+    // An in-progress slice keeps casting after its scheduled frame. Those frames do not
+    // increment the schedule counters.
+    let continue_trace = listener.is_some() && tracing.enabled && listener_trace.trace.is_tracing();
     // Diagnostics must not advertise a changed acoustic result to downstream systems.
     let scheduling = &mut listener_trace.bypass_change_detection().scheduling;
     scheduling.scene_refreshes += u64::from(scene_changed);
     if due {
         scheduling.scheduled += 1;
-    } else if trace_scratch.since_trace_s >= tracing.interval_s {
+        trace_scratch.since_trace_s = 0.0;
+    } else if !continue_trace && trace_scratch.since_trace_s >= tracing.interval_s {
         scheduling.unchanged += 1;
-    } else {
+    } else if !continue_trace {
         scheduling.throttled += 1;
     }
-    if due {
-        trace_scratch.since_trace_s = 0.0;
+    if due || continue_trace {
         trace_listener(
             &scene,
             listener.filter(|_| tracing.enabled),
@@ -184,7 +187,13 @@ impl TracedResponses<'_> {
     /// Returns the traced response for one emitter.
     fn response(&self, entity: Entity) -> Option<SourceRayResponse> {
         let index = *self.indices.get(&entity)?;
-        self.trace?.sources().get(index).copied()
+        let sources = self.trace?.sources();
+        // A source-count change must not apply another source's response before the new trace
+        // publishes. Lengths match again when that trace completes.
+        if sources.len() != self.indices.len() {
+            return None;
+        }
+        sources.get(index).copied()
     }
 
     /// Returns the latest listener reverb estimate.
@@ -221,12 +230,17 @@ fn trace_listener(
                 .push(RaytracedAudioClearance2d::emitter(clearance, position));
         }
     }
-    scene.trace_listener(
+    scene.advance_listener_trace(
         listener,
         &scratch.sources,
         tracing.settings,
         &mut listener_trace.trace,
+        frame_ray_budget(scratch.sources.len(), tracing.settings.ray_count()),
+        TraceResume::Coherent,
     );
+    if let Some(traced) = listener_trace.trace.traced_listener() {
+        scratch.listener = Some(traced);
+    }
     listener_trace.valid = true;
 }
 

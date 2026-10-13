@@ -16,7 +16,9 @@ pub(super) struct RaytracedAudioSettings {
     pub(super) reflections: bool,
     /// Longest first-order reflected path in meters, or `None` for no limit.
     pub(super) max_reflection_distance_m: Option<f32>,
-    /// Most emitters whose response is recomputed per update, or `None` for all of them.
+    /// Most emitters whose response is recomputed per update.
+    ///
+    /// `None` refreshes every emitter when the scene has at most 64, and 64 per update after that.
     pub(super) emitter_budget: Option<NonZeroUsize>,
 }
 

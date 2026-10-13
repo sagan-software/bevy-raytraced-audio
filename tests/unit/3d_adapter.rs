@@ -598,6 +598,7 @@ fn simultaneous_sink_recovery_and_invalid_transform_invalidation() {
         RaytracedAudio3dPlugin::default()
             .with_occluded_gain(0.25)
             .unwrap()
+            .with_emitter_budget(core::num::NonZeroUsize::new(128).expect("nonzero budget"))
             .with_ray_tracing(
                 RayTraceSettings::default()
                     .try_with_ray_count(4)
@@ -1219,4 +1220,72 @@ fn emitter_budget_recomputes_in_turn() -> Result<(), bevy_raytraced_audio::Geome
         assert_eq!(occluded(&app), expected);
     }
     Ok(())
+}
+
+/// More than 64 emitters refresh across updates when the plugin sets no emitter budget.
+#[test]
+fn a_large_scene_refreshes_a_frame_of_emitters() {
+    let mut app = App::new();
+    app.add_plugins((
+        TransformPlugin,
+        RaytracedAudio3dPlugin::default().without_ray_tracing(),
+    ));
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::default()));
+    let emitters: Vec<Entity> = (0..65_u16)
+        .map(|step| {
+            app.world_mut()
+                .spawn((
+                    RaytracedAudioEmitter3d,
+                    Transform::from_xyz(f32::from(step) * 0.1, 0.0, 0.0),
+                ))
+                .id()
+        })
+        .collect();
+    let responded = |app: &App| {
+        emitters
+            .iter()
+            .filter(|entity| {
+                app.world()
+                    .get::<RaytracedAudioResponse3d>(**entity)
+                    .is_some()
+            })
+            .count()
+    };
+    app.update();
+    assert_eq!(responded(&app), 64);
+    app.update();
+    assert_eq!(responded(&app), 65);
+}
+
+/// A trace longer than one frame's ray budget finishes on the next update.
+#[test]
+fn a_long_trace_continues_across_updates_without_another_schedule() {
+    use super::RaytracedAudioTracing3d;
+    let mut app = App::new();
+    app.add_plugins((TransformPlugin, RaytracedAudio3dPlugin::default()));
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::default()));
+    app.world_mut()
+        .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(2., 0., 0.)));
+    {
+        let mut tracing = app.world_mut().resource_mut::<RaytracedAudioTracing3d>();
+        tracing.settings = tracing
+            .settings
+            .try_with_ray_count(20_000)
+            .expect("nonzero ray count")
+            .with_max_bounces(1);
+    }
+    app.update();
+    {
+        let trace = app.world().resource::<RaytracedAudioListenerTrace3d>();
+        assert_eq!(trace.scheduling_statistics().scheduled, 1);
+        assert!(trace.trace().expect("listener").is_tracing());
+        assert_eq!(trace.trace().expect("listener").sources(), []);
+    }
+    app.update();
+    let trace = app.world().resource::<RaytracedAudioListenerTrace3d>();
+    assert_eq!(trace.scheduling_statistics().scheduled, 1);
+    assert!(!trace.trace().expect("listener").is_tracing());
+    assert_eq!(trace.trace().expect("listener").sources().len(), 1);
 }

@@ -150,7 +150,8 @@ impl RaytracedAudio3dPlugin {
     /// Emitters without a response yet go first; the others keep their last response until
     /// their turn. Sink volumes and processed-audio controls still update every frame from
     /// the latest responses. Many emitters then cost a bounded amount per frame, at the price
-    /// of responses that lag by up to `emitters / budget` updates.
+    /// of responses that lag by up to `emitters / budget` updates. Without this call, a due
+    /// update still refreshes at most 64 emitters once the scene is larger than that.
     #[must_use]
     pub const fn with_emitter_budget(mut self, budget: NonZeroUsize) -> Self {
         self.emitter_budget = Some(budget);

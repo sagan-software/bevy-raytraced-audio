@@ -761,3 +761,35 @@ fn clearance_component_ignores_nearby_surfaces() -> Result<(), bevy_raytraced_au
     assert!(traced(cleared));
     Ok(())
 }
+
+/// A trace longer than one frame's ray budget finishes on the next update.
+#[test]
+fn a_long_trace_continues_across_updates_without_another_schedule() {
+    use super::{RaytracedAudioListenerTrace2d, RaytracedAudioTracing2d};
+    let mut app = App::new();
+    app.add_plugins((TransformPlugin, RaytracedAudio2dPlugin::default()));
+    app.world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::default()));
+    app.world_mut()
+        .spawn((RaytracedAudioEmitter2d, Transform::from_xyz(2., 0., 0.)));
+    {
+        let mut tracing = app.world_mut().resource_mut::<RaytracedAudioTracing2d>();
+        tracing.settings = tracing
+            .settings
+            .try_with_ray_count(20_000)
+            .expect("nonzero ray count")
+            .with_max_bounces(1);
+    }
+    app.update();
+    {
+        let trace = app.world().resource::<RaytracedAudioListenerTrace2d>();
+        assert_eq!(trace.scheduling_statistics().scheduled, 1);
+        assert!(trace.trace().expect("listener").is_tracing());
+        assert_eq!(trace.trace().expect("listener").sources(), []);
+    }
+    app.update();
+    let trace = app.world().resource::<RaytracedAudioListenerTrace2d>();
+    assert_eq!(trace.scheduling_statistics().scheduled, 1);
+    assert!(!trace.trace().expect("listener").is_tracing());
+    assert_eq!(trace.trace().expect("listener").sources().len(), 1);
+}

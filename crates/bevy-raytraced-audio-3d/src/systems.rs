@@ -20,12 +20,18 @@ use bevy::prelude::*;
 use bevy::tasks::ComputeTaskPool;
 use bevy_raytraced_audio::{
     AcousticResponse, AcousticScene3d, BandGain, Emitter3d, Listener3d, MuffleFilter, Point3,
-    ReverbEstimate, SourceRayResponse, Triangle3d,
+    ReverbEstimate, SourceRayResponse, TraceResume, Triangle3d, frame_ray_budget,
 };
 use core::num::NonZeroUsize;
 
 /// Source count at and above which tracing uses the compute task pool.
 const PARALLEL_EMITTER_THRESHOLD: usize = 16;
+
+/// Image-source refreshes kept on a due frame when the plugin sets no emitter budget.
+///
+/// An unlimited 1,024-emitter refresh of the dense room measured about 19 ms. Scenes no larger
+/// than this still refresh every emitter on one update. Larger scenes take this many per update.
+const FRAME_EMITTER_REFRESHES: usize = 64;
 
 /// Bevy components read or updated for each 3D acoustic emitter.
 type EmitterQueryData = (
@@ -128,18 +134,21 @@ pub(super) fn update_raytraced_audio(
                 || source_positions_changed(&emitters, &trace_scratch, settings)))
         || has_untraced_emitter(&emitters, &trace_scratch.indices)
         || listener_trace.valid != listener.is_some();
+    // An in-progress slice keeps casting after its scheduled frame. Those frames do not
+    // increment the schedule counters.
+    let continue_trace = listener.is_some() && tracing.enabled && listener_trace.trace.is_tracing();
     // Diagnostics must not advertise a changed acoustic result to downstream systems.
     let scheduling = &mut listener_trace.bypass_change_detection().scheduling;
     scheduling.scene_refreshes += u64::from(scene_changed);
     if due {
         scheduling.scheduled += 1;
-    } else if trace_scratch.since_trace_s >= tracing.interval_s {
+        trace_scratch.since_trace_s = 0.0;
+    } else if !continue_trace && trace_scratch.since_trace_s >= tracing.interval_s {
         scheduling.unchanged += 1;
-    } else {
+    } else if !continue_trace {
         scheduling.throttled += 1;
     }
-    if due {
-        trace_scratch.since_trace_s = 0.0;
+    if due || continue_trace {
         trace_listener(
             &scene,
             listener.filter(|_| tracing.enabled),
@@ -150,7 +159,11 @@ pub(super) fn update_raytraced_audio(
             &mut trace_scratch,
         );
     }
-    let budgeted = budget.select(&emitters, settings.emitter_budget);
+    let emitter_count = emitters.iter().count();
+    let refresh_budget = settings
+        .emitter_budget
+        .or_else(|| frame_emitter_budget(emitter_count));
+    let budgeted = budget.select(&emitters, refresh_budget);
     let traced = TracedResponses {
         refresh_legacy: due || !tracing.enabled,
         budgeted,
@@ -158,6 +171,15 @@ pub(super) fn update_raytraced_audio(
         trace: listener_trace.trace(),
     };
     process_emitters(commands, &scene, listener, settings, &traced, emitters);
+}
+
+/// Returns the automatic per-frame emitter cap, or `None` when every emitter fits in one update.
+const fn frame_emitter_budget(emitter_count: usize) -> Option<NonZeroUsize> {
+    if emitter_count > FRAME_EMITTER_REFRESHES {
+        NonZeroUsize::new(FRAME_EMITTER_REFRESHES)
+    } else {
+        None
+    }
 }
 
 /// The emitters a budgeted update recomputes, and where the round-robin resumes.
@@ -265,7 +287,13 @@ impl TracedResponses<'_> {
     /// Returns the traced response for one emitter.
     fn response(&self, entity: Entity) -> Option<SourceRayResponse> {
         let index = *self.indices.get(&entity)?;
-        self.trace?.sources().get(index).copied()
+        let sources = self.trace?.sources();
+        // A source-count change must not apply another source's response before the new trace
+        // publishes. Lengths match again when that trace completes.
+        if sources.len() != self.indices.len() {
+            return None;
+        }
+        sources.get(index).copied()
     }
 
     /// Returns the latest listener reverb estimate.
@@ -303,12 +331,17 @@ fn trace_listener(
                 .push(RaytracedAudioClearance3d::emitter(clearance, position));
         }
     }
-    scene.trace_listener(
+    scene.advance_listener_trace(
         listener,
         &scratch.sources,
         tracing.settings,
         &mut listener_trace.trace,
+        frame_ray_budget(scratch.sources.len(), tracing.settings.ray_count()),
+        TraceResume::Coherent,
     );
+    if let Some(traced) = listener_trace.trace.traced_listener() {
+        scratch.listener = Some(traced);
+    }
     listener_trace.valid = true;
 }
 
