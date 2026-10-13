@@ -621,6 +621,27 @@ pub(crate) struct EchoStatistics {
     pub(crate) first_echo_weighted_distance_m: f64,
 }
 
+impl EchoStatistics {
+    /// Adds one primary ray's partial totals in the trace-wide accumulation.
+    ///
+    /// Folding per-ray partials in ray order keeps sums deterministic and independent of how
+    /// many execution lanes produced them, at the cost of regrouping additions relative to a
+    /// single interleaved loop.
+    pub(crate) fn merge(&mut self, other: Self) {
+        self.bounce_count += other.bounce_count;
+        self.echo_count += other.echo_count;
+        self.escaped_rays += other.escaped_rays;
+        self.bounce_leg_distance_m += other.bounce_leg_distance_m;
+        self.reflected_energy_sum += other.reflected_energy_sum;
+        self.reflected_low_sum += other.reflected_low_sum;
+        self.reflected_high_sum += other.reflected_high_sum;
+        self.echo_energy += other.echo_energy;
+        self.echo_weighted_distance_m += other.echo_weighted_distance_m;
+        self.first_echo_energy += other.first_echo_energy;
+        self.first_echo_weighted_distance_m += other.first_echo_weighted_distance_m;
+    }
+}
+
 /// Running per-source discovery and permeation totals.
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct SourceAccumulator {
@@ -684,6 +705,22 @@ impl TraceRng {
         }
     }
 
+    /// Returns the independent deterministic stream for one primary ray.
+    ///
+    /// Rays must not share one sequential stream when they execute on independent lanes, so
+    /// each ray derives its own from the trace seed and its index. The splitmix64 finalizer
+    /// separates neighboring streams; plain xorshift states seeded from nearby values would
+    /// stay correlated in their low bits.
+    pub(crate) fn for_ray(seed: u64, ray_index: u32) -> Self {
+        let mut state = seed.wrapping_add(u64::from(ray_index).wrapping_mul(0x9E37_79B9_7F4A_7C15));
+        state ^= state >> 30;
+        state = state.wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        state ^= state >> 27;
+        state = state.wrapping_mul(0x94D0_49BB_1331_11EB);
+        state ^= state >> 31;
+        Self::new(state)
+    }
+
     /// Returns a uniformly distributed value in `[0, 1)`.
     pub(crate) fn next_unit(&mut self) -> f64 {
         let mut value = self.state;
@@ -693,6 +730,84 @@ impl TraceRng {
         self.state = value;
         // The top 32 bits are exactly representable and give ample resolution for directions.
         f64::from(u32::try_from(value >> 32).unwrap_or(u32::MAX)) / 4_294_967_296.0
+    }
+}
+
+/// Estimated per-ray visibility work below which a trace stays on the calling thread.
+///
+/// One unit approximates one bounce-point visibility check. Spawning a scoped thread costs tens
+/// of microseconds, so a lane only pays off once its share clearly exceeds that. Calibrated
+/// against the dense-room listener fixtures in the propagation benchmarks.
+const MINIMUM_PARALLEL_RAY_UNITS: u64 = 12_000;
+
+/// Estimates the visibility work of one listener trace from its configuration and scene size.
+pub(crate) fn estimate_ray_units(
+    ray_count: u32,
+    max_bounces: u32,
+    sources: usize,
+    surfaces: usize,
+) -> u64 {
+    let per_bounce = u64::try_from(sources).unwrap_or(u64::MAX)
+        + u64::try_from(surfaces / 64).unwrap_or(u64::MAX)
+        + 8;
+    u64::from(ray_count)
+        .saturating_mul(u64::from(max_bounces))
+        .saturating_mul(per_bounce)
+}
+
+/// Returns how many execution lanes a trace with `units` of estimated work should use.
+///
+/// WebAssembly builds have no threads in this crate's targets and always return one lane.
+pub(crate) fn trace_threads(units: u64) -> usize {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = units;
+        1
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let available = std::thread::available_parallelism()
+            .map(std::num::NonZeroUsize::get)
+            .unwrap_or(1);
+        let wanted = usize::try_from(units / MINIMUM_PARALLEL_RAY_UNITS).unwrap_or(usize::MAX);
+        wanted.clamp(1, available)
+    }
+}
+
+/// Runs `run(index, slot)` for every slot, optionally across scoped threads.
+///
+/// Each slot is processed exactly once and lanes write disjoint slots, so a caller that folds
+/// slots in index order gets results independent of `threads`. Falls back to the calling thread
+/// for one lane, a single slot, or targets without thread support.
+pub(crate) fn for_each_slot<T: Send>(
+    slots: &mut [T],
+    threads: usize,
+    run: &(impl Fn(usize, &mut T) + Sync),
+) {
+    #[cfg(not(target_arch = "wasm32"))]
+    if threads > 1 && slots.len() > 1 {
+        let chunk = slots.len().div_ceil(threads).max(1);
+        std::thread::scope(|scope| {
+            let mut offset = 0;
+            let mut remaining = slots;
+            while !remaining.is_empty() {
+                let split = chunk.min(remaining.len());
+                let (head, tail) = remaining.split_at_mut(split);
+                remaining = tail;
+                scope.spawn(move || {
+                    for (index, slot) in head.iter_mut().enumerate() {
+                        run(offset + index, slot);
+                    }
+                });
+                offset += split;
+            }
+        });
+        return;
+    }
+    #[cfg(target_arch = "wasm32")]
+    let _ = threads;
+    for (index, slot) in slots.iter_mut().enumerate() {
+        run(index, slot);
     }
 }
 

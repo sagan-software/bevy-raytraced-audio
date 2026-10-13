@@ -2,7 +2,8 @@
 
 use bevy_raytraced_audio::{
     AcousticMaterial, AcousticScene2d, AcousticScene3d, Emitter2d, Emitter3d, GeometryError,
-    Listener2d, Listener3d, Point2, Point3, Segment2d, Triangle3d,
+    Listener2d, Listener3d, ListenerTrace2d, ListenerTrace3d, Point2, Point3, RayTraceSettings,
+    Segment2d, Triangle3d,
 };
 use criterion::{BenchmarkId, Criterion, Throughput};
 use std::{hint::black_box, time::Duration};
@@ -42,6 +43,8 @@ fn main() -> Result<(), GeometryError> {
     benchmark_2d_stress(&mut criterion, emitter2d, listener2d)?;
     benchmark_3d_stress(&mut criterion, emitter3d, listener3d)?;
     benchmark_3d_reflection_limit(&mut criterion)?;
+    benchmark_listener_frame(&mut criterion)?;
+    benchmark_emitter_refresh_frame(&mut criterion)?;
     criterion.final_summary();
     Ok(())
 }
@@ -313,4 +316,276 @@ fn floor_scene3d(side: u16) -> Result<AcousticScene3d, GeometryError> {
         }
     }
     Ok(scene)
+}
+
+/// Measures full listener traces per frame with a moving listener and sources.
+///
+/// These are the acoustic costs a frame budget has to carry whenever a trace is due:
+/// the default 256 rays and 8 bounces, with occlusion, echo, and permeation checks
+/// against every source. Movement invalidates the completed-result cache each
+/// iteration, so every sample measures a full recomputation.
+fn benchmark_listener_frame(criterion: &mut Criterion) -> Result<(), GeometryError> {
+    let mut group = criterion.benchmark_group("propagation/listener_frame");
+    for source_count in [64_usize, 1024] {
+        group.throughput(Throughput::Elements(
+            u64::try_from(source_count).unwrap_or(u64::MAX),
+        ));
+
+        let scene2d = dense_scene2d(1024)?;
+        let mut sources2d = dense_sources2d(source_count)?;
+        let mut output2d = ListenerTrace2d::default();
+        let mut frame2d = 0_usize;
+        group.bench_with_input(
+            BenchmarkId::new("2d/sources", source_count),
+            &source_count,
+            |bencher, _| {
+                bencher.iter(|| {
+                    frame2d += 1;
+                    let shift = movement_shift(frame2d);
+                    let listener = Listener2d::new(Point2::try_new(shift, 0.0).expect("finite"));
+                    for (index, source) in sources2d.iter_mut().enumerate() {
+                        *source = dense_source2d(index, shift).expect("finite fixture");
+                    }
+                    scene2d.trace_listener(
+                        black_box(listener),
+                        black_box(&sources2d),
+                        RayTraceSettings::default(),
+                        &mut output2d,
+                    );
+                    black_box(&output2d);
+                    trace_checksum2d(&output2d)
+                });
+            },
+        );
+
+        let scene3d = dense_scene3d(1024)?;
+        let mut sources3d = dense_sources3d(source_count)?;
+        let mut output3d = ListenerTrace3d::default();
+        let mut frame3d = 0_usize;
+        group.bench_with_input(
+            BenchmarkId::new("3d/sources", source_count),
+            &source_count,
+            |bencher, _| {
+                bencher.iter(|| {
+                    frame3d += 1;
+                    let shift = movement_shift(frame3d);
+                    let listener =
+                        Listener3d::new(Point3::try_new(shift, 0.0, 0.0).expect("finite"));
+                    for (index, source) in sources3d.iter_mut().enumerate() {
+                        *source = dense_source3d(index, shift).expect("finite fixture");
+                    }
+                    scene3d.trace_listener(
+                        black_box(listener),
+                        black_box(&sources3d),
+                        RayTraceSettings::default(),
+                        &mut output3d,
+                    );
+                    black_box(&output3d);
+                    trace_checksum3d(&output3d)
+                });
+            },
+        );
+    }
+    group.finish();
+    Ok(())
+}
+
+/// Measures one complete per-emitter image-source reflection refresh.
+///
+/// The adapters recompute every emitter's direct and first-order reflected
+/// response whenever a trace is due; this is that sweep for a dense scene.
+fn benchmark_emitter_refresh_frame(criterion: &mut Criterion) -> Result<(), GeometryError> {
+    let mut group = criterion.benchmark_group("propagation/emitter_refresh");
+    for emitter_count in [256_usize, 1024] {
+        group.throughput(Throughput::Elements(
+            u64::try_from(emitter_count).unwrap_or(u64::MAX),
+        ));
+
+        let scene2d = dense_scene2d(1024)?;
+        let sources2d = dense_sources2d(emitter_count)?;
+        let listener2d = Listener2d::new(Point2::try_new(0.0, 0.0)?);
+        group.bench_with_input(
+            BenchmarkId::new("2d/emitters", emitter_count),
+            &emitter_count,
+            |bencher, _| {
+                bencher.iter(|| {
+                    let mut checksum = 0.0;
+                    for source in &sources2d {
+                        let response = scene2d.trace(black_box(*source), black_box(listener2d));
+                        checksum += response.direct.distance_m();
+                    }
+                    black_box(checksum)
+                });
+            },
+        );
+
+        let scene3d = dense_scene3d(1024)?;
+        let limited3d = scene3d.clone().try_with_max_reflection_distance(30.0)?;
+        let sources3d = dense_sources3d(emitter_count)?;
+        let listener3d = Listener3d::new(Point3::try_new(0.0, 0.0, 0.0)?);
+        for (name, scene) in [("unlimited", &scene3d), ("limit_30m", &limited3d)] {
+            group.bench_with_input(
+                BenchmarkId::new(format!("3d/emitters/{name}"), emitter_count),
+                &emitter_count,
+                |bencher, _| {
+                    bencher.iter(|| {
+                        let mut checksum = 0.0;
+                        for source in &sources3d {
+                            let response = scene.trace(black_box(*source), black_box(listener3d));
+                            checksum += response.direct.distance_m();
+                        }
+                        black_box(checksum)
+                    });
+                },
+            );
+        }
+    }
+    group.finish();
+    Ok(())
+}
+
+/// Returns the deterministic per-frame movement offset for a frame counter.
+fn movement_shift(frame: usize) -> f32 {
+    f32::from(u16::try_from(frame % 32).unwrap_or(u16::MAX)) * 0.002
+}
+
+/// Consumes a listener trace into a finite checksum, matching the shared workloads.
+fn trace_checksum2d(output: &ListenerTrace2d) -> f64 {
+    f64::from(output.reverb().outdoor_fraction())
+        + output
+            .sources()
+            .iter()
+            .map(|source| f64::from(source.filter().gain_hf()))
+            .sum::<f64>()
+}
+
+/// Consumes a listener trace into a finite checksum, matching the shared workloads.
+fn trace_checksum3d(output: &ListenerTrace3d) -> f64 {
+    f64::from(output.reverb().outdoor_fraction())
+        + output
+            .sources()
+            .iter()
+            .map(|source| f64::from(source.filter().gain_hf()))
+            .sum::<f64>()
+}
+
+/// Converts a bounded fixture index into exact `f32` coordinates.
+fn fixture_number(value: usize) -> f32 {
+    f32::from(u16::try_from(value).expect("bounded fixture"))
+}
+
+/// Creates an enclosed 2D room with `count` short wall segments on a 0.25 m grid.
+fn dense_scene2d(count: usize) -> Result<AcousticScene2d, GeometryError> {
+    let mut scene = AcousticScene2d::default();
+    for (a, b) in [
+        ((-10.0, -10.0), (10.0, -10.0)),
+        ((10.0, -10.0), (10.0, 10.0)),
+        ((10.0, 10.0), (-10.0, 10.0)),
+        ((-10.0, 10.0), (-10.0, -10.0)),
+    ] {
+        scene.add_segment(Segment2d::try_new(
+            Point2::try_new(a.0, a.1)?,
+            Point2::try_new(b.0, b.1)?,
+            AcousticMaterial::default(),
+        )?);
+    }
+    for index in 0..count {
+        let x = fixture_number(index % 32).mul_add(0.25, -4.0);
+        let y = fixture_number(index / 32).mul_add(0.25, -4.0);
+        scene.add_segment(Segment2d::try_new(
+            Point2::try_new(x, y)?,
+            Point2::try_new(x, y + 0.24)?,
+            AcousticMaterial::default(),
+        )?);
+    }
+    Ok(scene)
+}
+
+/// Creates an enclosed 3D room with `count` baffle triangles on a 0.25 m grid.
+fn dense_scene3d(count: usize) -> Result<AcousticScene3d, GeometryError> {
+    let mut scene = AcousticScene3d::default();
+    for [a, b, c, d] in [
+        [
+            [-10., -10., -10.],
+            [10., -10., -10.],
+            [10., 10., -10.],
+            [-10., 10., -10.],
+        ],
+        [
+            [-10., -10., 10.],
+            [10., -10., 10.],
+            [10., 10., 10.],
+            [-10., 10., 10.],
+        ],
+        [
+            [-10., -10., -10.],
+            [-10., 10., -10.],
+            [-10., 10., 10.],
+            [-10., -10., 10.],
+        ],
+        [
+            [10., -10., -10.],
+            [10., 10., -10.],
+            [10., 10., 10.],
+            [10., -10., 10.],
+        ],
+        [
+            [-10., -10., -10.],
+            [10., -10., -10.],
+            [10., -10., 10.],
+            [-10., -10., 10.],
+        ],
+        [
+            [-10., 10., -10.],
+            [10., 10., -10.],
+            [10., 10., 10.],
+            [-10., 10., 10.],
+        ],
+    ] {
+        for vertices in [[a, b, c], [a, c, d]] {
+            let [first, second, third] = vertices.map(|[x, y, z]| Point3::try_new(x, y, z));
+            scene.add_triangle(Triangle3d::try_new(
+                [first?, second?, third?],
+                AcousticMaterial::default(),
+            )?);
+        }
+    }
+    for index in 0..count {
+        let x = fixture_number(index % 32).mul_add(0.25, -4.0);
+        let z = fixture_number(index / 32).mul_add(0.25, -4.0);
+        scene.add_triangle(Triangle3d::try_new(
+            [
+                Point3::try_new(x, -0.12, z)?,
+                Point3::try_new(x, 0.12, z)?,
+                Point3::try_new(x, 0.12, z + 0.24)?,
+            ],
+            AcousticMaterial::default(),
+        )?);
+    }
+    Ok(scene)
+}
+
+/// Returns one dense-fixture 2D source shifted by `shift` meters along x.
+fn dense_source2d(index: usize, shift: f32) -> Result<Emitter2d, GeometryError> {
+    let x = fixture_number(index).mul_add(0.013, -6.0) + shift;
+    let y = (fixture_number(index) * 0.071).sin() * 3.0;
+    Ok(Emitter2d::new(Point2::try_new(x, y)?))
+}
+
+/// Returns one dense-fixture 3D source shifted by `shift` meters along x.
+fn dense_source3d(index: usize, shift: f32) -> Result<Emitter3d, GeometryError> {
+    let x = fixture_number(index).mul_add(0.013, -6.0) + shift;
+    let y = (fixture_number(index) * 0.071).sin() * 3.0;
+    let z = (fixture_number(index) * 0.047).cos() * 2.0;
+    Ok(Emitter3d::new(Point3::try_new(x, y, z)?))
+}
+
+/// Creates the dense-fixture 2D source list.
+fn dense_sources2d(count: usize) -> Result<Vec<Emitter2d>, GeometryError> {
+    (0..count).map(|index| dense_source2d(index, 0.0)).collect()
+}
+
+/// Creates the dense-fixture 3D source list.
+fn dense_sources3d(count: usize) -> Result<Vec<Emitter3d>, GeometryError> {
+    (0..count).map(|index| dense_source3d(index, 0.0)).collect()
 }

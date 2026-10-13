@@ -491,20 +491,21 @@ fn escape_and_scatter_boundaries_are_finite() {
         z: 1.,
     };
     let mut statistics = EchoStatistics::default();
-    let mut output = ListenerTrace3d::default();
     for (bounce, last_echo) in [(1, None), (0, Some(zero))] {
+        let mut results = super::RayResults::default();
         assert_eq!(
             AcousticScene3d::escape(
                 (zero, zero, normal),
                 (bounce, 0., 1.),
                 last_echo,
                 RayTraceSettings::default().with_recorded_rays(true),
-                &mut statistics,
-                &mut output
+                &mut results
             ),
             None
         );
+        statistics.merge(results.statistics);
     }
+    assert_eq!(statistics.escaped_rays, 2);
     let scene = AcousticScene3d::default();
     assert!(!scene.segment_is_blocked(zero, zero, None));
     let mut rng = TraceRng::new(7);

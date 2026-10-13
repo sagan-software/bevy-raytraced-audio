@@ -5,6 +5,13 @@ use core::ops::Range;
 /// Maximum primitive count stored directly in one leaf.
 const MAX_LEAF_SURFACES: usize = 4;
 
+/// Fixed node stack for explicit any-hit traversal.
+///
+/// Median splits halve the primitive count per level and leaves hold at most
+/// [`MAX_LEAF_SURFACES`], so the depth of any tree over allocatable memory is far below half
+/// this capacity; the any-hit fallback recursion covers the theoretical remainder.
+const MAX_TRAVERSAL_STACK: usize = 128;
+
 /// Number of coordinate axes in the planar acoustic scene.
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum SceneDimensions {
@@ -214,6 +221,16 @@ impl Bounds {
             && other.min_z <= self.max_z
     }
 
+    /// Returns whether these bounds completely contain `other` on all three stored axes.
+    pub(crate) fn contains(self, other: Self) -> bool {
+        self.min_x <= other.min_x
+            && other.max_x <= self.max_x
+            && self.min_y <= other.min_y
+            && other.max_y <= self.max_y
+            && self.min_z <= other.min_z
+            && other.max_z <= self.max_z
+    }
+
     /// Returns the midpoint coordinate on one split axis without overflowing on finite inputs.
     const fn center(self, axis: Axis) -> f64 {
         let (minimum, maximum) = match axis {
@@ -313,6 +330,13 @@ impl BoundingVolumeHierarchy {
         hierarchy
     }
 
+    /// Returns the bounds of every primitive in the hierarchy, or `None` for an empty scene.
+    pub(crate) fn root_bounds(&self) -> Option<Bounds> {
+        self.root
+            .and_then(|index| self.nodes.get(index))
+            .map(|node| node.bounds)
+    }
+
     /// Rejects parallel wall groups whose tangential bounds cannot contain an image reflection.
     /// A valid image ray is a convex combination of the two tangential endpoint coordinates.
     /// Other orientations keep the exact per-surface path; padding permits arithmetic rounding.
@@ -410,6 +434,131 @@ impl BoundingVolumeHierarchy {
             .is_some();
         if root_is_reached {
             self.visit_ray_node(root, ray, &mut maximum_parameter, &mut hit_parameter);
+        }
+    }
+
+    /// Returns whether `test` accepts any primitive the ray corridor reaches before the limit.
+    ///
+    /// This is the visibility-query specialization of [`Self::visit_ray`]: the answer is a
+    /// boolean, so children are visited without nearest-first ordering and traversal stops at
+    /// the first accepted primitive. Visibility checks are the hottest traversal in a listener
+    /// trace because every bounce casts one per source plus one toward the listener.
+    /// `path_bounds` is the corridor's conservative box, used only for tiny single-leaf scenes
+    /// where the box test beats slab traversal setup.
+    pub(crate) fn any_hit(
+        &self,
+        ray: Ray,
+        path_bounds: Bounds,
+        limit: f64,
+        skipped_surface: Option<usize>,
+        mut test: impl FnMut(usize) -> bool,
+    ) -> bool {
+        if self.surface_indices.len() <= MAX_LEAF_SURFACES {
+            return !self
+                .visit_candidates_until(path_bounds, skipped_surface, |index| !test(index));
+        }
+        let Some(root) = self.root else {
+            return false;
+        };
+        let root_is_reached = self
+            .nodes
+            .get(root)
+            .is_some_and(|node| node.bounds.ray_entry(ray, limit).is_some());
+        if !root_is_reached {
+            return false;
+        }
+        let mut stack = [root; MAX_TRAVERSAL_STACK];
+        let mut depth = 1_usize;
+        while depth > 0 {
+            depth -= 1;
+            let Some(node_index) = stack.get(depth).copied() else {
+                break;
+            };
+            let Some(node) = self.nodes.get(node_index) else {
+                continue;
+            };
+            match node.kind {
+                NodeKind::Leaf { ref indices } => {
+                    if let Some(surface_indices) = self.surface_indices.get(indices.clone()) {
+                        for surface_index in surface_indices {
+                            if skipped_surface != Some(*surface_index) && test(*surface_index) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                NodeKind::Branch { left, right } => {
+                    for child in [left, right] {
+                        let reached = self
+                            .nodes
+                            .get(child)
+                            .is_some_and(|node| node.bounds.ray_entry(ray, limit).is_some());
+                        if !reached {
+                            continue;
+                        }
+                        match stack.get_mut(depth) {
+                            Some(slot) => {
+                                *slot = child;
+                                depth += 1;
+                            }
+                            // The fixed stack exceeds any allocatable tree's depth; this
+                            // recursive fallback keeps the answer exact if that bound were
+                            // ever exceeded.
+                            None => {
+                                if self.any_hit_descendant(
+                                    child,
+                                    ray,
+                                    limit,
+                                    skipped_surface,
+                                    &mut test,
+                                ) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        false
+    }
+
+    /// Recursively answers one [`Self::any_hit`] query for a subtree without stack storage.
+    fn any_hit_descendant(
+        &self,
+        node_index: usize,
+        ray: Ray,
+        limit: f64,
+        skipped_surface: Option<usize>,
+        test: &mut impl FnMut(usize) -> bool,
+    ) -> bool {
+        let Some(node) = self.nodes.get(node_index) else {
+            return false;
+        };
+        match node.kind {
+            NodeKind::Leaf { ref indices } => {
+                if let Some(surface_indices) = self.surface_indices.get(indices.clone()) {
+                    for surface_index in surface_indices {
+                        if skipped_surface != Some(*surface_index) && test(*surface_index) {
+                            return true;
+                        }
+                    }
+                }
+                false
+            }
+            NodeKind::Branch { left, right } => {
+                for child in [left, right] {
+                    let reached = self
+                        .nodes
+                        .get(child)
+                        .is_some_and(|node| node.bounds.ray_entry(ray, limit).is_some());
+                    if reached && self.any_hit_descendant(child, ray, limit, skipped_surface, test)
+                    {
+                        return true;
+                    }
+                }
+                false
+            }
         }
     }
 

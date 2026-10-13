@@ -148,11 +148,25 @@ impl AcousticScene2d {
         source: Vector2,
         receiver: Vector2,
     ) -> (BandGain, bool) {
+        let mut crossings = Vec::new();
+        self.direct_transmission_with(source, receiver, &mut crossings)
+    }
+
+    /// [`Self::direct_transmission`] with caller-owned reusable crossing storage.
+    ///
+    /// Listener traces call this once per source and once per permeation ray, so the crossing
+    /// list must not allocate per query; the buffer is cleared on entry and keeps its capacity.
+    pub(crate) fn direct_transmission_with(
+        &self,
+        source: Vector2,
+        receiver: Vector2,
+        crossings: &mut Vec<(f64, Vector2, BandGain)>,
+    ) -> (BandGain, bool) {
         // If source and listener coincide, the path has no interior where a surface can attenuate it.
+        crossings.clear();
         let mut direct_occluded = false;
         let mut direct_gain = BandGain::UNITY;
         let acceleration = self.acceleration();
-        let mut crossings: Vec<(f64, Vector2, BandGain)> = Vec::new();
         if receiver.subtract(source).length() > 0.0 {
             let offset = receiver.subtract(source);
             let _traversal_completed = acceleration.hierarchy.visit_segment_candidates(
@@ -256,12 +270,13 @@ impl AcousticScene2d {
     ) -> bool {
         let acceleration = self.acceleration();
         let offset = end.subtract(start);
-        !acceleration.hierarchy.visit_segment_candidates(
+        acceleration.hierarchy.any_hit(
             Ray::new((start.x, start.y, 0.0), (offset.x, offset.y, 0.0)),
             Bounds::path_2d((start.x, start.y), (end.x, end.y)),
+            1.0,
             skipped_index,
             |index| {
-                !acceleration
+                acceleration
                     .segments
                     .get(index)
                     .is_some_and(|segment| path_intersects_geometry(start, end, segment))

@@ -280,20 +280,20 @@ fn cache_invalidates_for_all_inputs_and_scene_clone_mutation() {
 fn escape_and_scatter_boundaries_are_finite() {
     let zero = Vector2::default();
     let normal = Vector2 { x: 0., y: 1. };
-    let mut statistics = EchoStatistics::default();
-    let mut output = ListenerTrace2d::default();
     for (bounce, last_echo) in [(1, None), (0, Some(zero))] {
+        let mut results = super::RayResults::default();
         assert_eq!(
             AcousticScene2d::escape(
                 (zero, zero, normal),
                 (bounce, 0., 1.),
                 last_echo,
                 RayTraceSettings::default().with_recorded_rays(true),
-                &mut statistics,
-                &mut output
+                &mut results
             ),
             None
         );
+        let statistics: EchoStatistics = results.statistics;
+        assert_eq!(statistics.escaped_rays, 1);
     }
     let scene = AcousticScene2d::default();
     assert!(!scene.segment_is_blocked(zero, zero, None));

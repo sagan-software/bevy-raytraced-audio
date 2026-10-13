@@ -215,11 +215,25 @@ impl AcousticScene3d {
         source: Vector3,
         receiver: Vector3,
     ) -> (BandGain, bool) {
+        let mut crossings = Vec::new();
+        self.direct_transmission_with(source, receiver, &mut crossings)
+    }
+
+    /// [`Self::direct_transmission`] with caller-owned reusable crossing storage.
+    ///
+    /// Listener traces call this once per source and once per permeation ray, so the crossing
+    /// list must not allocate per query; the buffer is cleared on entry and keeps its capacity.
+    pub(crate) fn direct_transmission_with(
+        &self,
+        source: Vector3,
+        receiver: Vector3,
+        crossings: &mut Vec<(f64, Vector3, BandGain)>,
+    ) -> (BandGain, bool) {
         // If source and listener coincide, the path has no interior where a surface can attenuate it.
+        crossings.clear();
         let acceleration = self.acceleration();
         let mut direct_occluded = false;
         let mut direct_gain = BandGain::UNITY;
-        let mut crossings: Vec<(f64, Vector3, BandGain)> = Vec::new();
         if receiver.subtract(source).length() > 0.0 {
             let offset = receiver.subtract(source);
             let _traversal_completed = acceleration.hierarchy.visit_segment_candidates(
@@ -274,48 +288,61 @@ impl AcousticScene3d {
             (source.x, source.y, source.z),
             (receiver.x, receiver.y, receiver.z),
         ));
+        // With a limit only triangles near the source-listener ellipsoid are candidates. The
+        // ellipsoid with these foci and major axis `limit` lies in a sphere of radius
+        // `limit / 2` around their midpoint; a path no longer than the direct one has none.
+        let mut culled: Vec<usize> = Vec::new();
+        let mut scan_all = may_reflect;
+        if may_reflect && let Some(limit) = limit {
+            if limit <= direct_distance {
+                scan_all = false;
+            } else {
+                let midpoint = (
+                    f64::midpoint(source.x, receiver.x),
+                    f64::midpoint(source.y, receiver.y),
+                    f64::midpoint(source.z, receiver.z),
+                );
+                let region = Bounds::sphere_3d(midpoint, limit / 2.0);
+                // When the region already covers the hierarchy, culling cannot reject anything,
+                // so the query keeps the allocation-free ordered scan instead.
+                let covers_scene = acceleration
+                    .hierarchy
+                    .root_bounds()
+                    .is_some_and(|root| region.contains(root));
+                scan_all = covers_scene;
+                if !covers_scene {
+                    acceleration
+                        .hierarchy
+                        .visit_candidates_until(region, None, |index| {
+                            culled.push(index);
+                            true
+                        });
+                    // Paths keep the documented insertion order.
+                    culled.sort_unstable();
+                }
+            }
+        }
         // Without a limit every triangle is a candidate, in insertion order.
-        let all_count = if may_reflect && limit.is_none() {
+        let all_count = if scan_all {
             acceleration.triangles.len()
         } else {
             0
         };
-        let all = acceleration.triangles.iter().enumerate().take(all_count);
-        // With a limit only triangles near the source-listener ellipsoid are candidates. The
-        // ellipsoid with these foci and major axis `limit` lies in a sphere of radius
-        // `limit / 2` around their midpoint; a path no longer than the direct one has none.
-        let mut culled = Vec::new();
-        if let Some(limit) = limit.filter(|limit| may_reflect && *limit > direct_distance) {
-            let midpoint = (
-                f64::midpoint(source.x, receiver.x),
-                f64::midpoint(source.y, receiver.y),
-                f64::midpoint(source.z, receiver.z),
-            );
-            let region = Bounds::sphere_3d(midpoint, limit / 2.0);
-            acceleration
-                .hierarchy
-                .visit_candidates_until(region, None, |index| {
-                    culled.extend(
-                        acceleration
-                            .triangles
-                            .get(index)
-                            .map(|triangle| (index, triangle)),
-                    );
-                    true
-                });
-            // Paths keep the documented insertion order.
-            culled.sort_unstable_by_key(|(index, _)| *index);
-        }
-        all.chain(culled).filter_map(move |(index, reflector)| {
+        (0..all_count).chain(culled).filter_map(move |index| {
             // If source and listener coincide, this triangle cannot form a positive-length reflected path.
             if direct_distance == 0.0 {
                 return None;
             }
 
+            let probe = acceleration.probes.get(index)?;
             // A reflected path longer than the scene's limit is ignored.
             let (reflection_point, reflected_distance, image_source) =
-                first_reflection(source, receiver, reflector)
+                first_reflection_probe(source, receiver, probe)
                     .filter(|(_, distance, _)| limit.is_none_or(|limit| *distance <= limit))?;
+            let reflector = acceleration.triangles.get(index)?;
+            if !reflection_point_on_triangle(reflector, reflection_point, reflected_distance) {
+                return None;
+            }
 
             // If the reflection point lies inside the source clearance, the reflector is ignored.
             let leg_start = clear_of_source(source, reflection_point, clearance_m)?;
@@ -348,12 +375,13 @@ impl AcousticScene3d {
     ) -> bool {
         let acceleration = self.acceleration();
         let offset = end.subtract(start);
-        !acceleration.hierarchy.visit_segment_candidates(
+        acceleration.hierarchy.any_hit(
             Ray::new((start.x, start.y, start.z), (offset.x, offset.y, offset.z)),
             Bounds::path_3d((start.x, start.y, start.z), (end.x, end.y, end.z)),
+            1.0,
             skipped_index,
             |index| {
-                !acceleration
+                acceleration
                     .triangles
                     .get(index)
                     .is_some_and(|triangle| path_intersects_triangle(start, end, triangle))
@@ -377,9 +405,19 @@ impl AcousticScene3d {
                     .map(|(index, triangle)| (index, triangle.bounds)),
                 SceneDimensions::Three,
             );
+            let probes = triangles
+                .iter()
+                .map(|triangle| ReflectionProbe {
+                    origin: triangle.origin,
+                    normal: triangle.normal,
+                    normal_squared: triangle.normal_squared,
+                    normal_length: triangle.normal_length,
+                })
+                .collect();
             SceneAcceleration3d {
                 hierarchy,
                 triangles,
+                probes,
             }
         })
     }
@@ -503,6 +541,25 @@ pub(crate) struct SceneAcceleration3d {
     pub(crate) hierarchy: BoundingVolumeHierarchy,
     /// Triangles with cached coordinates and material properties.
     pub(crate) triangles: Vec<TriangleGeometry>,
+    /// Compact plane data for first-stage image-source rejection.
+    pub(crate) probes: Vec<ReflectionProbe>,
+}
+
+/// The plane fields an image-source test needs, split from the full triangle cache.
+///
+/// Unlimited reflection queries test every triangle as a reflector, and the planar rejection
+/// stage accepts only a few; streaming this compact array instead of the full geometry keeps
+/// the scan cache-resident.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct ReflectionProbe {
+    /// First vertex, used as the origin for plane offsets.
+    origin: Vector3,
+    /// Unnormalized plane normal.
+    normal: Vector3,
+    /// Squared normal length used to reflect the source point.
+    normal_squared: f64,
+    /// Normal length used for the scale-relative parallel test.
+    normal_length: f64,
 }
 
 /// Moves a path start out of the source clearance along the path toward `end`.
@@ -518,14 +575,18 @@ pub(crate) fn clear_of_source(source: Vector3, end: Vector3, clearance_m: f64) -
     (length > clearance_m).then(|| source.add(offset.scale(clearance_m / length)))
 }
 
-/// Finds one valid image-source reflection and returns its point and path length.
-fn first_reflection(
+/// Finds one valid image-source reflection plane solution and returns its point and path length.
+///
+/// This first stage uses only the compact [`ReflectionProbe`] plane data; whether the reflection
+/// point actually lies on the finite triangle is decided by
+/// [`reflection_point_on_triangle`].
+fn first_reflection_probe(
     source: Vector3,
     receiver: Vector3,
-    triangle: &TriangleGeometry,
+    probe: &ReflectionProbe,
 ) -> Option<(Vector3, f64, Vector3)> {
-    let source_offset = source.subtract(triangle.origin).dot(triangle.normal);
-    let receiver_offset = receiver.subtract(triangle.origin).dot(triangle.normal);
+    let source_offset = source.subtract(probe.origin).dot(probe.normal);
+    let receiver_offset = receiver.subtract(probe.origin).dot(probe.normal);
 
     // If either endpoint lies on the surface or they lie on opposite sides, no image-source reflection exists.
     if source_offset == 0.0
@@ -536,36 +597,60 @@ fn first_reflection(
     }
 
     let image_source = source.subtract(
-        triangle
+        probe
             .normal
-            .scale(2.0 * source_offset / triangle.normal_squared),
+            .scale(2.0 * source_offset / probe.normal_squared),
     );
     let image_to_receiver = receiver.subtract(image_source);
-    let denominator = image_to_receiver.dot(triangle.normal);
-    let denominator_scale = image_to_receiver.length() * triangle.normal_length;
+    let denominator = image_to_receiver.dot(probe.normal);
+    let denominator_scale = image_to_receiver.length() * probe.normal_length;
     if denominator.abs() <= PARALLEL_EPSILON * denominator_scale {
         return None;
     }
 
     // If the image ray misses the finite triangle, the candidate cannot reflect from this surface.
-    let ray_parameter = triangle.origin.subtract(image_source).dot(triangle.normal) / denominator;
+    let ray_parameter = probe.origin.subtract(image_source).dot(probe.normal) / denominator;
     if !(0.0..=1.0).contains(&ray_parameter) {
         return None;
     }
     let reflection_point = image_source.add(image_to_receiver.scale(ray_parameter));
+    let reflected_distance = image_to_receiver.length();
+    Some((reflection_point, reflected_distance, image_source))
+}
+
+/// Second reflection stage: whether the plane solution lands on the finite triangle.
+fn reflection_point_on_triangle(
+    triangle: &TriangleGeometry,
+    reflection_point: Vector3,
+    reflected_distance: f64,
+) -> bool {
     let reflection_point_bounds = Bounds::path_3d(
         (reflection_point.x, reflection_point.y, reflection_point.z),
         (reflection_point.x, reflection_point.y, reflection_point.z),
     );
-    if !triangle.bounds.overlaps(reflection_point_bounds) {
-        return None;
-    }
-    if !triangle.contains_point(reflection_point) {
-        return None;
-    }
+    triangle.bounds.overlaps(reflection_point_bounds)
+        && triangle.contains_point(reflection_point)
+        && reflected_distance > 0.0
+}
 
-    let reflected_distance = image_to_receiver.length();
-    (reflected_distance > 0.0).then_some((reflection_point, reflected_distance, image_source))
+/// Finds one valid image-source reflection and returns its point and path length.
+///
+/// Joins both stages against one triangle's full geometry, matching the historical single-call
+/// behavior for boundary tests.
+#[cfg(test)]
+fn first_reflection(
+    source: Vector3,
+    receiver: Vector3,
+    triangle: &TriangleGeometry,
+) -> Option<(Vector3, f64, Vector3)> {
+    let probe = ReflectionProbe {
+        origin: triangle.origin,
+        normal: triangle.normal,
+        normal_squared: triangle.normal_squared,
+        normal_length: triangle.normal_length,
+    };
+    first_reflection_probe(source, receiver, &probe)
+        .filter(|&(point, distance, _)| reflection_point_on_triangle(triangle, point, distance))
 }
 
 /// Tests whether a point lies inside or on the boundary of one triangle.

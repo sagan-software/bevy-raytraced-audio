@@ -1,9 +1,12 @@
 //! Listener-centred stochastic ray tracing over 2D segments.
 
-use crate::bvh::Ray;
+use crate::bvh::{Bounds, Ray};
 use crate::cache_statistics::{TraceCacheMiss, TraceCacheStatistics};
 use crate::math2d::Vector2;
-use crate::ray_trace::{EchoStatistics, SourceAccumulator, TraceRng, narrow};
+use crate::ray_trace::{
+    EchoStatistics, SourceAccumulator, TraceRng, estimate_ray_units, for_each_slot, narrow,
+    trace_threads,
+};
 use crate::scene2d::clear_of_source;
 use crate::{
     AcousticScene2d, BandGain, Emitter2d, Listener2d, RayKind, RayTraceSettings, ReverbEstimate,
@@ -86,6 +89,55 @@ impl RaySegment2d {
     }
 }
 
+/// Position, clearance, and accumulation state fused for one traced source.
+///
+/// The ray loop reads this single array instead of walking parallel per-source buffers, which
+/// keeps the hottest scan cache-friendly.
+#[derive(Clone, Copy, Debug, Default)]
+struct SourceScratch {
+    /// Solver-space position in meters.
+    point: Vector2,
+    /// Clearance radius in meters inside which crossings are ignored.
+    clearance_m: f64,
+    /// Visibility, discovery, and permeation totals for the current trace.
+    accumulator: SourceAccumulator,
+}
+
+/// Independent results of one primary ray, folded into the trace in ray order.
+///
+/// Rays write only their own slot, so lanes can execute them concurrently; folding in ray order
+/// keeps every accumulated value independent of the lane count.
+#[derive(Clone, Debug, Default)]
+struct RayResults {
+    /// Echo, bounce, and escape totals along this ray's path.
+    statistics: EchoStatistics,
+    /// Ambience direction scaled by remaining energy, if this ray escaped.
+    ambient: Option<Vector2>,
+    /// Sources this ray discovered with the mid-band energy at discovery.
+    discovered: Vec<(usize, f64)>,
+    /// Permeation gains this ray's first bounce contributed to hidden sources.
+    permeated: Vec<(usize, BandGain)>,
+    /// Segments recorded for this ray when recording is enabled.
+    segments: Vec<RaySegment2d>,
+    /// Sources this ray has not discovered yet; shrinks as bounces find them.
+    active: Vec<usize>,
+    /// Reused crossing list for this ray's permeation transmission queries.
+    crossings: Vec<(f64, Vector2, BandGain)>,
+}
+
+impl RayResults {
+    /// Clears one ray's results while keeping every allocation for the next trace.
+    fn clear(&mut self) {
+        self.statistics = EchoStatistics::default();
+        self.ambient = None;
+        self.discovered.clear();
+        self.permeated.clear();
+        self.segments.clear();
+        self.active.clear();
+        self.crossings.clear();
+    }
+}
+
 /// Results of one listener ray trace, with reusable storage.
 #[derive(Clone, Debug, Default)]
 pub struct ListenerTrace2d {
@@ -99,10 +151,10 @@ pub struct ListenerTrace2d {
     ambient_focus: f32,
     /// Recorded segments when the settings request them.
     segments: Vec<RaySegment2d>,
-    /// Scratch per-source accumulators.
-    accumulators: Vec<SourceAccumulator>,
-    /// Scratch per-source index of the last primary ray that discovered the source.
-    discovered_by_ray: Vec<u32>,
+    /// Scratch per-source positions, clearances, and accumulators.
+    scratch: Vec<SourceScratch>,
+    /// Per-primary-ray results, reused across traces and folded in ray order.
+    ray_results: Vec<RayResults>,
     /// Reused solver-space source positions and clearances in meters; retained across changing
     /// emitter counts.
     source_points: Vec<(Vector2, f64)>,
@@ -149,40 +201,13 @@ impl ListenerTrace2d {
         &self.segments
     }
 
-    /// Clears results while keeping allocated storage.
-    fn reset(&mut self, source_count: usize) {
+    /// Clears published results while keeping allocated storage.
+    fn reset(&mut self) {
         self.sources.clear();
         self.segments.clear();
-        self.accumulators.clear();
-        self.accumulators
-            .resize(source_count, SourceAccumulator::default());
-        self.discovered_by_ray.clear();
-        self.discovered_by_ray.resize(source_count, u32::MAX);
         self.reverb = ReverbEstimate::DRY;
         self.ambient_direction = None;
         self.ambient_focus = 0.0;
-    }
-
-    /// Records one segment when recording is enabled.
-    fn record(
-        &mut self,
-        enabled: bool,
-        (start, end): (Vector2, Vector2),
-        kind: RayKind,
-        start_distance_m: f64,
-        energy: f64,
-        source_index: Option<usize>,
-    ) {
-        if enabled {
-            self.segments.push(RaySegment2d {
-                start: SolverPoint2d::new(start.x, start.y),
-                end: SolverPoint2d::new(end.x, end.y),
-                kind,
-                start_distance_m,
-                energy: narrow(energy.clamp(0.0, 1.0)),
-                source_index,
-            });
-        }
     }
 }
 
@@ -215,6 +240,11 @@ impl AcousticScene2d {
     /// of `sources`. Repeating an identical scene, listener, source list and settings reuses
     /// the completed deterministic result. Changes to any input trigger a full trace.
     /// See [`crate::RayTraceSettings`] for the ray model.
+    ///
+    /// Primary rays execute on scoped threads when the estimated work is large enough to pay
+    /// for them. Each ray draws from its own deterministic stream derived from the seed and its
+    /// index, and per-ray results fold in ray order, so a completed trace depends only on its
+    /// inputs, never on the lane count.
     pub fn trace_listener(
         &self,
         listener: Listener2d,
@@ -251,28 +281,41 @@ impl AcousticScene2d {
         }
         // Invalidate before recomputing so unwinding cannot leave a partially refreshed cache.
         output.cached_input = None;
-        output.reset(sources.len());
+        output.reset();
         let record = settings.records_rays();
         let origin = Vector2::from_point(listener.position());
         let mut source_points = core::mem::take(&mut output.source_points);
         source_points.clear();
         source_points.extend(sources.iter().map(|source| source_point(*source)));
 
+        // Positions, clearances, and accumulators share one array for the ray loop's hot scan.
+        let mut scratch = core::mem::take(&mut output.scratch);
+        scratch.clear();
+        scratch.extend(
+            source_points
+                .iter()
+                .map(|&(point, clearance_m)| SourceScratch {
+                    point,
+                    clearance_m,
+                    accumulator: SourceAccumulator::default(),
+                }),
+        );
+
         // Straight lines from the listener decide direct visibility and seed permeation.
-        for (index, (source, clearance_m)) in source_points.iter().copied().enumerate() {
+        let mut direct_crossings: Vec<(f64, Vector2, BandGain)> = Vec::new();
+        for (index, source) in scratch.iter_mut().enumerate() {
             // Crossings inside the source clearance are skipped by ending the path before it.
-            let (gain, occluded) = clear_of_source(source, origin, clearance_m)
+            let (gain, occluded) = clear_of_source(source.point, origin, source.clearance_m)
                 .map_or((BandGain::UNITY, false), |end| {
-                    self.direct_transmission(origin, end)
+                    self.direct_transmission_with(origin, end, &mut direct_crossings)
                 });
-            if let Some(accumulator) = output.accumulators.get_mut(index) {
-                accumulator.direct_visible = !occluded;
-                accumulator.add_permeation(gain, 1.0);
-            }
+            source.accumulator.direct_visible = !occluded;
+            source.accumulator.add_permeation(gain, 1.0);
             if occluded {
-                output.record(
+                record_segment(
+                    &mut output.segments,
                     record,
-                    (origin, source),
+                    (origin, source.point),
                     RayKind::Permeation,
                     0.0,
                     f64::from(gain.mid()),
@@ -285,37 +328,74 @@ impl AcousticScene2d {
         let permeation_stride = ray_count
             .checked_div(settings.permeation_ray_count())
             .map_or(u32::MAX, |stride| stride.max(1));
-        let mut rng = TraceRng::new(settings.seed());
-        let angle_offset = rng.next_unit() * TAU / f64::from(ray_count);
-        let mut statistics = EchoStatistics::default();
-        let mut ambient_sum = Vector2::default();
-        let mut ambient_weight = 0.0_f64;
+        let mut base_rng = TraceRng::new(settings.seed());
+        let angle_offset = base_rng.next_unit() * TAU / f64::from(ray_count);
 
-        for ray_index in 0..ray_count {
+        // Per-ray result slots keep their allocations across traces and lane counts.
+        let slot_count = usize::try_from(ray_count).unwrap_or(usize::MAX);
+        let mut ray_results = core::mem::take(&mut output.ray_results);
+        while ray_results.len() < slot_count {
+            ray_results.push(RayResults::default());
+        }
+        for results in ray_results.iter_mut().take(slot_count) {
+            results.clear();
+        }
+        let (ray_slots, _) = ray_results.split_at_mut(slot_count);
+
+        // The hierarchy must exist before lanes run, so no thread waits on its lazy build.
+        let _ = self.acceleration();
+        let units = estimate_ray_units(
+            ray_count,
+            settings.max_bounces(),
+            scratch.len(),
+            self.segment_count(),
+        );
+        let threads = trace_threads(units);
+        for_each_slot(ray_slots, threads, &|ray_index, results| {
+            let ray_index = u32::try_from(ray_index).unwrap_or(u32::MAX);
             let angle = TAU.mul_add(f64::from(ray_index) / f64::from(ray_count), angle_offset);
-            let initial_direction = Vector2 {
+            let direction = Vector2 {
                 x: angle.cos(),
                 y: angle.sin(),
             };
             let casts_permeation =
                 settings.permeation_ray_count() > 0 && ray_index % permeation_stride == 0;
-            let ambient = self.follow_ray(
+            let mut rng = TraceRng::for_ray(settings.seed(), ray_index);
+            results.active.extend(0..scratch.len());
+            self.follow_ray(
                 PrimaryRay {
-                    index: ray_index,
                     origin,
-                    direction: initial_direction,
+                    direction,
                     casts_permeation,
                 },
-                &source_points,
+                &scratch,
                 settings,
                 &mut rng,
-                &mut statistics,
-                output,
+                results,
             );
-            if let Some(direction) = ambient {
+        });
+
+        // Folding in ray order makes statistics, accumulations, and recordings lane independent.
+        let mut statistics = EchoStatistics::default();
+        let mut ambient_sum = Vector2::default();
+        let mut ambient_weight = 0.0_f64;
+        for results in ray_slots.iter() {
+            statistics.merge(results.statistics);
+            if let Some(direction) = results.ambient {
                 ambient_sum = ambient_sum.add(direction);
                 ambient_weight += direction.length();
             }
+            for &(index, energy) in &results.discovered {
+                if let Some(source) = scratch.get_mut(index) {
+                    source.accumulator.discovered_energy += energy;
+                }
+            }
+            for &(index, gain) in &results.permeated {
+                if let Some(source) = scratch.get_mut(index) {
+                    source.accumulator.add_permeation(gain, 1.0);
+                }
+            }
+            output.segments.extend(results.segments.iter().copied());
         }
 
         output.reverb = ReverbEstimate::from_statistics(&statistics, ray_count);
@@ -325,28 +405,27 @@ impl AcousticScene2d {
             output.ambient_direction = Some(SolverPoint2d::new(unit.x, unit.y));
             output.ambient_focus = narrow((ambient_length / ambient_weight).clamp(0.0, 1.0));
         }
-        let accumulators = core::mem::take(&mut output.accumulators);
         output.sources.extend(
-            accumulators
+            scratch
                 .iter()
-                .map(|accumulator| accumulator.finish(ray_count)),
+                .map(|source| source.accumulator.finish(ray_count)),
         );
-        output.accumulators = accumulators;
+        output.scratch = scratch;
+        output.ray_results = ray_results;
         output.source_points = source_points;
         output.cached_input =
             revision.map(|revision| (std::sync::Arc::clone(revision), listener, settings));
     }
 
-    /// Follows one primary ray and returns its ambience direction if it escaped.
+    /// Follows one primary ray, writing its independent results into `results`.
     fn follow_ray(
         &self,
         ray: PrimaryRay,
-        sources: &[(Vector2, f64)],
+        sources: &[SourceScratch],
         settings: RayTraceSettings,
         rng: &mut TraceRng,
-        statistics: &mut EchoStatistics,
-        output: &mut ListenerTrace2d,
-    ) -> Option<Vector2> {
+        results: &mut RayResults,
+    ) {
         let record = settings.records_rays();
         let listener = ray.origin;
         let mut position = ray.origin;
@@ -367,18 +446,20 @@ impl AcousticScene2d {
                 settings.escape_distance_m(),
                 skipped_segment,
             ) else {
-                return Self::escape(
+                let ambient = Self::escape(
                     (listener, position, direction),
                     (bounce, travelled_m, energy.mid),
                     last_echo_point,
                     settings,
-                    statistics,
-                    output,
+                    results,
                 );
+                results.ambient = ambient;
+                return;
             };
 
             let hit_point = position.add(direction.scale(hit.distance_m));
-            output.record(
+            record_segment(
+                &mut results.segments,
                 record,
                 (position, hit_point),
                 RayKind::Primary,
@@ -387,12 +468,15 @@ impl AcousticScene2d {
                 None,
             );
             travelled_m += hit.distance_m;
-            let segment = self.segments().get(hit.segment_index)?;
+            let Some(segment) = self.segments().get(hit.segment_index) else {
+                return;
+            };
             let material = segment.material();
             let reflected = material.reflected_fraction();
             energy.low *= reflected.low();
             energy.mid *= reflected.mid();
             energy.high *= reflected.high();
+            let statistics = &mut results.statistics;
             statistics.bounce_count += 1;
             statistics.bounce_leg_distance_m += hit.distance_m;
             statistics.reflected_energy_sum += reflected.mid();
@@ -417,7 +501,8 @@ impl AcousticScene2d {
                         .mul_add(return_m, statistics.first_echo_weighted_distance_m);
                 }
                 last_echo_point = Some(hit_point);
-                output.record(
+                record_segment(
+                    &mut results.segments,
                     record,
                     (hit_point, listener),
                     RayKind::Echo,
@@ -428,32 +513,27 @@ impl AcousticScene2d {
             }
 
             self.discover_sources(
-                (ray.index, hit_point, hit, travelled_m, energy.mid),
+                (hit_point, hit, travelled_m, energy.mid),
                 sources,
                 record,
-                output,
+                results,
             );
 
             if bounce == 0 && ray.casts_permeation {
                 let start = hit_point.subtract(direction.scale(PERMEATION_BACKOFF_M));
-                for (index, (source, clearance_m)) in sources.iter().copied().enumerate() {
-                    let direct_visible = output
-                        .accumulators
-                        .get(index)
-                        .is_some_and(|accumulator| accumulator.direct_visible);
-                    if direct_visible {
+                for (index, source) in sources.iter().enumerate() {
+                    if source.accumulator.direct_visible {
                         continue;
                     }
-                    let (gain, _) = clear_of_source(source, start, clearance_m)
+                    let (gain, _) = clear_of_source(source.point, start, source.clearance_m)
                         .map_or((BandGain::UNITY, false), |end| {
-                            self.direct_transmission(start, end)
+                            self.direct_transmission_with(start, end, &mut results.crossings)
                         });
-                    if let Some(accumulator) = output.accumulators.get_mut(index) {
-                        accumulator.add_permeation(gain, 1.0);
-                    }
-                    output.record(
+                    results.permeated.push((index, gain));
+                    record_segment(
+                        &mut results.segments,
                         record,
-                        (hit_point, source),
+                        (hit_point, source.point),
                         RayKind::Permeation,
                         travelled_m,
                         f64::from(gain.mid()),
@@ -463,7 +543,7 @@ impl AcousticScene2d {
             }
 
             if energy.low.max(energy.mid).max(energy.high) < MINIMUM_RAY_ENERGY {
-                return None;
+                return;
             }
             direction = scatter(
                 reflect(direction, hit.normal),
@@ -477,22 +557,21 @@ impl AcousticScene2d {
             position = hit_point;
             skipped_segment = Some(hit.segment_index);
         }
-        None
     }
 
-    /// Records an escaped leg and returns its ambience direction scaled by remaining energy.
+    /// Records an escaped leg into the ray's results and returns its scaled ambience direction.
     fn escape(
         (listener, position, direction): (Vector2, Vector2, Vector2),
         (bounce, travelled_m, energy): (u32, f64, f64),
         last_echo_point: Option<Vector2>,
         settings: RayTraceSettings,
-        statistics: &mut EchoStatistics,
-        output: &mut ListenerTrace2d,
+        results: &mut RayResults,
     ) -> Option<Vector2> {
         let record = settings.records_rays();
-        statistics.escaped_rays += 1;
+        results.statistics.escaped_rays += 1;
         let end = position.add(direction.scale(settings.escape_distance_m()));
-        output.record(
+        record_segment(
+            &mut results.segments,
             record,
             (position, end),
             RayKind::Escaped,
@@ -513,7 +592,8 @@ impl AcousticScene2d {
         }
         let unit = arrival.scale(length.recip());
         let shown_end = last_echo_point.unwrap_or_else(|| listener.add(unit.scale(2.0)));
-        output.record(
+        record_segment(
+            &mut results.segments,
             record,
             (listener, shown_end),
             RayKind::Ambient,
@@ -526,50 +606,71 @@ impl AcousticScene2d {
     }
 
     /// Marks sources visible from a bounce point that this primary ray has not yet discovered.
+    ///
+    /// Only the ray's still-undiscovered sources are scanned, and each discovery removes its
+    /// source from that scan, so later bounces of the same ray skip work the earlier bounces
+    /// already finished.
     fn discover_sources(
         &self,
-        (ray_index, hit_point, hit, travelled_m, energy): (u32, Vector2, Hit, f64, f64),
-        sources: &[(Vector2, f64)],
+        (hit_point, hit, travelled_m, energy): (Vector2, Hit, f64, f64),
+        sources: &[SourceScratch],
         record: bool,
-        output: &mut ListenerTrace2d,
+        results: &mut RayResults,
     ) {
-        for (index, (source, clearance_m)) in sources.iter().copied().enumerate() {
-            let already_discovered = output
-                .discovered_by_ray
-                .get(index)
-                .is_none_or(|last_ray| *last_ray == ray_index);
-            let faces_source = source.subtract(hit_point).dot(hit.normal) > 0.0;
-            if already_discovered
-                || !faces_source
-                // A hit point inside the source clearance is a reflector the clearance ignores.
-                || clear_of_source(source, hit_point, clearance_m).is_none_or(|end| {
-                    self.segment_is_blocked(hit_point, end, Some(hit.segment_index))
-                })
-            {
-                continue;
+        let RayResults {
+            active,
+            discovered,
+            segments,
+            ..
+        } = results;
+        let bounce_start = discovered.len();
+        let mut cursor = 0;
+        while cursor < active.len() {
+            let Some(&index) = active.get(cursor) else {
+                break;
+            };
+            let visible = sources.get(index).is_some_and(|source| {
+                let faces_source = source.point.subtract(hit_point).dot(hit.normal) > 0.0;
+                faces_source
+                    && clear_of_source(source.point, hit_point, source.clearance_m).is_none_or(
+                        |end| !self.segment_is_blocked(hit_point, end, Some(hit.segment_index)),
+                    )
+            });
+            if visible {
+                discovered.push((index, energy));
+                let last = active.len() - 1;
+                active.swap(cursor, last);
+                active.pop();
+            } else {
+                cursor += 1;
             }
-            if let Some(last_ray) = output.discovered_by_ray.get_mut(index) {
-                *last_ray = ray_index;
+        }
+        if record {
+            // Recorded paths keep source order within the bounce even though discovery does not.
+            let (_, bounce_discoveries) = discovered.split_at_mut(bounce_start);
+            bounce_discoveries.sort_unstable_by_key(|&(index, _)| index);
+            for &(index, _) in bounce_discoveries.iter() {
+                let Some(source) = sources.get(index) else {
+                    continue;
+                };
+                record_segment(
+                    segments,
+                    true,
+                    (hit_point, source.point),
+                    RayKind::Occlusion,
+                    travelled_m,
+                    energy,
+                    Some(index),
+                );
             }
-            if let Some(accumulator) = output.accumulators.get_mut(index) {
-                accumulator.discovered_energy += energy;
-            }
-            output.record(
-                record,
-                (hit_point, source),
-                RayKind::Occlusion,
-                travelled_m,
-                energy,
-                Some(index),
-            );
         }
     }
 
     /// Returns whether any segment other than `skipped_segment` crosses the open path interior.
     ///
-    /// Ray traversal only visits nodes the path passes through and stops after the first
-    /// blocker, which matters because every bounce casts one check per source and one toward
-    /// the listener.
+    /// The visibility-specialized traversal only visits nodes the path passes through and stops
+    /// after the first blocker, which matters because every bounce casts one check per source
+    /// and one toward the listener.
     fn segment_is_blocked(
         &self,
         start: Vector2,
@@ -584,23 +685,20 @@ impl AcousticScene2d {
             return false;
         }
         let direction = offset.scale(length.recip());
-        let mut blocked = false;
         let acceleration = self.acceleration();
-        acceleration.hierarchy.visit_ray(
+        acceleration.hierarchy.any_hit(
             Ray::new((start.x, start.y, 0.0), (direction.x, direction.y, 0.0)),
+            Bounds::path_2d((start.x, start.y), (end.x, end.y)),
             limit,
+            skipped_segment,
             |index| {
-                if blocked || skipped_segment == Some(index) {
-                    return None;
-                }
-                let segment = acceleration.segments.get(index)?;
-                let distance = ray_segment_distance(start, direction, segment.start, segment.end)?;
-                blocked = distance < limit;
-                // A negative hit parameter prunes every remaining node.
-                blocked.then_some(-1.0)
+                let Some(segment) = acceleration.segments.get(index) else {
+                    return false;
+                };
+                ray_segment_distance(start, direction, segment.start, segment.end)
+                    .is_some_and(|distance| distance < limit)
             },
-        );
-        blocked
+        )
     }
 
     /// Finds the closest segment hit along a ray within the escape distance.
@@ -653,11 +751,31 @@ fn source_point(source: Emitter2d) -> (Vector2, f64) {
     )
 }
 
+/// Records one segment into a buffer when recording is enabled.
+fn record_segment(
+    segments: &mut Vec<RaySegment2d>,
+    enabled: bool,
+    (start, end): (Vector2, Vector2),
+    kind: RayKind,
+    start_distance_m: f64,
+    energy: f64,
+    source_index: Option<usize>,
+) {
+    if enabled {
+        segments.push(RaySegment2d {
+            start: SolverPoint2d::new(start.x, start.y),
+            end: SolverPoint2d::new(end.x, end.y),
+            kind,
+            start_distance_m,
+            energy: narrow(energy.clamp(0.0, 1.0)),
+            source_index,
+        });
+    }
+}
+
 /// Inputs that identify one primary ray.
 #[derive(Clone, Copy, Debug)]
 struct PrimaryRay {
-    /// Primary ray index within the trace.
-    index: u32,
     /// Listener position where the ray starts.
     origin: Vector2,
     /// Initial unit direction.
