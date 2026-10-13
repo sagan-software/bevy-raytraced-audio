@@ -482,13 +482,13 @@ fn benchmark_listener_slice(criterion: &mut Criterion) -> Result<(), GeometryErr
     Ok(())
 }
 
-/// Measures one complete per-emitter image-source reflection refresh.
+/// Measures per-emitter image-source reflection refreshes on a dense scene.
 ///
-/// The adapters recompute every emitter's direct and first-order reflected
-/// response whenever a trace is due; this is that sweep for a dense scene.
+/// A due adapter frame refreshes at most 64 emitters when the plugin sets no budget.
+/// The 64-emitter group is that frame. Larger groups are the full sweep.
 fn benchmark_emitter_refresh_frame(criterion: &mut Criterion) -> Result<(), GeometryError> {
     let mut group = criterion.benchmark_group("propagation/emitter_refresh");
-    for emitter_count in [256_usize, 1024] {
+    for emitter_count in [64_usize, 256, 1024] {
         group.throughput(Throughput::Elements(
             u64::try_from(emitter_count).unwrap_or(u64::MAX),
         ));

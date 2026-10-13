@@ -13,7 +13,7 @@ use super::surface::RaytracedAudioSurface2d;
 use super::volume::RaytracedAudioBaseVolume;
 use crate::processed_audio::RaytracedAudioPlayer;
 use bevy::audio::Volume;
-use bevy::ecs::entity::EntityHashMap;
+use bevy::ecs::entity::{EntityHashMap, EntityHashSet};
 use bevy::ecs::query::QueryItem;
 use bevy::prelude::*;
 use bevy::tasks::ComputeTaskPool;
@@ -21,9 +21,16 @@ use bevy_raytraced_audio::{
     AcousticResponse, AcousticScene2d, BandGain, Emitter2d, Listener2d, MuffleFilter, Point2,
     ReverbEstimate, Segment2d, SourceRayResponse, TraceResume, frame_ray_budget,
 };
+use core::num::NonZeroUsize;
 
 /// Source count at and above which tracing uses the compute task pool.
 const PARALLEL_EMITTER_THRESHOLD: usize = 16;
+
+/// Image-source refreshes kept on a due frame when the plugin sets no emitter budget.
+///
+/// Scenes no larger than this still refresh every emitter on one update. Larger scenes take
+/// this many per update.
+const FRAME_EMITTER_REFRESHES: usize = 64;
 
 /// Bevy components read or updated for each 2D acoustic emitter.
 type EmitterQueryData = (
@@ -69,6 +76,7 @@ pub(super) fn update_raytraced_audio(
     tracing: Res<'_, RaytracedAudioTracing2d>,
     mut listener_trace: ResMut<'_, RaytracedAudioListenerTrace2d>,
     mut trace_scratch: Local<'_, TraceScratch>,
+    mut budget: Local<'_, BudgetState>,
     real_time: Option<Res<'_, Time<Real>>>,
     emitters: EmitterQuery<'_, '_>,
 ) {
@@ -83,17 +91,59 @@ pub(super) fn update_raytraced_audio(
         &mut scene_is_cached,
     );
     let delta_s = real_time.map_or(f32::INFINITY, |time| time.delta_secs());
+    let due = advance_scheduled_trace(
+        &scene,
+        listener,
+        scene_changed,
+        &tracing,
+        &mut listener_trace,
+        &mut trace_scratch,
+        &emitters,
+        delta_s,
+    );
+    let refresh_budget = settings
+        .emitter_budget
+        .or_else(|| frame_emitter_budget(emitters.iter().count()));
+    let budgeted = budget.select(&emitters, refresh_budget);
+    let traced = TracedResponses {
+        refresh_legacy: due || !tracing.enabled,
+        budgeted,
+        indices: &trace_scratch.indices,
+        trace: listener_trace.trace(),
+    };
+    process_emitters(
+        commands,
+        &scene,
+        listener,
+        settings.occluded_gain,
+        &traced,
+        emitters,
+    );
+}
+
+/// Records one schedule step, advances a due or continued slice, and returns whether it was due.
+///
+/// An in-progress slice keeps casting after its scheduled frame. Those frames do not increment
+/// the schedule counters.
+fn advance_scheduled_trace(
+    scene: &AcousticScene2d,
+    listener: Option<Listener2d>,
+    scene_changed: bool,
+    tracing: &Res<'_, RaytracedAudioTracing2d>,
+    listener_trace: &mut ResMut<'_, RaytracedAudioListenerTrace2d>,
+    trace_scratch: &mut TraceScratch,
+    emitters: &EmitterQuery<'_, '_>,
+    delta_s: f32,
+) -> bool {
     trace_scratch.since_trace_s += delta_s;
     let due = tracing.is_changed()
         || scene_changed
         || (trace_scratch.since_trace_s >= tracing.interval_s
             && (!tracing.settings.reuses_results()
                 || trace_scratch.listener != listener
-                || source_positions_changed(&emitters, &trace_scratch)))
-        || has_untraced_emitter(&emitters, &trace_scratch.indices)
+                || source_positions_changed(emitters, trace_scratch)))
+        || has_untraced_emitter(emitters, &trace_scratch.indices)
         || listener_trace.valid != listener.is_some();
-    // An in-progress slice keeps casting after its scheduled frame. Those frames do not
-    // increment the schedule counters.
     let continue_trace = listener.is_some() && tracing.enabled && listener_trace.trace.is_tracing();
     // Diagnostics must not advertise a changed acoustic result to downstream systems.
     let scheduling = &mut listener_trace.bypass_change_detection().scheduling;
@@ -108,27 +158,15 @@ pub(super) fn update_raytraced_audio(
     }
     if due || continue_trace {
         trace_listener(
-            &scene,
+            scene,
             listener.filter(|_| tracing.enabled),
-            *tracing,
-            &emitters,
-            &mut listener_trace,
-            &mut trace_scratch,
+            **tracing,
+            emitters,
+            listener_trace,
+            trace_scratch,
         );
     }
-    let traced = TracedResponses {
-        refresh_legacy: due || !tracing.enabled,
-        indices: &trace_scratch.indices,
-        trace: listener_trace.trace(),
-    };
-    process_emitters(
-        commands,
-        &scene,
-        listener,
-        settings.occluded_gain,
-        &traced,
-        emitters,
-    );
+    due
 }
 
 /// Reused emitter positions and entity-to-trace-index lookup.
@@ -173,10 +211,64 @@ fn source_positions_changed(emitters: &EmitterQuery<'_, '_>, scratch: &TraceScra
     valid_count != scratch.sources.len()
 }
 
+/// Returns the automatic per-frame emitter cap, or `None` when every emitter fits in one update.
+const fn frame_emitter_budget(emitter_count: usize) -> Option<NonZeroUsize> {
+    if emitter_count > FRAME_EMITTER_REFRESHES {
+        NonZeroUsize::new(FRAME_EMITTER_REFRESHES)
+    } else {
+        None
+    }
+}
+
+/// The emitters a budgeted update recomputes, and where the round-robin resumes.
+#[derive(Default)]
+pub(super) struct BudgetState {
+    /// Emitters recomputed in the current update.
+    selected: EntityHashSet,
+    /// Position in the emitters that already have a response, where the next turn starts.
+    cursor: usize,
+}
+
+impl BudgetState {
+    /// Chooses this update's emitters: those without a response first, then the others in
+    /// turn. Returns `None` without a budget, when every emitter is recomputed.
+    fn select(
+        &mut self,
+        emitters: &EmitterQuery<'_, '_>,
+        budget: Option<NonZeroUsize>,
+    ) -> Option<&EntityHashSet> {
+        let budget = budget?.get();
+        self.selected.clear();
+        // New emitters have nothing to reuse, so they take the budget first.
+        let fresh = emitters
+            .iter()
+            .filter(|item| item.5.is_none())
+            .map(|item| item.0)
+            .take(budget);
+        self.selected.extend(fresh);
+        let remaining = budget - self.selected.len();
+        let responded = emitters.iter().filter(|item| item.5.is_some()).count();
+        if remaining > 0 && responded > 0 {
+            let start = self.cursor % responded;
+            let turns = remaining.min(responded);
+            let ordered = emitters
+                .iter()
+                .filter(|item| item.5.is_some())
+                .map(|item| item.0);
+            self.selected
+                .extend(ordered.clone().skip(start).chain(ordered).take(turns));
+            self.cursor = (start + turns) % responded;
+        }
+        Some(&self.selected)
+    }
+}
+
 /// Read-only view of the latest listener trace used while updating emitters.
 struct TracedResponses<'a> {
     /// Keep image-source queries on the same update cadence as the listener trace.
     refresh_legacy: bool,
+    /// Emitters a budgeted update may recompute, or `None` for all of them.
+    budgeted: Option<&'a EntityHashSet>,
     /// Trace source index for each traced emitter entity.
     indices: &'a EntityHashMap<usize>,
     /// Latest valid trace.
@@ -358,25 +450,28 @@ fn update_emitter(
         clearance,
     ): QueryItem<'_, '_, EmitterQueryData>,
 ) {
+    let has_turn = traced
+        .budgeted
+        .is_none_or(|selected| selected.contains(&entity));
+    // An emitter outside the budget with nothing to reuse waits for its turn untouched.
+    if !has_turn && response_state.is_none() {
+        return;
+    }
     let translation = transform.translation();
     let response = Point2::try_new(translation.x, translation.y)
         .ok()
         .zip(listener)
         .map(|(position, listener)| {
-            if !traced.refresh_legacy
-                && !reflection_paths
-                    .as_ref()
-                    .is_some_and(DetectChanges::is_added)
-                && let Some(cached) = response_state.as_deref()
-            {
-                return cached.response;
-            }
-            let emitter = RaytracedAudioClearance2d::emitter(clearance, position);
-            if let Some(paths) = reflection_paths.as_deref_mut() {
-                scene.trace_with_reflection_paths(emitter, *listener, &mut paths.paths)
-            } else {
-                scene.trace(emitter, *listener)
-            }
+            image_source_response(
+                scene,
+                *listener,
+                position,
+                clearance,
+                traced,
+                has_turn,
+                &mut reflection_paths,
+                response_state.as_deref(),
+            )
         });
 
     // Invalid endpoints clear reflection paths left by a previous valid frame.
@@ -409,6 +504,33 @@ fn update_emitter(
     );
     update_response_component(commands, entity, response, response_state);
     update_ray_response_component(commands, entity, ray_response, ray_response_state);
+}
+
+/// Returns the cached image-source response, or traces one when this emitter's turn is due.
+fn image_source_response(
+    scene: &AcousticScene2d,
+    listener: Listener2d,
+    position: Point2,
+    clearance: Option<&RaytracedAudioClearance2d>,
+    traced: &TracedResponses<'_>,
+    has_turn: bool,
+    reflection_paths: &mut Option<Mut<'_, RaytracedAudioReflectionPaths2d>>,
+    cached: Option<&RaytracedAudioResponse2d>,
+) -> AcousticResponse {
+    if (!traced.refresh_legacy || !has_turn)
+        && !reflection_paths
+            .as_ref()
+            .is_some_and(DetectChanges::is_added)
+        && let Some(cached) = cached
+    {
+        return cached.response;
+    }
+    let emitter = RaytracedAudioClearance2d::emitter(clearance, position);
+    if let Some(paths) = reflection_paths.as_deref_mut() {
+        scene.trace_with_reflection_paths(emitter, listener, &mut paths.paths)
+    } else {
+        scene.trace(emitter, listener)
+    }
 }
 
 /// Chooses the sink-volume scale for an emitter played through Bevy's unprocessed sink.

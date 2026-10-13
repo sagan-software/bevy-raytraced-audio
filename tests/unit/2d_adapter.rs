@@ -480,6 +480,7 @@ fn simultaneous_sink_recovery_and_invalid_transform_invalidation() {
         RaytracedAudio2dPlugin::default()
             .with_occluded_gain(0.25)
             .unwrap()
+            .with_emitter_budget(core::num::NonZeroUsize::new(128).expect("nonzero budget"))
             .with_ray_tracing(
                 RayTraceSettings::default()
                     .try_with_ray_count(4)
@@ -792,4 +793,115 @@ fn a_long_trace_continues_across_updates_without_another_schedule() {
     assert_eq!(trace.scheduling_statistics().scheduled, 1);
     assert!(!trace.trace().expect("listener").is_tracing());
     assert_eq!(trace.trace().expect("listener").sources().len(), 1);
+}
+
+/// Counts emitters that already have an image-source response.
+fn emitters_with_response(app: &App, emitters: &[Entity]) -> usize {
+    emitters
+        .iter()
+        .filter(|entity| {
+            app.world()
+                .get::<RaytracedAudioResponse2d>(**entity)
+                .is_some()
+        })
+        .count()
+}
+
+/// Counts emitters whose latest direct path is occluded.
+fn occluded_emitters(app: &App, emitters: &[Entity]) -> usize {
+    emitters
+        .iter()
+        .filter(|entity| {
+            app.world()
+                .get::<RaytracedAudioResponse2d>(**entity)
+                .is_some_and(|response| response.response().direct.is_occluded())
+        })
+        .count()
+}
+
+/// A budget of one recomputes one emitter per update: new emitters first, then in turn.
+#[test]
+fn emitter_budget_recomputes_in_turn() -> Result<(), bevy_raytraced_audio::GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(
+        RaytracedAudio2dPlugin::default()
+            .without_ray_tracing()
+            .with_emitter_budget(core::num::NonZeroUsize::MIN),
+    );
+    app.world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    let emitters: Vec<Entity> = (0..3_u8)
+        .map(|step| {
+            app.world_mut()
+                .spawn((
+                    RaytracedAudioEmitter2d,
+                    Transform::from_xyz(-1.0, f32::from(step) * 0.1, 0.0),
+                ))
+                .id()
+        })
+        .collect();
+    for expected in 1..=3 {
+        app.update();
+        assert_eq!(emitters_with_response(&app, &emitters), expected);
+    }
+    app.world_mut().spawn((
+        RaytracedAudioSurface2d::new(
+            Vec2::new(0.0, -1.0),
+            Vec2::new(0.0, 1.0),
+            AcousticMaterial::default(),
+        )?,
+        Transform::default(),
+    ));
+    for expected in 1..=3 {
+        app.update();
+        assert_eq!(occluded_emitters(&app, &emitters), expected);
+    }
+    let wall = app
+        .world_mut()
+        .query_filtered::<Entity, bevy::prelude::With<RaytracedAudioSurface2d>>()
+        .single(app.world())
+        .expect("one wall");
+    assert!(app.world_mut().despawn(wall));
+    for expected in (0..3).rev() {
+        app.update();
+        assert_eq!(occluded_emitters(&app, &emitters), expected);
+    }
+    Ok(())
+}
+
+/// More than 64 emitters refresh across updates when the plugin sets no emitter budget.
+#[test]
+fn a_large_scene_refreshes_a_frame_of_emitters() {
+    let mut app = App::new();
+    app.add_plugins((
+        TransformPlugin,
+        RaytracedAudio2dPlugin::default().without_ray_tracing(),
+    ));
+    app.world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::default()));
+    let emitters: Vec<Entity> = (0..65_u16)
+        .map(|step| {
+            app.world_mut()
+                .spawn((
+                    RaytracedAudioEmitter2d,
+                    Transform::from_xyz(f32::from(step) * 0.1, 0.0, 0.0),
+                ))
+                .id()
+        })
+        .collect();
+    let responded = |app: &App| {
+        emitters
+            .iter()
+            .filter(|entity| {
+                app.world()
+                    .get::<RaytracedAudioResponse2d>(**entity)
+                    .is_some()
+            })
+            .count()
+    };
+    app.update();
+    assert_eq!(responded(&app), 64);
+    app.update();
+    assert_eq!(responded(&app), 65);
 }

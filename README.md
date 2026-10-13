@@ -72,7 +72,9 @@ let sound leak through them. For plain `AudioPlayer` emitters, set a fallback
 linear gain for fully silent paths with
 `RaytracedAudio2dPlugin::default().with_occluded_gain(0.15)?`. Tune ray counts and
 bounces with `with_ray_tracing(RayTraceSettings)`, or call `without_ray_tracing()`
-to use only the straight-line direct transmission.
+to use only the straight-line direct transmission. With no emitter budget, a due
+update refreshes every emitter when there are at most 64, and 64 per update after
+that. `with_emitter_budget(n)` sets that cap.
 
 Create a partially transmitting 2D surface like this:
 

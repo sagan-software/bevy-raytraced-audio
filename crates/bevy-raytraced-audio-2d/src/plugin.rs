@@ -7,6 +7,7 @@ use crate::processed_audio::{RaytracedAudioPrepareSystems, RaytracedAudioProcess
 use bevy::ecs::schedule::IntoScheduleConfigs;
 use bevy::prelude::{App, Plugin, PostUpdate, TransformSystems};
 use bevy_raytraced_audio::{AudioBackendPreference, BandGain, GeometryError, RayTraceSettings};
+use core::num::NonZeroUsize;
 
 /// Bevy plugin that traces explicit 2D acoustic surfaces after transform propagation.
 #[derive(Clone, Copy, Debug)]
@@ -17,6 +18,8 @@ pub struct RaytracedAudio2dPlugin {
     backend_preference: AudioBackendPreference,
     /// Initial listener ray-trace configuration.
     tracing: RaytracedAudioTracing2d,
+    /// Most emitters whose response is recomputed per update.
+    emitter_budget: Option<NonZeroUsize>,
 }
 
 impl Default for RaytracedAudio2dPlugin {
@@ -26,6 +29,7 @@ impl Default for RaytracedAudio2dPlugin {
             occluded_gain: 0.0,
             backend_preference: AudioBackendPreference::Cpu,
             tracing: RaytracedAudioTracing2d::default(),
+            emitter_budget: None,
         }
     }
 }
@@ -65,6 +69,19 @@ impl RaytracedAudio2dPlugin {
 }
 
 impl RaytracedAudio2dPlugin {
+    /// Recomputes at most `budget` emitter responses per update, round-robin.
+    ///
+    /// Emitters without a response yet go first; the others keep their last response until
+    /// their turn. Sink volumes and processed-audio controls still update every frame from
+    /// the latest responses. Many emitters then cost a bounded amount per frame, at the price
+    /// of responses that lag by up to `emitters / budget` updates. Without this call, a due
+    /// update still refreshes at most 64 emitters once the scene is larger than that.
+    #[must_use]
+    pub const fn with_emitter_budget(mut self, budget: NonZeroUsize) -> Self {
+        self.emitter_budget = Some(budget);
+        self
+    }
+
     /// Sets the initial listener ray-trace settings.
     #[must_use]
     pub const fn with_ray_tracing(mut self, settings: RayTraceSettings) -> Self {
@@ -94,6 +111,7 @@ impl Plugin for RaytracedAudio2dPlugin {
         }
         app.insert_resource(RaytracedAudioSettings {
             occluded_gain: self.occluded_gain,
+            emitter_budget: self.emitter_budget,
         })
         .insert_resource(self.tracing)
         .init_resource::<RaytracedAudioListenerTrace2d>()
