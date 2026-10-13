@@ -5,6 +5,7 @@
 //! virtual [`Time`], so pausing or slowing virtual time also slows the rays.
 
 use super::ray_tracing::{RaytracedAudioListenerTrace3d, RaytracedAudioTracing3d};
+use super::settings::RaytracedAudioSettings;
 use crate::audio_2d::{RayKindMask, kind_alpha, visible_fractions};
 use bevy::color::{Alpha, Color};
 use bevy::gizmos::gizmos::Gizmos;
@@ -83,9 +84,12 @@ pub(super) fn draw_rays(
     draw: Res<'_, RaytracedAudioDebugDraw3d>,
     trace: Res<'_, RaytracedAudioListenerTrace3d>,
     time: Res<'_, Time>,
+    settings: Option<Res<'_, RaytracedAudioSettings>>,
     mut state: Local<'_, ReplayState>,
     mut gizmos: Gizmos<'_, '_>,
 ) {
+    // Segments are recorded in meters; the world scale places them in Bevy units.
+    let units_per_meter = settings.map_or(1.0, |settings| settings.units_per_meter);
     if !draw.enabled {
         state.segments.clear();
         return;
@@ -114,7 +118,7 @@ pub(super) fn draw_rays(
     for segment in &state.segments {
         if draw.kinds.contains(segment.kind()) {
             let trail_m = if instant { f32::INFINITY } else { draw.trail_m };
-            draw_segment(&mut gizmos, *segment, (front_m, trail_m));
+            draw_segment(&mut gizmos, *segment, (front_m, trail_m), units_per_meter);
         }
     }
 }
@@ -140,6 +144,7 @@ fn draw_segment(
     gizmos: &mut Gizmos<'_, '_>,
     segment: RaySegment3d,
     (front_m, trail_m): (f32, f32),
+    units_per_meter: f32,
 ) {
     let start = Vec3::new(
         narrow(segment.start().x_m()),
@@ -157,6 +162,8 @@ fn draw_segment(
     else {
         return;
     };
+    // Fractions come from distances in meters; drawing uses world units.
+    let (start, end) = (start * units_per_meter, end * units_per_meter);
     let base = RaytracedAudioDebugDraw3d::color(segment.kind());
     let alpha = kind_alpha(segment.kind(), segment.energy());
     let tail_alpha = if trail_m.is_finite() { 0.0 } else { alpha };
@@ -169,9 +176,9 @@ fn draw_segment(
     );
     // A bright tick marks each primary ray's travelling wavefront.
     if head < 1.0 && segment.kind() == RayKind::Primary {
-        let direction = (end - start) / length;
+        let direction = (end - start) / (length * units_per_meter);
         // Any unit vector perpendicular to the ray works; 3D has no preferred drawing plane.
-        let side = direction.any_orthonormal_vector() * 0.08;
+        let side = direction.any_orthonormal_vector() * (0.08 * units_per_meter);
         gizmos.line(head_point - side, head_point + side, base);
     }
 }

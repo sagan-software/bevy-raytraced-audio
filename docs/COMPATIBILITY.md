@@ -9,9 +9,9 @@ Research snapshot: 2026-10-06.
 | 0.17.3      | Stable            | `Decodable` with `DecoderItem`  | `bevy-raytraced-audio-compat-0-17` |
 | 0.18.1      | Stable            | `Decodable` with `DecoderItem`  | `bevy-raytraced-audio-compat-0-18` |
 | 0.19.1      | Stable            | `Decodable` uses rodio `Sample` | `bevy-raytraced-audio-compat-0-19` |
-| 0.20.0-rc.2 | Release candidate | `Decodable` uses rodio `Sample` | `bevy-raytraced-audio-compat-0-20` |
+| 0.20.0      | Stable            | `Decodable` uses rodio `Sample` | `bevy-raytraced-audio-compat-0-20` |
 
-The Bevy 0.20 row is provisional because the pinned release is not stable. The
+The
 browser gallery and tutorial examples use Bevy 0.19.1. Adapter compatibility
 crates isolate the changes to Bevy's audio sink types.
 
@@ -23,12 +23,12 @@ Sources: [Bevy releases](https://github.com/bevyengine/bevy/releases), tagged
 Bevy [0.17.3](https://github.com/bevyengine/bevy/blob/v0.17.3/Cargo.toml),
 [0.18.1](https://github.com/bevyengine/bevy/blob/v0.18.1/Cargo.toml),
 [0.19.1](https://github.com/bevyengine/bevy/blob/v0.19.1/Cargo.toml), and
-[0.20.0-rc.2](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/Cargo.toml)
+[0.20.0](https://github.com/bevyengine/bevy/blob/v0.20.0/Cargo.toml)
 manifests. See the versioned Bevy audio sources in
 [0.17.3](https://github.com/bevyengine/bevy/blob/v0.17.3/crates/bevy_audio/src/audio_source.rs),
 [0.18.1](https://github.com/bevyengine/bevy/blob/v0.18.1/crates/bevy_audio/src/audio_source.rs),
 [0.19.1](https://github.com/bevyengine/bevy/blob/v0.19.1/crates/bevy_audio/src/audio_source.rs), and
-[0.20.0-rc.2](https://github.com/bevyengine/bevy/blob/v0.20.0-rc.2/crates/bevy_audio/src/audio_source.rs).
+[0.20.0](https://github.com/bevyengine/bevy/blob/v0.20.0/crates/bevy_audio/src/audio_source.rs).
 
 ## Spatial audio correction
 
@@ -44,9 +44,9 @@ patch does not propagate through a published library dependency. The Bevy
 
 ## Rust versions
 
-The manifest `rust-version` and Clippy `msrv` are `1.96.1`. The compatibility
-workflow tests Rust `1.96.1`, `1.97.1`, `1.98.1`, and `1.99.0`. The 1.96 minimum
-matches the Bevy 0.20 release candidate's declared minimum.
+The manifest `rust-version` and Clippy `msrv` are `1.97.1`. The compatibility
+workflow tests Rust `1.97.1`, `1.98.1`, and `1.99.0`. The 1.97.1 minimum
+matches the `rust-version` that Bevy 0.20.0 declares.
 
 ## Test matrix
 

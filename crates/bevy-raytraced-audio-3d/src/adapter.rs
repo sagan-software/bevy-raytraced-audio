@@ -34,7 +34,7 @@ pub use ray_tracing::{
 };
 pub use reflection_paths::RaytracedAudioReflectionPaths3d;
 pub use response::RaytracedAudioResponse3d;
-pub use surface::RaytracedAudioSurface3d;
+pub use surface::{RaytracedAudioSurface3d, RaytracedAudioSurfaces3d};
 
 #[cfg(test)]
 #[path = "../../../tests/unit/3d_adapter.rs"]

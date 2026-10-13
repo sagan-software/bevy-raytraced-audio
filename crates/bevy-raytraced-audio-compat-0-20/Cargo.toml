@@ -4,19 +4,19 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
-description = "Bevy 0.20 release-candidate compatibility implementation for ray-traced audio adapters"
+description = "Bevy 0.20 compatibility implementation for ray-traced audio adapters"
 
 [features]
 debug_draw = ["bevy/bevy_color", "bevy/bevy_gizmos"]
 
 [dependencies]
-bevy = { version = "=0.20.0-rc.2", default-features = false, features = ["bevy_asset", "bevy_audio"] }
+bevy = { version = "=0.20.0", default-features = false, features = ["bevy_asset", "bevy_audio"] }
 bevy-raytraced-audio = { path = "../..", version = "0.1.0" }
-bevy_ecs = "=0.20.0-rc.2"
+bevy_ecs = "=0.20.0"
 log = "0.4"
 
 [dev-dependencies]
-bevy = { version = "=0.20.0-rc.2", default-features = false, features = ["wav"] }
+bevy = { version = "=0.20.0", default-features = false, features = ["wav"] }
 rodio = { version = "0.22", default-features = false }
 
 [lints]

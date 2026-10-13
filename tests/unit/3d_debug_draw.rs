@@ -2,8 +2,8 @@
 
 use super::{
     Alpha, Gizmos, Local, RayKind, RayKindMask, RaytracedAudioDebugDraw3d,
-    RaytracedAudioListenerTrace3d, RaytracedAudioTracing3d, ReplayState, Res, ResMut, Time,
-    draw_rays, restart_replay, sync_recording,
+    RaytracedAudioListenerTrace3d, RaytracedAudioSettings, RaytracedAudioTracing3d, ReplayState,
+    Res, ResMut, Time, draw_rays, restart_replay, sync_recording,
 };
 
 /// Device-free replay checks use the real Gizmos system parameter and inspect emitted vertices.
@@ -59,6 +59,7 @@ fn replay_emits_finite_vertices_and_observes_controls() {
         Res<'_, RaytracedAudioDebugDraw3d>,
         Res<'_, RaytracedAudioListenerTrace3d>,
         Res<'_, Time>,
+        Option<Res<'_, RaytracedAudioSettings>>,
         Local<'_, ReplayState>,
         Gizmos<'_, '_>,
     )>::new(app.world_mut());
@@ -77,10 +78,10 @@ fn replay_emits_finite_vertices_and_observes_controls() {
         app.world_mut()
             .resource_mut::<Time>()
             .advance_by(std::time::Duration::from_millis(20));
-        let (draw, trace, time, local, gizmos) =
+        let (draw, trace, time, settings, local, gizmos) =
             crate::test_support::test_system_param(state.get_mut(app.world_mut()));
-        draw_rays(draw, trace, time, local, gizmos);
-        let (_, _, _, local, mut gizmos) =
+        draw_rays(draw, trace, time, settings, local, gizmos);
+        let (_, _, _, _, local, mut gizmos) =
             crate::test_support::test_system_param(state.get_mut(app.world_mut()));
         assert!(
             gizmos
@@ -96,6 +97,37 @@ fn replay_emits_finite_vertices_and_observes_controls() {
             assert_eq!(local.segments, Vec::new());
         }
         gizmos.clear();
+    }
+    // A world scale places the same instant replay at scaled world positions.
+    let instant = |app: &mut App, state: &mut SystemState<_>| {
+        let mut config = app.world_mut().resource_mut::<RaytracedAudioDebugDraw3d>();
+        config.ray_speed_m_per_s = f32::INFINITY;
+        config.trail_m = f32::INFINITY;
+        config.enabled = true;
+        config.kinds = RayKindMask::ALL;
+        let (draw, trace, time, settings, local, gizmos) =
+            crate::test_support::test_system_param(state.get_mut(app.world_mut()));
+        draw_rays(draw, trace, time, settings, local, gizmos);
+        let (_, _, _, _, _, mut gizmos): (_, _, _, _, _, Gizmos<'_, '_>) =
+            crate::test_support::test_system_param(state.get_mut(app.world_mut()));
+        let positions = gizmos.buffer().list_positions.clone();
+        gizmos.clear();
+        positions
+    };
+    let unscaled = instant(&mut app, &mut state);
+    app.insert_resource(RaytracedAudioSettings {
+        occluded_gain: 0.0,
+        units_per_meter: 50.0,
+        controls_sink_volume: true,
+    });
+    let scaled = instant(&mut app, &mut state);
+    assert_eq!(unscaled.len(), scaled.len());
+    assert_ne!(scaled.as_slice(), []);
+    for (unscaled, scaled) in unscaled.iter().zip(&scaled) {
+        assert!(
+            (*unscaled * 50.0 - *scaled).length() < 1.0e-2,
+            "{unscaled} {scaled}"
+        );
     }
     let mut replay = ReplayState::default();
     app.world_mut()

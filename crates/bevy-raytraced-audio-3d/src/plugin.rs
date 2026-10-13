@@ -17,6 +17,10 @@ pub struct RaytracedAudio3dPlugin {
     backend_preference: AudioBackendPreference,
     /// Initial listener ray-trace configuration.
     tracing: RaytracedAudioTracing3d,
+    /// Bevy world units per meter.
+    units_per_meter: f32,
+    /// Whether the adapter writes Bevy sink volumes.
+    controls_sink_volume: bool,
 }
 
 impl Default for RaytracedAudio3dPlugin {
@@ -26,6 +30,8 @@ impl Default for RaytracedAudio3dPlugin {
             occluded_gain: 0.0,
             backend_preference: AudioBackendPreference::Cpu,
             tracing: RaytracedAudioTracing3d::default(),
+            units_per_meter: 1.0,
+            controls_sink_volume: true,
         }
     }
 }
@@ -65,6 +71,37 @@ impl RaytracedAudio3dPlugin {
 }
 
 impl RaytracedAudio3dPlugin {
+    /// Sets how many Bevy world units make one meter, for worlds not modelled in meters.
+    ///
+    /// Transforms of listeners, emitters and surfaces are divided by this scale before tracing,
+    /// so distances, delays and clearances stay in meters. The default is `1`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GeometryError::NonFiniteValue`] for a non-finite scale or
+    /// [`GeometryError::CoefficientOutOfRange`] for a scale at or below zero.
+    pub fn with_world_units_per_meter(mut self, units: f32) -> Result<Self, GeometryError> {
+        if !units.is_finite() {
+            return Err(GeometryError::NonFiniteValue);
+        }
+        if units <= 0.0 {
+            return Err(GeometryError::CoefficientOutOfRange);
+        }
+        self.units_per_meter = units;
+        Ok(self)
+    }
+
+    /// Leaves Bevy sink volumes to the application.
+    ///
+    /// The adapter still publishes [`super::RaytracedAudioResponse3d`] and
+    /// [`super::RaytracedAudioRayResponse3d`], so the application can map them through its own
+    /// occlusion curves. Processed players keep their filter and reverb controls.
+    #[must_use]
+    pub const fn without_sink_volume(mut self) -> Self {
+        self.controls_sink_volume = false;
+        self
+    }
+
     /// Sets the initial listener ray-trace settings.
     #[must_use]
     pub const fn with_ray_tracing(mut self, settings: RayTraceSettings) -> Self {
@@ -94,6 +131,8 @@ impl Plugin for RaytracedAudio3dPlugin {
         }
         app.insert_resource(RaytracedAudioSettings {
             occluded_gain: self.occluded_gain,
+            units_per_meter: self.units_per_meter,
+            controls_sink_volume: self.controls_sink_volume,
         })
         .insert_resource(self.tracing)
         .init_resource::<RaytracedAudioListenerTrace3d>()

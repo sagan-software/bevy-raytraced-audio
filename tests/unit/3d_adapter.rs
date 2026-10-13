@@ -2,7 +2,7 @@
 
 use super::{RaytracedAudio3dPlugin, RaytracedAudioEmitter3d, RaytracedAudioListener3d};
 use super::{RaytracedAudioListenerTrace3d, RaytracedAudioRayResponse3d};
-use super::{RaytracedAudioResponse3d, RaytracedAudioSurface3d};
+use super::{RaytracedAudioResponse3d, RaytracedAudioSurface3d, RaytracedAudioSurfaces3d};
 use bevy::audio::{AudioSink, AudioSinkPlayback, Volume};
 use bevy::prelude::{App, Entity, Transform, TransformPlugin, Vec3};
 use bevy_raytraced_audio::{AcousticMaterial, BandGain};
@@ -886,5 +886,163 @@ fn clearance_component_ignores_nearby_surfaces() -> Result<(), bevy_raytraced_au
     };
     assert!(!traced(plain));
     assert!(traced(cleared));
+    Ok(())
+}
+
+/// The wall used by the batched-surface and world-scale tests, at `x = 0` in local units.
+fn wall_vertices(half: f32) -> [Vec3; 3] {
+    [
+        Vec3::new(0.0, -half, -half),
+        Vec3::new(0.0, half, -half),
+        Vec3::new(0.0, 0.0, half),
+    ]
+}
+
+/// A world modelled in centimeters traces distances in meters.
+#[test]
+fn world_scale_converts_positions_to_meters() -> Result<(), bevy_raytraced_audio::GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(RaytracedAudio3dPlugin::default().with_world_units_per_meter(100.0)?);
+    app.world_mut().spawn((
+        RaytracedAudioListener3d,
+        Transform::from_xyz(500.0, 0.0, 0.0),
+    ));
+    let emitter = app
+        .world_mut()
+        .spawn((
+            RaytracedAudioEmitter3d,
+            Transform::from_xyz(-500.0, 0.0, 0.0),
+        ))
+        .id();
+    app.update();
+    let response = app
+        .world()
+        .get::<RaytracedAudioResponse3d>(emitter)
+        .expect("adapter inserts a response component")
+        .response();
+    assert!(
+        (response.direct.distance_m() - 10.0).abs() < 1.0e-9,
+        "{response:?}"
+    );
+    assert!(!response.direct.is_occluded());
+
+    // A wall 2 m wide in world centimeters blocks the scaled path.
+    app.world_mut().spawn((
+        RaytracedAudioSurfaces3d::from_vertices(
+            [wall_vertices(100.0)],
+            AcousticMaterial::default(),
+        )
+        .0,
+        Transform::default(),
+    ));
+    app.update();
+    let response = app
+        .world()
+        .get::<RaytracedAudioResponse3d>(emitter)
+        .expect("adapter keeps the response component")
+        .response();
+    assert!(response.direct.is_occluded());
+    Ok(())
+}
+
+/// The world scale must be a finite positive number.
+#[test]
+fn plugin_builder_checks_world_scale() {
+    for units in [0.0, -1.0, f32::NAN, f32::INFINITY] {
+        assert!(
+            RaytracedAudio3dPlugin::default()
+                .with_world_units_per_meter(units)
+                .is_err(),
+            "{units}"
+        );
+    }
+    assert!(
+        RaytracedAudio3dPlugin::default()
+            .with_world_units_per_meter(50.0)
+            .is_ok()
+    );
+}
+
+/// One batched entity occludes like single surfaces, and removing it clears the occlusion.
+#[test]
+fn batched_surfaces_occlude_and_rebuild_on_removal() {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(RaytracedAudio3dPlugin::default());
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    let emitter = app
+        .world_mut()
+        .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(-1.0, 0.0, 0.0)))
+        .id();
+    // A degenerate triple is skipped and counted.
+    let (batch, skipped) = RaytracedAudioSurfaces3d::from_vertices(
+        [wall_vertices(1.0), [Vec3::ZERO, Vec3::X, Vec3::X * 2.0]],
+        AcousticMaterial::default(),
+    );
+    assert_eq!((batch.triangles().len(), skipped), (1, 1));
+    let wall = app.world_mut().spawn((batch, Transform::default())).id();
+    app.update();
+    let occluded = |app: &App| {
+        app.world()
+            .get::<RaytracedAudioResponse3d>(emitter)
+            .expect("adapter inserts a response component")
+            .response()
+            .direct
+            .is_occluded()
+    };
+    assert!(occluded(&app));
+    // Moving the batch out of the path rebuilds the scene.
+    app.world_mut()
+        .get_mut::<Transform>(wall)
+        .expect("the batch keeps its transform")
+        .translation = Vec3::new(0.0, 10.0, 0.0);
+    app.update();
+    assert!(!occluded(&app));
+    app.world_mut()
+        .get_mut::<Transform>(wall)
+        .expect("the batch keeps its transform")
+        .translation = Vec3::ZERO;
+    app.update();
+    assert!(occluded(&app));
+    assert!(app.world_mut().despawn(wall));
+    app.update();
+    assert!(!occluded(&app));
+    let empty = RaytracedAudioSurfaces3d::new(Vec::new());
+    assert_eq!(empty.triangles(), []);
+}
+
+/// Without sink control the adapter publishes the occluded response and leaves the volume alone.
+#[test]
+fn without_sink_volume_leaves_the_sink_to_the_application()
+-> Result<(), bevy_raytraced_audio::GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(RaytracedAudio3dPlugin::default().without_sink_volume());
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    let mut sink = crate::test_support::test_audio_sink();
+    sink.set_volume(Volume::Linear(0.4));
+    let emitter = app
+        .world_mut()
+        .spawn((
+            RaytracedAudioEmitter3d,
+            Transform::from_xyz(-1.0, 0.0, 0.0),
+            sink,
+        ))
+        .id();
+    app.world_mut().spawn((
+        RaytracedAudioSurface3d::new(wall_vertices(1.0), AcousticMaterial::default())?,
+        Transform::default(),
+    ));
+    app.update();
+    assert_eq!(audio_volume(&app, emitter), 0.4);
+    let response = app
+        .world()
+        .get::<RaytracedAudioResponse3d>(emitter)
+        .expect("adapter inserts a response component")
+        .response();
+    assert!(response.direct.is_occluded());
     Ok(())
 }

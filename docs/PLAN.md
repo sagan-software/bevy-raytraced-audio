@@ -53,4 +53,4 @@ On Intel UHD Graphics 620 through ANGLE Vulkan, uncapped headless browser animat
 
 ## Compatibility maintenance
 
-Bevy 0.20 is currently tested at `0.20.0-rc.2`. Replace that release candidate when stable 0.20 is published and rerun the Bevy and Rust matrix. Keep the MSRV at Rust 1.96.1 unless every Bevy version and documented feature set passes an earlier compiler.
+Bevy 0.20 is tested at the stable `0.20.0` release. Keep the MSRV at Rust 1.97.1, the minimum Bevy 0.20.0 declares, unless every Bevy version and documented feature set passes an earlier compiler.

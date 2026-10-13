@@ -462,7 +462,9 @@
             version = "0.1.0";
             nativeBuildInputs = commonArgs.nativeBuildInputs ++ [ bevyCli ];
             buildPhaseCargoCommand = ''
-              CARGO_TARGET_DIR=target/bevy-lint bevy_lint --workspace --all-targets --locked
+              # bevy_lint pins a nightly older than Bevy 0.20.0's rust-version; the stable
+              # toolchain above enforces the MSRV, so the lint pass ignores it.
+              CARGO_TARGET_DIR=target/bevy-lint bevy_lint --workspace --all-targets --locked --ignore-rust-version
             '';
             doInstallCargoArtifacts = false;
             installPhaseCommand = "mkdir -p $out";
@@ -519,7 +521,9 @@
               treefmt --fail-on-change
               cargo clippy --workspace --all-targets --locked -- --deny warnings
               ${supportedFeatureCheckCommands}
-              CARGO_TARGET_DIR=target/bevy-lint bevy_lint --workspace --all-targets --locked
+              # bevy_lint pins a nightly older than Bevy 0.20.0's rust-version; the stable
+              # toolchain above enforces the MSRV, so the lint pass ignores it.
+              CARGO_TARGET_DIR=target/bevy-lint bevy_lint --workspace --all-targets --locked --ignore-rust-version
               cargo nextest run --locked --workspace --no-tests=pass
               cargo test --workspace --doc --locked
               RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --document-private-items --locked

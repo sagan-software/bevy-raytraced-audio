@@ -1,4 +1,4 @@
-//! Shared 2D and 3D systems compiled against Bevy 0.20 release candidate 2.
+//! Shared 2D and 3D systems compiled against Bevy 0.20.
 
 #[path = "../../shared/processed_audio.rs"]
 pub mod processed_audio;

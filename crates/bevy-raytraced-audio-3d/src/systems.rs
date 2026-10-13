@@ -9,12 +9,13 @@ use super::ray_tracing::{
 use super::reflection_paths::RaytracedAudioReflectionPaths3d;
 use super::response::RaytracedAudioResponse3d;
 use super::settings::RaytracedAudioSettings;
-use super::surface::RaytracedAudioSurface3d;
+use super::surface::{RaytracedAudioSurface3d, RaytracedAudioSurfaces3d};
 use super::volume::RaytracedAudioBaseVolume;
 use crate::processed_audio::RaytracedAudioPlayer;
 use bevy::audio::Volume;
 use bevy::ecs::entity::EntityHashMap;
 use bevy::ecs::query::QueryItem;
+use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 use bevy::tasks::ComputeTaskPool;
 use bevy_raytraced_audio::{
@@ -42,28 +43,47 @@ type EmitterQueryData = (
 /// Selects entities marked as 3D emitters and their adapter state.
 type EmitterQuery<'w, 's> = Query<'w, 's, EmitterQueryData, With<RaytracedAudioEmitter3d>>;
 
+/// Matches entities that carry single or batched acoustic surfaces.
+type AnySurface = Or<(
+    With<RaytracedAudioSurface3d>,
+    With<RaytracedAudioSurfaces3d>,
+)>;
+
+/// The surface queries and removal cursors that decide when the cached scene is rebuilt.
+#[derive(SystemParam)]
+pub(super) struct SurfaceQueries<'w, 's> {
+    /// Single-triangle surfaces and their placement.
+    surfaces: Query<'w, 's, (&'static RaytracedAudioSurface3d, &'static GlobalTransform)>,
+    /// Batched surfaces and their placement.
+    batches: Query<'w, 's, (&'static RaytracedAudioSurfaces3d, &'static GlobalTransform)>,
+    /// Surfaces whose geometry or placement changed since the last run.
+    changed: Query<
+        'w,
+        's,
+        (),
+        (
+            AnySurface,
+            Or<(
+                Changed<RaytracedAudioSurface3d>,
+                Changed<RaytracedAudioSurfaces3d>,
+                Changed<GlobalTransform>,
+            )>,
+        ),
+    >,
+    /// Surfaces that cannot be placed yet.
+    without_transform: Query<'w, 's, (), (AnySurface, Without<GlobalTransform>)>,
+    /// Removed single-triangle surfaces.
+    removed: RemovedComponents<'w, 's, RaytracedAudioSurface3d>,
+    /// Removed batched surfaces.
+    removed_batches: RemovedComponents<'w, 's, RaytracedAudioSurfaces3d>,
+}
+
 /// Caches unchanged geometry, updates responses, and applies direct-path transmission to sinks.
 pub(super) fn update_raytraced_audio(
     commands: ParallelCommands<'_, '_>,
     settings: Res<'_, RaytracedAudioSettings>,
     listeners: Query<'_, '_, &GlobalTransform, With<RaytracedAudioListener3d>>,
-    surfaces: Query<'_, '_, (&RaytracedAudioSurface3d, &GlobalTransform)>,
-    changed_surfaces: Query<
-        '_,
-        '_,
-        (),
-        (
-            With<RaytracedAudioSurface3d>,
-            Or<(Changed<RaytracedAudioSurface3d>, Changed<GlobalTransform>)>,
-        ),
-    >,
-    surfaces_without_transform: Query<
-        '_,
-        '_,
-        (),
-        (With<RaytracedAudioSurface3d>, Without<GlobalTransform>),
-    >,
-    mut removed_surfaces: RemovedComponents<'_, '_, RaytracedAudioSurface3d>,
+    mut surfaces: SurfaceQueries<'_, '_>,
     mut scene: Local<'_, AcousticScene3d>,
     mut scene_is_cached: Local<'_, bool>,
     tracing: Res<'_, RaytracedAudioTracing3d>,
@@ -72,7 +92,8 @@ pub(super) fn update_raytraced_audio(
     real_time: Option<Res<'_, Time<Real>>>,
     emitters: EmitterQuery<'_, '_>,
 ) {
-    let listener = unique_listener(&listeners);
+    let settings = *settings;
+    let listener = unique_listener(&listeners, settings);
     // Pose updates run every frame, independently of the more expensive ray-tracing cadence.
     // Ignore transform scale: direction is in head coordinates, distance stays in world units.
     let head = listeners.single().ok().filter(|_| listener.is_some());
@@ -80,7 +101,8 @@ pub(super) fn update_raytraced_audio(
         if let Some(params) = player.and_then(RaytracedAudioPlayer::binaural_params) {
             if let Some(head) = head {
                 let (_, rotation, translation) = head.to_scale_rotation_translation();
-                let local = rotation.inverse() * (transform.translation() - translation);
+                let local = settings
+                    .to_meters(rotation.inverse() * (transform.translation() - translation));
                 params.set_position(local.to_array());
             } else {
                 params.clear_listener();
@@ -89,10 +111,8 @@ pub(super) fn update_raytraced_audio(
     }
     let scene_changed = refresh_scene(
         listener.is_some(),
-        &surfaces,
-        &changed_surfaces,
-        &surfaces_without_transform,
-        &mut removed_surfaces,
+        settings,
+        &mut surfaces,
         &mut scene,
         &mut scene_is_cached,
     );
@@ -103,7 +123,7 @@ pub(super) fn update_raytraced_audio(
         || (trace_scratch.since_trace_s >= tracing.interval_s
             && (!tracing.settings.reuses_results()
                 || trace_scratch.listener != listener
-                || source_positions_changed(&emitters, &trace_scratch)))
+                || source_positions_changed(&emitters, &trace_scratch, settings)))
         || has_untraced_emitter(&emitters, &trace_scratch.indices)
         || listener_trace.valid != listener.is_some();
     // Diagnostics must not advertise a changed acoustic result to downstream systems.
@@ -122,6 +142,7 @@ pub(super) fn update_raytraced_audio(
             &scene,
             listener.filter(|_| tracing.enabled),
             *tracing,
+            settings,
             &emitters,
             &mut listener_trace,
             &mut trace_scratch,
@@ -132,14 +153,7 @@ pub(super) fn update_raytraced_audio(
         indices: &trace_scratch.indices,
         trace: listener_trace.trace(),
     };
-    process_emitters(
-        commands,
-        &scene,
-        listener,
-        settings.occluded_gain,
-        &traced,
-        emitters,
-    );
+    process_emitters(commands, &scene, listener, settings, &traced, emitters);
 }
 
 /// Reused emitter positions and entity-to-trace-index lookup.
@@ -164,10 +178,14 @@ fn has_untraced_emitter(emitters: &EmitterQuery<'_, '_>, indices: &EntityHashMap
 }
 
 /// Compares current finite sources with cached input, including removals and invalid transforms.
-fn source_positions_changed(emitters: &EmitterQuery<'_, '_>, scratch: &TraceScratch) -> bool {
+fn source_positions_changed(
+    emitters: &EmitterQuery<'_, '_>,
+    scratch: &TraceScratch,
+    settings: RaytracedAudioSettings,
+) -> bool {
     let mut valid_count = 0;
     for (entity, transform, .., clearance) in emitters {
-        let translation = transform.translation();
+        let translation = settings.to_meters(transform.translation());
         if let Ok(position) = Point3::try_new(translation.x, translation.y, translation.z) {
             valid_count += 1;
             let previous = scratch
@@ -215,6 +233,7 @@ fn trace_listener(
     scene: &AcousticScene3d,
     listener: Option<Listener3d>,
     tracing: RaytracedAudioTracing3d,
+    settings: RaytracedAudioSettings,
     emitters: &EmitterQuery<'_, '_>,
     listener_trace: &mut RaytracedAudioListenerTrace3d,
     scratch: &mut TraceScratch,
@@ -227,7 +246,7 @@ fn trace_listener(
         return;
     };
     for (entity, transform, .., clearance) in emitters {
-        let translation = transform.translation();
+        let translation = settings.to_meters(transform.translation());
         if let Ok(position) = Point3::try_new(translation.x, translation.y, translation.z) {
             scratch.indices.insert(entity, scratch.sources.len());
             scratch
@@ -247,13 +266,14 @@ fn trace_listener(
 /// Returns the unique finite 3D listener, disabling tracing for missing or ambiguous listeners.
 fn unique_listener(
     listeners: &Query<'_, '_, &GlobalTransform, With<RaytracedAudioListener3d>>,
+    settings: RaytracedAudioSettings,
 ) -> Option<Listener3d> {
     let mut listener_iter = listeners.iter();
     let listener_transform = listener_iter.next()?;
     if listener_iter.next().is_some() {
         return None;
     }
-    let translation = listener_transform.translation();
+    let translation = settings.to_meters(listener_transform.translation());
     Point3::try_new(translation.x, translation.y, translation.z)
         .ok()
         .map(Listener3d::new)
@@ -262,30 +282,16 @@ fn unique_listener(
 /// Clears invalid scenes and rebuilds cached geometry after a surface change.
 fn refresh_scene(
     listener_is_valid: bool,
-    surfaces: &Query<'_, '_, (&RaytracedAudioSurface3d, &GlobalTransform)>,
-    changed_surfaces: &Query<
-        '_,
-        '_,
-        (),
-        (
-            With<RaytracedAudioSurface3d>,
-            Or<(Changed<RaytracedAudioSurface3d>, Changed<GlobalTransform>)>,
-        ),
-    >,
-    surfaces_without_transform: &Query<
-        '_,
-        '_,
-        (),
-        (With<RaytracedAudioSurface3d>, Without<GlobalTransform>),
-    >,
-    removed_surfaces: &mut RemovedComponents<'_, '_, RaytracedAudioSurface3d>,
+    settings: RaytracedAudioSettings,
+    surfaces: &mut SurfaceQueries<'_, '_>,
     scene: &mut Local<'_, AcousticScene3d>,
     scene_is_cached: &mut Local<'_, bool>,
 ) -> bool {
-    // Removed surfaces are absent from the changed query, so read their event cursor separately.
-    let surface_was_removed = removed_surfaces.read().count() != 0;
-    let surface_changed = !changed_surfaces.is_empty()
-        || !surfaces_without_transform.is_empty()
+    // Removed surfaces are absent from the changed query, so read their event cursors separately.
+    let surface_was_removed =
+        surfaces.removed.read().count() != 0 || surfaces.removed_batches.read().count() != 0;
+    let surface_changed = !surfaces.changed.is_empty()
+        || !surfaces.without_transform.is_empty()
         || surface_was_removed;
 
     if !listener_is_valid {
@@ -296,8 +302,18 @@ fn refresh_scene(
         false
     } else if !**scene_is_cached || surface_changed {
         scene.clear();
-        for (surface, transform) in surfaces {
-            if let Some(triangle) = transformed_triangle(surface.triangle, transform) {
+        let singles = surfaces
+            .surfaces
+            .iter()
+            .map(|(surface, transform)| (surface.triangle, transform));
+        let batched = surfaces.batches.iter().flat_map(|(batch, transform)| {
+            batch
+                .triangles
+                .iter()
+                .map(move |triangle| (*triangle, transform))
+        });
+        for (triangle, transform) in singles.chain(batched) {
+            if let Some(triangle) = transformed_triangle(triangle, transform, settings) {
                 scene.add_triangle(triangle);
             }
         }
@@ -313,7 +329,7 @@ fn process_emitters(
     commands: ParallelCommands<'_, '_>,
     scene: &AcousticScene3d,
     listener: Option<Listener3d>,
-    occluded_gain: f32,
+    settings: RaytracedAudioSettings,
     traced: &TracedResponses<'_>,
     mut emitters: EmitterQuery<'_, '_>,
 ) {
@@ -325,7 +341,7 @@ fn process_emitters(
             &commands,
             scene,
             listener.as_ref(),
-            occluded_gain,
+            settings,
             traced,
             emitter,
         );
@@ -343,7 +359,7 @@ fn update_emitter(
     commands: &ParallelCommands<'_, '_>,
     scene: &AcousticScene3d,
     listener: Option<&Listener3d>,
-    occluded_gain: f32,
+    settings: RaytracedAudioSettings,
     traced: &TracedResponses<'_>,
     (
         entity,
@@ -358,7 +374,7 @@ fn update_emitter(
         clearance,
     ): QueryItem<'_, '_, EmitterQueryData>,
 ) {
-    let translation = transform.translation();
+    let translation = settings.to_meters(transform.translation());
     let response = Point3::try_new(translation.x, translation.y, translation.z)
         .ok()
         .zip(listener)
@@ -397,16 +413,19 @@ fn update_emitter(
     let visibility_gain = if player.is_some() && ray_response.is_some() {
         Some(1.0)
     } else {
-        response.map(|response| visibility_gain(response, ray_response, occluded_gain))
+        response.map(|response| visibility_gain(response, ray_response, settings.occluded_gain))
     };
-    update_sink_volume(
-        commands,
-        entity,
-        visibility_gain,
-        audio_sink,
-        spatial_sink,
-        base_volume,
-    );
+    // An application that applies its own curves keeps ownership of the sink volume.
+    if settings.controls_sink_volume {
+        update_sink_volume(
+            commands,
+            entity,
+            visibility_gain,
+            audio_sink,
+            spatial_sink,
+            base_volume,
+        );
+    }
     update_response_component(commands, entity, response, response_state);
     update_ray_response_component(commands, entity, ray_response, ray_response_state);
 }
@@ -556,11 +575,13 @@ fn update_response_component(
 fn transformed_triangle(
     local_triangle: Triangle3d,
     transform: &GlobalTransform,
+    settings: RaytracedAudioSettings,
 ) -> Option<Triangle3d> {
     let [first, second, third] = local_triangle.vertices();
-    let first = transform.transform_point(Vec3::new(first.x(), first.y(), first.z()));
-    let second = transform.transform_point(Vec3::new(second.x(), second.y(), second.z()));
-    let third = transform.transform_point(Vec3::new(third.x(), third.y(), third.z()));
+    let place = |point: Point3| {
+        settings.to_meters(transform.transform_point(Vec3::new(point.x(), point.y(), point.z())))
+    };
+    let (first, second, third) = (place(first), place(second), place(third));
     let vertices = [
         Point3::try_new(first.x, first.y, first.z).ok()?,
         Point3::try_new(second.x, second.y, second.z).ok()?,

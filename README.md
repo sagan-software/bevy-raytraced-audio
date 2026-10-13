@@ -118,6 +118,30 @@ still occludes the source. Emitters without the component use a clearance of
 and `Emitter2d::try_with_clearance`; `cargo run --example source_clearance`
 compares an enclosed source with and without it.
 
+Level geometry such as a collision mesh can live on one entity instead of one
+entity per triangle. `RaytracedAudioSurfaces3d::from_vertices` validates each
+vertex triple, skips degenerate or non-finite triples, and returns how many it
+skipped:
+
+```rust,ignore
+let (surfaces, skipped) =
+    RaytracedAudioSurfaces3d::from_vertices(level_triangles, AcousticMaterial::default());
+commands.spawn((surfaces, Transform::default()));
+```
+
+The adapter assumes one Bevy world unit is one meter. For a world modelled in
+other units, set the scale once, and the adapter converts every listener,
+emitter and surface position to meters before tracing:
+
+```rust,ignore
+app.add_plugins(RaytracedAudio3dPlugin::default().with_world_units_per_meter(100.0)?);
+```
+
+Clearances, ray speeds and trail lengths stay in meters. To map responses
+through your own occlusion curves, call `without_sink_volume()`: the adapter
+keeps publishing `RaytracedAudioResponse3d` and `RaytracedAudioRayResponse3d`
+but leaves every Bevy sink volume to the application.
+
 For headphone elevation cues, opt a 3D player into measured binaural rendering:
 `RaytracedAudioPlayer::new(audio).with_binaural(0.22)`. The scale controls distance
 rolloff and replaces Bevy's spatial scale for that voice. The adapter follows
@@ -135,9 +159,8 @@ backend is not implemented yet.
 
 For a Bevy 0.17, 0.18, or 0.20 project, set the adapter feature to `bevy_0_17`,
 `bevy_0_18`, or `bevy_0_20`. Disable default features when selecting a version.
-Use one Bevy adapter version per application. The current 0.20 adapter targets
-`0.20.0-rc.2`; the [official release list](https://github.com/bevyengine/bevy/releases)
-has no stable 0.20 release as of 2026-10-06.
+Use one Bevy adapter version per application. The 0.20 adapter targets the
+stable `0.20.0` release.
 
 ## Browser examples
 
@@ -197,10 +220,9 @@ nix run .#forest-3d
 | `bevy_0_17`  | 0.17.3       | Feature and integration tested             |
 | `bevy_0_18`  | 0.18.1       | Feature and integration tested             |
 | `bevy_0_19`  | 0.19.1       | Default feature; examples use this version |
-| `bevy_0_20`  | 0.20.0-rc.2  | Release-candidate compatibility only       |
+| `bevy_0_20`  | 0.20.0       | Stable release                             |
 
-The workspace MSRV is Rust 1.96.1. CI tests Rust 1.96.1, 1.97.1, 1.98.1, and
-1.99.0. The local verification host uses Rust 1.99.0. See the
+The workspace MSRV is Rust 1.97.1. CI tests Rust 1.97.1, 1.98.1, and 1.99.0. The local verification host uses Rust 1.99.0. See the
 [compatibility notes](docs/COMPATIBILITY.md) for the tested matrix and release
 sources.
 
