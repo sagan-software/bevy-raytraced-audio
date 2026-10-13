@@ -3,7 +3,7 @@
 use bevy_raytraced_audio::{
     AcousticMaterial, AcousticScene2d, AcousticScene3d, Emitter2d, Emitter3d, GeometryError,
     Listener2d, Listener3d, ListenerTrace2d, ListenerTrace3d, Point2, Point3, RayTraceSettings,
-    Segment2d, Triangle3d,
+    Segment2d, TraceResume, Triangle3d, frame_ray_budget,
 };
 use criterion::{BenchmarkId, Criterion, Throughput};
 use std::{hint::black_box, time::Duration};
@@ -44,6 +44,7 @@ fn main() -> Result<(), GeometryError> {
     benchmark_3d_stress(&mut criterion, emitter3d, listener3d)?;
     benchmark_3d_reflection_limit(&mut criterion)?;
     benchmark_listener_frame(&mut criterion)?;
+    benchmark_listener_slice(&mut criterion)?;
     benchmark_emitter_refresh_frame(&mut criterion)?;
     criterion.final_summary();
     Ok(())
@@ -382,6 +383,97 @@ fn benchmark_listener_frame(criterion: &mut Criterion) -> Result<(), GeometryErr
                     );
                     black_box(&output3d);
                     trace_checksum3d(&output3d)
+                });
+            },
+        );
+    }
+    group.finish();
+    Ok(())
+}
+
+/// Measures one coherent continuation of a listener trace that stays under a frame budget.
+///
+/// The ray count stays above the rays this sample can cast, so publishing and the direct-path
+/// setup of a new trace stay outside the timed loop. Listener and source motion stays inside
+/// one meter of the poses captured when the trace started. The budget is `frame_ray_budget`.
+fn benchmark_listener_slice(criterion: &mut Criterion) -> Result<(), GeometryError> {
+    let mut group = criterion.benchmark_group("propagation/listener_slice");
+    let settings = RayTraceSettings::default()
+        .try_with_ray_count(65_536)
+        .expect("nonzero ray count");
+    for source_count in [64_usize, 1024] {
+        let budget = frame_ray_budget(source_count, settings.ray_count());
+        group.throughput(Throughput::Elements(u64::from(budget)));
+
+        let scene2d = dense_scene2d(1024)?;
+        let mut sources2d = dense_sources2d(source_count)?;
+        let mut output2d = ListenerTrace2d::default();
+        let mut frame2d = 0_usize;
+        scene2d.advance_listener_trace(
+            Listener2d::new(Point2::try_new(0.0, 0.0)?),
+            &sources2d,
+            settings,
+            &mut output2d,
+            budget,
+            TraceResume::Coherent,
+        );
+        group.bench_with_input(
+            BenchmarkId::new("2d/sources", source_count),
+            &source_count,
+            |bencher, _| {
+                bencher.iter(|| {
+                    frame2d += 1;
+                    let shift = f32::from(u16::try_from(frame2d % 1_000).unwrap_or(0)) * 1.0e-4;
+                    let listener = Listener2d::new(Point2::try_new(shift, 0.0).expect("finite"));
+                    for (index, source) in sources2d.iter_mut().enumerate() {
+                        *source = dense_source2d(index, shift).expect("finite fixture");
+                    }
+                    let step = scene2d.advance_listener_trace(
+                        black_box(listener),
+                        black_box(&sources2d),
+                        settings,
+                        &mut output2d,
+                        budget,
+                        TraceResume::Coherent,
+                    );
+                    black_box(step.rays_completed())
+                });
+            },
+        );
+
+        let scene3d = dense_scene3d(1024)?;
+        let mut sources3d = dense_sources3d(source_count)?;
+        let mut output3d = ListenerTrace3d::default();
+        let mut frame3d = 0_usize;
+        scene3d.advance_listener_trace(
+            Listener3d::new(Point3::try_new(0.0, 0.0, 0.0)?),
+            &sources3d,
+            settings,
+            &mut output3d,
+            budget,
+            TraceResume::Coherent,
+        );
+        group.bench_with_input(
+            BenchmarkId::new("3d/sources", source_count),
+            &source_count,
+            |bencher, _| {
+                bencher.iter(|| {
+                    frame3d += 1;
+                    let shift = f32::from(u16::try_from(frame3d % 1_000).unwrap_or(0)) * 1.0e-4;
+                    let listener =
+                        Listener3d::new(Point3::try_new(shift, 0.0, 0.0).expect("finite"));
+                    for (index, source) in sources3d.iter_mut().enumerate() {
+                        *source = dense_source3d(index, shift).expect("finite fixture");
+                    }
+                    let step = scene3d.advance_listener_trace(
+                        black_box(listener),
+                        black_box(&sources3d),
+                        settings,
+                        &mut output3d,
+                        budget,
+                        TraceResume::Coherent,
+                    );
+                    black_box(step.rays_completed())
                 });
             },
         );
