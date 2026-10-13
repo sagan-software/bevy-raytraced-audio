@@ -3,8 +3,8 @@
 use crate::bvh::{BoundingVolumeHierarchy, Bounds, Ray, SceneDimensions};
 use crate::math3d::Vector3;
 use crate::{
-    AcousticResponse, BandEnergy, BandGain, Emitter3d, Listener3d, PathResponse, ReflectionPath3d,
-    ReflectionSurfaceIndex, SolverPoint3d, Triangle3d,
+    AcousticResponse, BandEnergy, BandGain, Emitter3d, GeometryError, Listener3d, PathResponse,
+    ReflectionPath3d, ReflectionSurfaceIndex, SolverPoint3d, Triangle3d,
 };
 use std::sync::{Arc, OnceLock};
 
@@ -23,6 +23,8 @@ pub struct AcousticScene3d {
     acceleration: OnceLock<SceneAcceleration3d>,
     /// Shared identity for the current immutable geometry, created only when traced.
     revision: OnceLock<Arc<()>>,
+    /// Longest first-order reflected path, in meters, or `None` for no limit.
+    max_reflection_distance_m: Option<f32>,
 }
 
 impl AcousticScene3d {
@@ -36,6 +38,56 @@ impl AcousticScene3d {
         self.triangles.push(triangle);
         drop(self.acceleration.take());
         drop(self.revision.take());
+    }
+
+    /// Limits first-order reflections to paths no longer than `distance_m` meters.
+    ///
+    /// A reflection point on such a path lies inside an ellipsoid around the source and the
+    /// listener, so the broad-phase hierarchy rejects every triangle outside it; without a
+    /// limit each query tests every triangle as a reflector. A longer reflection carries at
+    /// most `(direct / distance)^2` of the direct energy, so the limit trades faint distant
+    /// reflections for a query cost that no longer grows with the size of the scene.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GeometryError::NonFiniteValue`] for a non-finite distance or
+    /// [`GeometryError::CoefficientOutOfRange`] for a distance at or below zero.
+    pub fn try_with_max_reflection_distance(
+        mut self,
+        distance_m: f32,
+    ) -> Result<Self, GeometryError> {
+        self.set_max_reflection_distance(Some(distance_m))?;
+        Ok(self)
+    }
+
+    /// Sets or, with `None`, removes the reflected path length limit of
+    /// [`Self::try_with_max_reflection_distance`].
+    ///
+    /// # Errors
+    ///
+    /// Returns the same errors as [`Self::try_with_max_reflection_distance`] and leaves the
+    /// limit unchanged.
+    pub fn set_max_reflection_distance(
+        &mut self,
+        distance_m: Option<f32>,
+    ) -> Result<(), GeometryError> {
+        if let Some(distance) = distance_m {
+            if !distance.is_finite() {
+                return Err(GeometryError::NonFiniteValue);
+            }
+            if distance <= 0.0 {
+                return Err(GeometryError::CoefficientOutOfRange);
+            }
+        }
+        self.max_reflection_distance_m = distance_m;
+        drop(self.revision.take());
+        Ok(())
+    }
+
+    /// Returns the reflected path length limit in meters, or `None` without one.
+    #[must_use]
+    pub const fn max_reflection_distance_m(&self) -> Option<f32> {
+        self.max_reflection_distance_m
     }
 
     /// Removes every surface triangle from the scene.
@@ -217,46 +269,74 @@ impl AcousticScene3d {
         clearance_m: f64,
     ) -> impl Iterator<Item = ReflectionPath3d> + '_ {
         let acceleration = self.acceleration();
-        let candidates = if acceleration.hierarchy.may_have_reflections(Bounds::path_3d(
+        let limit = self.max_reflection_distance_m.map(f64::from);
+        let may_reflect = acceleration.hierarchy.may_have_reflections(Bounds::path_3d(
             (source.x, source.y, source.z),
             (receiver.x, receiver.y, receiver.z),
-        )) {
-            acceleration.triangles.as_slice()
+        ));
+        // Without a limit every triangle is a candidate, in insertion order.
+        let all_count = if may_reflect && limit.is_none() {
+            acceleration.triangles.len()
         } else {
-            &[]
+            0
         };
-        candidates
-            .iter()
-            .enumerate()
-            .filter_map(move |(index, reflector)| {
-                // If source and listener coincide, this triangle cannot form a positive-length reflected path.
-                if direct_distance == 0.0 {
-                    return None;
-                }
+        let all = acceleration.triangles.iter().enumerate().take(all_count);
+        // With a limit only triangles near the source-listener ellipsoid are candidates. The
+        // ellipsoid with these foci and major axis `limit` lies in a sphere of radius
+        // `limit / 2` around their midpoint; a path no longer than the direct one has none.
+        let mut culled = Vec::new();
+        if let Some(limit) = limit.filter(|limit| may_reflect && *limit > direct_distance) {
+            let midpoint = (
+                f64::midpoint(source.x, receiver.x),
+                f64::midpoint(source.y, receiver.y),
+                f64::midpoint(source.z, receiver.z),
+            );
+            let region = Bounds::sphere_3d(midpoint, limit / 2.0);
+            acceleration
+                .hierarchy
+                .visit_candidates_until(region, None, |index| {
+                    culled.extend(
+                        acceleration
+                            .triangles
+                            .get(index)
+                            .map(|triangle| (index, triangle)),
+                    );
+                    true
+                });
+            // Paths keep the documented insertion order.
+            culled.sort_unstable_by_key(|(index, _)| *index);
+        }
+        all.chain(culled).filter_map(move |(index, reflector)| {
+            // If source and listener coincide, this triangle cannot form a positive-length reflected path.
+            if direct_distance == 0.0 {
+                return None;
+            }
 
-                let (reflection_point, reflected_distance, image_source) =
-                    first_reflection(source, receiver, reflector)?;
+            // A reflected path longer than the scene's limit is ignored.
+            let (reflection_point, reflected_distance, image_source) =
+                first_reflection(source, receiver, reflector)
+                    .filter(|(_, distance, _)| limit.is_none_or(|limit| *distance <= limit))?;
 
-                // If the reflection point lies inside the source clearance, the reflector is ignored.
-                let leg_start = clear_of_source(source, reflection_point, clearance_m)?;
+            // If the reflection point lies inside the source clearance, the reflector is ignored.
+            let leg_start = clear_of_source(source, reflection_point, clearance_m)?;
 
-                // If another triangle crosses either leg, this reflected candidate is omitted.
-                if self.segment_is_occluded(leg_start, reflection_point, Some(index))
-                    || self.segment_is_occluded(reflection_point, receiver, Some(index))
-                {
-                    return None;
-                }
+            // If another triangle crosses either leg, this reflected candidate is omitted.
+            if self.segment_is_occluded(leg_start, reflection_point, Some(index))
+                || self.segment_is_occluded(reflection_point, receiver, Some(index))
+            {
+                return None;
+            }
 
-                let distance_ratio = direct_distance / reflected_distance;
-                Some(ReflectionPath3d::new(
-                    ReflectionSurfaceIndex::new(index),
-                    SolverPoint3d::new(reflection_point.x, reflection_point.y, reflection_point.z),
-                    SolverPoint3d::new(image_source.x, image_source.y, image_source.z),
-                    reflected_distance,
-                    distance_ratio * distance_ratio,
-                    reflector.reflected_fraction,
-                ))
-            })
+            let distance_ratio = direct_distance / reflected_distance;
+            Some(ReflectionPath3d::new(
+                ReflectionSurfaceIndex::new(index),
+                SolverPoint3d::new(reflection_point.x, reflection_point.y, reflection_point.z),
+                SolverPoint3d::new(image_source.x, image_source.y, image_source.z),
+                reflected_distance,
+                distance_ratio * distance_ratio,
+                reflector.reflected_fraction,
+            ))
+        })
     }
 
     /// Checks whether another registered triangle crosses an open reflection leg.

@@ -341,3 +341,85 @@ fn direct_trace_skips_reflections_and_keeps_occlusion() {
     scene.add_triangle(Triangle3d::try_new(wall, AcousticMaterial::default()).unwrap());
     assert!(scene.trace_direct(emitter, listener).direct.is_occluded());
 }
+
+/// A reflection limit keeps near reflectors, drops far ones, and matches the unlimited result
+/// when every reflection fits.
+#[test]
+fn reflection_limit_culls_far_reflectors() {
+    let point = |x, y, z| Point3::try_new(x, y, z).unwrap();
+    let emitter = Emitter3d::new(point(-1.0, 0.0, 0.0));
+    let listener = Listener3d::new(point(1.0, 0.0, 0.0));
+    let floor = |y: f32| {
+        Triangle3d::try_new(
+            [
+                point(-50.0, y, -50.0),
+                point(50.0, y, -50.0),
+                point(0.0, y, 50.0),
+            ],
+            AcousticMaterial::default(),
+        )
+        .unwrap()
+    };
+    // Floors 1 m and 20 m below give reflected paths of about 2.8 m and 40 m.
+    let mut unlimited = AcousticScene3d::default();
+    unlimited.add_triangle(floor(-20.0));
+    unlimited.add_triangle(floor(-1.0));
+    // Many far triangles that cannot reflect within the limit.
+    for step in 0..200_u32 {
+        let x = 500.0 + f32::from(u16::try_from(step).unwrap());
+        unlimited.add_triangle(
+            Triangle3d::try_new(
+                [
+                    point(x, -1.0, -1.0),
+                    point(x, 1.0, -1.0),
+                    point(x, 0.0, 1.0),
+                ],
+                AcousticMaterial::default(),
+            )
+            .unwrap(),
+        );
+    }
+    let all: Vec<_> = unlimited.reflection_paths(emitter, listener).collect();
+    let limited = unlimited
+        .clone()
+        .try_with_max_reflection_distance(10.0)
+        .unwrap();
+    assert_eq!(limited.max_reflection_distance_m(), Some(10.0));
+    let near: Vec<_> = limited.reflection_paths(emitter, listener).collect();
+    assert_eq!(near.len(), 1, "{near:?}");
+    assert_eq!(near[0].surface_index().index(), 1);
+    assert!(all.len() > near.len());
+    // A generous limit keeps every reflection in insertion order.
+    let generous = unlimited
+        .clone()
+        .try_with_max_reflection_distance(1.0e6)
+        .unwrap();
+    let kept: Vec<_> = generous.reflection_paths(emitter, listener).collect();
+    assert_eq!(kept, all);
+    assert_eq!(
+        generous.trace(emitter, listener),
+        unlimited.trace(emitter, listener)
+    );
+    // A limit no longer than the direct path leaves no reflection.
+    let short = unlimited
+        .clone()
+        .try_with_max_reflection_distance(2.0)
+        .unwrap();
+    assert_eq!(short.reflection_paths(emitter, listener).count(), 0);
+    // Invalid limits are rejected and removing the limit restores every reflection.
+    let mut scene = limited;
+    for invalid in [0.0, -1.0, f32::NAN, f32::INFINITY] {
+        assert!(
+            scene.set_max_reflection_distance(Some(invalid)).is_err(),
+            "{invalid}"
+        );
+        assert_eq!(scene.max_reflection_distance_m(), Some(10.0));
+    }
+    assert!(
+        AcousticScene3d::default()
+            .try_with_max_reflection_distance(f32::NAN)
+            .is_err()
+    );
+    scene.set_max_reflection_distance(None).unwrap();
+    assert_eq!(scene.reflection_paths(emitter, listener).count(), all.len());
+}

@@ -13,7 +13,7 @@ use super::surface::{RaytracedAudioSurface3d, RaytracedAudioSurfaces3d};
 use super::volume::RaytracedAudioBaseVolume;
 use crate::processed_audio::RaytracedAudioPlayer;
 use bevy::audio::Volume;
-use bevy::ecs::entity::EntityHashMap;
+use bevy::ecs::entity::{EntityHashMap, EntityHashSet};
 use bevy::ecs::query::QueryItem;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
@@ -22,6 +22,7 @@ use bevy_raytraced_audio::{
     AcousticResponse, AcousticScene3d, BandGain, Emitter3d, Listener3d, MuffleFilter, Point3,
     ReverbEstimate, SourceRayResponse, Triangle3d,
 };
+use core::num::NonZeroUsize;
 
 /// Source count at and above which tracing uses the compute task pool.
 const PARALLEL_EMITTER_THRESHOLD: usize = 16;
@@ -89,6 +90,7 @@ pub(super) fn update_raytraced_audio(
     tracing: Res<'_, RaytracedAudioTracing3d>,
     mut listener_trace: ResMut<'_, RaytracedAudioListenerTrace3d>,
     mut trace_scratch: Local<'_, TraceScratch>,
+    mut budget: Local<'_, BudgetState>,
     real_time: Option<Res<'_, Time<Real>>>,
     emitters: EmitterQuery<'_, '_>,
 ) {
@@ -148,12 +150,57 @@ pub(super) fn update_raytraced_audio(
             &mut trace_scratch,
         );
     }
+    let budgeted = budget.select(&emitters, settings.emitter_budget);
     let traced = TracedResponses {
         refresh_legacy: due || !tracing.enabled,
+        budgeted,
         indices: &trace_scratch.indices,
         trace: listener_trace.trace(),
     };
     process_emitters(commands, &scene, listener, settings, &traced, emitters);
+}
+
+/// The emitters a budgeted update recomputes, and where the round-robin resumes.
+#[derive(Default)]
+pub(super) struct BudgetState {
+    /// Emitters recomputed in the current update.
+    selected: EntityHashSet,
+    /// Position in the emitters that already have a response, where the next turn starts.
+    cursor: usize,
+}
+
+impl BudgetState {
+    /// Chooses this update's emitters: those without a response first, then the others in
+    /// turn. Returns `None` without a budget, when every emitter is recomputed.
+    fn select(
+        &mut self,
+        emitters: &EmitterQuery<'_, '_>,
+        budget: Option<NonZeroUsize>,
+    ) -> Option<&EntityHashSet> {
+        let budget = budget?.get();
+        self.selected.clear();
+        // New emitters have nothing to reuse, so they take the budget first.
+        let fresh = emitters
+            .iter()
+            .filter(|item| item.5.is_none())
+            .map(|item| item.0)
+            .take(budget);
+        self.selected.extend(fresh);
+        let remaining = budget - self.selected.len();
+        let responded = emitters.iter().filter(|item| item.5.is_some()).count();
+        if remaining > 0 && responded > 0 {
+            let start = self.cursor % responded;
+            let turns = remaining.min(responded);
+            let ordered = emitters
+                .iter()
+                .filter(|item| item.5.is_some())
+                .map(|item| item.0);
+            self.selected
+                .extend(ordered.clone().skip(start).chain(ordered).take(turns));
+            self.cursor = (start + turns) % responded;
+        }
+        Some(&self.selected)
+    }
 }
 
 /// Reused emitter positions and entity-to-trace-index lookup.
@@ -206,6 +253,8 @@ fn source_positions_changed(
 struct TracedResponses<'a> {
     /// Keep image-source queries on the same update cadence as the listener trace.
     refresh_legacy: bool,
+    /// Emitters a budgeted update may recompute, or `None` for all of them.
+    budgeted: Option<&'a EntityHashSet>,
     /// Trace source index for each traced emitter entity.
     indices: &'a EntityHashMap<usize>,
     /// Latest valid trace.
@@ -302,6 +351,8 @@ fn refresh_scene(
         false
     } else if !**scene_is_cached || surface_changed {
         scene.clear();
+        // The plugin validated the limit, so applying it cannot fail.
+        let _ = scene.set_max_reflection_distance(settings.max_reflection_distance_m);
         let singles = surfaces
             .surfaces
             .iter()
@@ -374,12 +425,22 @@ fn update_emitter(
         clearance,
     ): QueryItem<'_, '_, EmitterQueryData>,
 ) {
+    let has_turn = traced
+        .budgeted
+        .is_none_or(|selected| selected.contains(&entity));
+    // An emitter outside the budget with nothing to reuse waits for its turn untouched.
+    if !has_turn && response_state.is_none() {
+        return;
+    }
     let translation = settings.to_meters(transform.translation());
     let response = Point3::try_new(translation.x, translation.y, translation.z)
         .ok()
         .zip(listener)
         .map(|(position, listener)| {
-            if !traced.refresh_legacy
+            let has_turn = traced
+                .budgeted
+                .is_none_or(|selected| selected.contains(&entity));
+            if (!traced.refresh_legacy || !has_turn)
                 && !reflection_paths
                     .as_ref()
                     .is_some_and(DetectChanges::is_added)

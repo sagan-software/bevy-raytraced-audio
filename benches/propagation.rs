@@ -41,6 +41,7 @@ fn main() -> Result<(), GeometryError> {
     );
     benchmark_2d_stress(&mut criterion, emitter2d, listener2d)?;
     benchmark_3d_stress(&mut criterion, emitter3d, listener3d)?;
+    benchmark_3d_reflection_limit(&mut criterion)?;
     criterion.final_summary();
     Ok(())
 }
@@ -257,6 +258,59 @@ fn stress_scene3d(surface_count: usize) -> Result<AcousticScene3d, GeometryError
         )?;
         scene.add_triangle(triangle);
         x += 0.01;
+    }
+    Ok(scene)
+}
+
+/// Measures first-order reflections over a large floor with and without a reflection limit.
+fn benchmark_3d_reflection_limit(criterion: &mut Criterion) -> Result<(), GeometryError> {
+    let emitter = Emitter3d::new(Point3::try_new(-1.0, 1.5, 0.0)?);
+    let listener = Listener3d::new(Point3::try_new(1.0, 1.5, 0.0)?);
+    let mut group = criterion.benchmark_group("propagation/3d/reflection_limit");
+    for side in [32_u16, 128] {
+        let unlimited = floor_scene3d(side)?;
+        let limited = unlimited.clone().try_with_max_reflection_distance(30.0)?;
+        let triangles = u64::try_from(unlimited.triangle_count()).unwrap_or(u64::MAX);
+        group.throughput(Throughput::Elements(triangles));
+        for (name, scene) in [("unlimited", &unlimited), ("limit_30m", &limited)] {
+            group.bench_with_input(
+                BenchmarkId::new(name, triangles),
+                scene,
+                |bencher, scene| {
+                    bencher
+                        .iter(|| black_box(scene.trace(black_box(emitter), black_box(listener))));
+                },
+            );
+        }
+    }
+    group.finish();
+    Ok(())
+}
+
+/// Creates a floor of `side` by `side` two-triangle tiles, each 4 m wide, centred on the origin.
+fn floor_scene3d(side: u16) -> Result<AcousticScene3d, GeometryError> {
+    let mut scene = AcousticScene3d::default();
+    let half = f32::from(side) * 2.0;
+    for row in 0..side {
+        for column in 0..side {
+            let tile_x = f32::from(column).mul_add(4.0, -half);
+            let tile_z = f32::from(row).mul_add(4.0, -half);
+            let corner = |dx: f32, dz: f32| Point3::try_new(tile_x + dx, 0.0, tile_z + dz);
+            let [near_left, near_right, far_right, far_left] = [
+                corner(0.0, 0.0)?,
+                corner(4.0, 0.0)?,
+                corner(4.0, 4.0)?,
+                corner(0.0, 4.0)?,
+            ];
+            scene.add_triangle(Triangle3d::try_new(
+                [near_left, near_right, far_right],
+                AcousticMaterial::default(),
+            )?);
+            scene.add_triangle(Triangle3d::try_new(
+                [near_left, far_right, far_left],
+                AcousticMaterial::default(),
+            )?);
+        }
     }
     Ok(scene)
 }

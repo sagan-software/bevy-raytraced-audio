@@ -1098,3 +1098,125 @@ fn direct_path_only_skips_reflections() -> Result<(), bevy_raytraced_audio::Geom
     );
     Ok(())
 }
+
+/// A reflection limit removes distant reflected energy from emitter responses.
+#[test]
+fn reflection_limit_reaches_emitter_responses() -> Result<(), bevy_raytraced_audio::GeometryError> {
+    let reflected =
+        |plugin: RaytracedAudio3dPlugin| -> Result<bool, bevy_raytraced_audio::GeometryError> {
+            let mut app = App::new();
+            app.add_plugins(TransformPlugin);
+            app.add_plugins(plugin);
+            app.world_mut()
+                .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)));
+            let emitter = app
+                .world_mut()
+                .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(-1.0, 0.0, 0.0)))
+                .id();
+            // A floor 20 m below reflects along a path of about 40 m.
+            app.world_mut().spawn((
+                RaytracedAudioSurface3d::new(
+                    [
+                        Vec3::new(-50.0, -20.0, -50.0),
+                        Vec3::new(50.0, -20.0, -50.0),
+                        Vec3::new(0.0, -20.0, 50.0),
+                    ],
+                    AcousticMaterial::default(),
+                )?,
+                Transform::default(),
+            ));
+            app.update();
+            Ok(app
+                .world()
+                .get::<RaytracedAudioResponse3d>(emitter)
+                .expect("adapter inserts a response component")
+                .response()
+                .reflected_energy
+                != bevy_raytraced_audio::BandEnergy::ZERO)
+        };
+    assert!(reflected(RaytracedAudio3dPlugin::default())?);
+    assert!(reflected(
+        RaytracedAudio3dPlugin::default().with_max_reflection_distance(100.0)?
+    )?);
+    assert!(!reflected(
+        RaytracedAudio3dPlugin::default().with_max_reflection_distance(10.0)?
+    )?);
+    for invalid in [0.0, -1.0, f32::NAN, f32::INFINITY] {
+        assert!(
+            RaytracedAudio3dPlugin::default()
+                .with_max_reflection_distance(invalid)
+                .is_err(),
+            "{invalid}"
+        );
+    }
+    Ok(())
+}
+
+/// A budget of one recomputes one emitter per update: new emitters first, then in turn.
+#[test]
+fn emitter_budget_recomputes_in_turn() -> Result<(), bevy_raytraced_audio::GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(
+        RaytracedAudio3dPlugin::default()
+            .without_ray_tracing()
+            .with_emitter_budget(core::num::NonZeroUsize::MIN),
+    );
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    let emitters: Vec<Entity> = (0..3_u8)
+        .map(|step| {
+            app.world_mut()
+                .spawn((
+                    RaytracedAudioEmitter3d,
+                    Transform::from_xyz(-1.0, 0.0, f32::from(step) * 0.1),
+                ))
+                .id()
+        })
+        .collect();
+    let responded = |app: &App| {
+        emitters
+            .iter()
+            .filter(|entity| {
+                app.world()
+                    .get::<RaytracedAudioResponse3d>(**entity)
+                    .is_some()
+            })
+            .count()
+    };
+    let occluded = |app: &App| {
+        emitters
+            .iter()
+            .filter(|entity| {
+                app.world()
+                    .get::<RaytracedAudioResponse3d>(**entity)
+                    .is_some_and(|response| response.response().direct.is_occluded())
+            })
+            .count()
+    };
+    for expected in 1..=3 {
+        app.update();
+        assert_eq!(responded(&app), expected);
+    }
+    // A new wall reaches one emitter per update.
+    app.world_mut().spawn((
+        RaytracedAudioSurface3d::new(wall_vertices(1.0), AcousticMaterial::default())?,
+        Transform::default(),
+    ));
+    for expected in 1..=3 {
+        app.update();
+        assert_eq!(occluded(&app), expected);
+    }
+    // The turn wraps around: removing the wall clears one emitter per update again.
+    let wall = app
+        .world_mut()
+        .query_filtered::<Entity, bevy::prelude::With<RaytracedAudioSurface3d>>()
+        .single(app.world())
+        .expect("one wall");
+    assert!(app.world_mut().despawn(wall));
+    for expected in (0..3).rev() {
+        app.update();
+        assert_eq!(occluded(&app), expected);
+    }
+    Ok(())
+}

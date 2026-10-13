@@ -116,6 +116,37 @@ fn replay_emits_finite_vertices_and_observes_controls() {
         }
         gizmos.clear();
     }
+    // A slow replay keeps its rays until the scene refreshes.
+    {
+        let mut config = app.world_mut().resource_mut::<RaytracedAudioDebugDraw2d>();
+        config.ray_speed_m_per_s = 0.5;
+        config.trail_m = f32::INFINITY;
+        config.enabled = true;
+        config.kinds = RayKindMask::ALL;
+    }
+    let mut step = |app: &mut App| {
+        let (draw, trace, time, local, gizmos) =
+            crate::test_support::test_system_param(state.get_mut(app.world_mut()));
+        draw_rays(draw, trace, time, local, gizmos);
+        let (_, _, _, local, mut gizmos) =
+            crate::test_support::test_system_param(state.get_mut(app.world_mut()));
+        gizmos.clear();
+        local.segments.len()
+    };
+    let replayed = step(&mut app);
+    assert_ne!(replayed, 0);
+    app.world_mut()
+        .resource_mut::<RaytracedAudioListenerTrace2d>()
+        .valid = false;
+    assert_eq!(step(&mut app), replayed);
+    app.world_mut()
+        .resource_mut::<RaytracedAudioListenerTrace2d>()
+        .scheduling
+        .scene_refreshes += 1;
+    assert_eq!(step(&mut app), 0);
+    app.world_mut()
+        .resource_mut::<RaytracedAudioListenerTrace2d>()
+        .valid = true;
     let mut replay = ReplayState::default();
     app.world_mut()
         .resource_mut::<RaytracedAudioListenerTrace2d>()

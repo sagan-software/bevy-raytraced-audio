@@ -1082,3 +1082,44 @@ fn reflection_broad_phase_public_query_boundaries() -> Result<(), GeometryError>
     assert_eq!(estimate.reflections_delay_s(), 0.);
     Ok(())
 }
+
+/// The public reflection limit and direct-only trace keep the direct path and bound reflections.
+#[test]
+fn reflection_limit_and_direct_trace_through_the_public_api() -> Result<(), GeometryError> {
+    let point = Point3::try_new;
+    let emitter = Emitter3d::new(point(-1.0, 0.0, 0.0)?);
+    let listener = Listener3d::new(point(1.0, 0.0, 0.0)?);
+    let mut scene = AcousticScene3d::default();
+    // A floor 20 m below reflects along a path of about 40 m.
+    scene.add_triangle(Triangle3d::try_new(
+        [
+            point(-50.0, -20.0, -50.0)?,
+            point(50.0, -20.0, -50.0)?,
+            point(0.0, -20.0, 50.0)?,
+        ],
+        AcousticMaterial::default(),
+    )?);
+    let full = scene.trace(emitter, listener);
+    assert_ne!(full.reflected_energy, BandEnergy::ZERO);
+    assert_eq!(
+        scene.trace_direct(emitter, listener).reflected_energy,
+        BandEnergy::ZERO
+    );
+    let mut limited = scene.try_with_max_reflection_distance(10.0)?;
+    assert_eq!(limited.max_reflection_distance_m(), Some(10.0));
+    assert_eq!(
+        limited.trace(emitter, listener).reflected_energy,
+        BandEnergy::ZERO
+    );
+    assert_eq!(limited.trace(emitter, listener).direct, full.direct);
+    assert!(limited.set_max_reflection_distance(Some(f32::NAN)).is_err());
+    assert!(limited.set_max_reflection_distance(Some(0.0)).is_err());
+    assert!(
+        AcousticScene3d::default()
+            .try_with_max_reflection_distance(-1.0)
+            .is_err()
+    );
+    limited.set_max_reflection_distance(None)?;
+    assert_eq!(limited.trace(emitter, listener), full);
+    Ok(())
+}

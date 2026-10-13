@@ -7,6 +7,7 @@ use crate::processed_audio::{RaytracedAudioPrepareSystems, RaytracedAudioProcess
 use bevy::ecs::schedule::IntoScheduleConfigs;
 use bevy::prelude::{App, Plugin, PostUpdate, TransformSystems};
 use bevy_raytraced_audio::{AudioBackendPreference, BandGain, GeometryError, RayTraceSettings};
+use core::num::NonZeroUsize;
 
 /// Bevy plugin that traces explicit 3D acoustic surfaces after transform propagation.
 #[derive(Clone, Copy, Debug)]
@@ -23,6 +24,10 @@ pub struct RaytracedAudio3dPlugin {
     controls_sink_volume: bool,
     /// Whether per-emitter responses include first-order reflections.
     reflections: bool,
+    /// Longest first-order reflected path in meters, or `None` for no limit.
+    max_reflection_distance_m: Option<f32>,
+    /// Most emitters whose response is recomputed per update.
+    emitter_budget: Option<NonZeroUsize>,
 }
 
 impl Default for RaytracedAudio3dPlugin {
@@ -35,6 +40,8 @@ impl Default for RaytracedAudio3dPlugin {
             units_per_meter: 1.0,
             controls_sink_volume: true,
             reflections: true,
+            max_reflection_distance_m: None,
+            emitter_budget: None,
         }
     }
 }
@@ -117,6 +124,39 @@ impl RaytracedAudio3dPlugin {
         self
     }
 
+    /// Limits each emitter's first-order reflections to paths no longer than `distance_m` meters.
+    ///
+    /// The limit lets the broad-phase hierarchy reject distant surfaces, so the reflection
+    /// cost follows the geometry near the source and listener instead of the whole scene. See
+    /// [`bevy_raytraced_audio::AcousticScene3d::try_with_max_reflection_distance`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GeometryError::NonFiniteValue`] for a non-finite distance or
+    /// [`GeometryError::CoefficientOutOfRange`] for a distance at or below zero.
+    pub fn with_max_reflection_distance(mut self, distance_m: f32) -> Result<Self, GeometryError> {
+        if !distance_m.is_finite() {
+            return Err(GeometryError::NonFiniteValue);
+        }
+        if distance_m <= 0.0 {
+            return Err(GeometryError::CoefficientOutOfRange);
+        }
+        self.max_reflection_distance_m = Some(distance_m);
+        Ok(self)
+    }
+
+    /// Recomputes at most `budget` emitter responses per update, round-robin.
+    ///
+    /// Emitters without a response yet go first; the others keep their last response until
+    /// their turn. Sink volumes and processed-audio controls still update every frame from
+    /// the latest responses. Many emitters then cost a bounded amount per frame, at the price
+    /// of responses that lag by up to `emitters / budget` updates.
+    #[must_use]
+    pub const fn with_emitter_budget(mut self, budget: NonZeroUsize) -> Self {
+        self.emitter_budget = Some(budget);
+        self
+    }
+
     /// Sets the initial listener ray-trace settings.
     #[must_use]
     pub const fn with_ray_tracing(mut self, settings: RayTraceSettings) -> Self {
@@ -149,6 +189,8 @@ impl Plugin for RaytracedAudio3dPlugin {
             units_per_meter: self.units_per_meter,
             controls_sink_volume: self.controls_sink_volume,
             reflections: self.reflections,
+            max_reflection_distance_m: self.max_reflection_distance_m,
+            emitter_budget: self.emitter_budget,
         })
         .insert_resource(self.tracing)
         .init_resource::<RaytracedAudioListenerTrace3d>()

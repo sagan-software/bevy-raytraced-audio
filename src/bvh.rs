@@ -191,6 +191,19 @@ impl Bounds {
         }
     }
 
+    /// Builds the cube that contains a sphere, for conservative candidate queries.
+    pub(crate) fn sphere_3d(center: (f64, f64, f64), radius: f64) -> Self {
+        let (x, y, z) = center;
+        Self {
+            min_x: x - radius,
+            min_y: y - radius,
+            min_z: z - radius,
+            max_x: x + radius,
+            max_y: y + radius,
+            max_z: z + radius,
+        }
+    }
+
     /// Returns whether two closed bounds overlap on all three stored axes.
     pub(crate) fn overlaps(self, other: Self) -> bool {
         self.min_x <= other.max_x

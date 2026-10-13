@@ -1,6 +1,7 @@
 //! Private settings shared by the 3d plugin and update system.
 
 use bevy::prelude::{Resource, Vec3};
+use core::num::NonZeroUsize;
 
 /// Adapter settings shared by every opted-in source in the application.
 #[derive(Resource, Clone, Copy, Debug)]
@@ -13,6 +14,10 @@ pub(super) struct RaytracedAudioSettings {
     pub(super) controls_sink_volume: bool,
     /// Whether per-emitter responses include first-order reflections.
     pub(super) reflections: bool,
+    /// Longest first-order reflected path in meters, or `None` for no limit.
+    pub(super) max_reflection_distance_m: Option<f32>,
+    /// Most emitters whose response is recomputed per update, or `None` for all of them.
+    pub(super) emitter_budget: Option<NonZeroUsize>,
 }
 
 impl RaytracedAudioSettings {

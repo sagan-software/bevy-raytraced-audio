@@ -8,6 +8,10 @@ use super::{
 
 /// Device-free replay checks use the real Gizmos system parameter and inspect emitted vertices.
 #[test]
+#[expect(
+    clippy::too_many_lines,
+    reason = "one recorded trace walks every replay control in order"
+)]
 fn replay_emits_finite_vertices_and_observes_controls() {
     use bevy::ecs::system::SystemState;
     use bevy::gizmos::{AppGizmoBuilder, config::DefaultGizmoConfigGroup};
@@ -120,6 +124,8 @@ fn replay_emits_finite_vertices_and_observes_controls() {
         units_per_meter: 50.0,
         controls_sink_volume: true,
         reflections: true,
+        max_reflection_distance_m: None,
+        emitter_budget: None,
     });
     let scaled = instant(&mut app, &mut state);
     assert_eq!(unscaled.len(), scaled.len());
@@ -130,6 +136,36 @@ fn replay_emits_finite_vertices_and_observes_controls() {
             "{unscaled} {scaled}"
         );
     }
+    // A slow replay keeps its rays until the scene refreshes.
+    {
+        let mut config = app.world_mut().resource_mut::<RaytracedAudioDebugDraw3d>();
+        config.ray_speed_m_per_s = 0.5;
+        config.trail_m = f32::INFINITY;
+    }
+    let mut step = |app: &mut App| {
+        let (draw, trace, time, settings, local, gizmos) =
+            crate::test_support::test_system_param(state.get_mut(app.world_mut()));
+        draw_rays(draw, trace, time, settings, local, gizmos);
+        let (_, _, _, _, local, mut gizmos) =
+            crate::test_support::test_system_param(state.get_mut(app.world_mut()));
+        gizmos.clear();
+        local.segments.len()
+    };
+    let replayed = step(&mut app);
+    assert_ne!(replayed, 0);
+    // The stored trace becomes empty, but the unchanged scene keeps the replay running.
+    app.world_mut()
+        .resource_mut::<RaytracedAudioListenerTrace3d>()
+        .valid = false;
+    assert_eq!(step(&mut app), replayed);
+    app.world_mut()
+        .resource_mut::<RaytracedAudioListenerTrace3d>()
+        .scheduling
+        .scene_refreshes += 1;
+    assert_eq!(step(&mut app), 0);
+    app.world_mut()
+        .resource_mut::<RaytracedAudioListenerTrace3d>()
+        .valid = true;
     let mut replay = ReplayState::default();
     app.world_mut()
         .resource_mut::<RaytracedAudioListenerTrace3d>()

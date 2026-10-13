@@ -67,6 +67,9 @@ pub(super) struct ReplayState {
     elapsed_s: f32,
     /// Longest path distance reached by any segment end, in meters.
     farthest_m: f32,
+    /// Scene refresh count of the trace being replayed; a changed count means the replayed
+    /// rays belong to geometry that no longer exists.
+    scene_refreshes: u64,
 }
 
 /// Turns on ray recording while drawing is enabled.
@@ -105,7 +108,9 @@ pub(super) fn draw_rays(
         > draw
             .linger_s
             .mul_add(draw.ray_speed_m_per_s, state.farthest_m + trail_clearance);
-    if instant || state.segments.is_empty() || wave_finished {
+    // Changed geometry makes the replayed rays stale, so the wave restarts on the new trace.
+    let scene_changed = trace.scheduling_statistics().scene_refreshes != state.scene_refreshes;
+    if instant || state.segments.is_empty() || wave_finished || scene_changed {
         restart_replay(&trace, &mut state);
     }
     state.elapsed_s += time.delta_secs();
@@ -128,6 +133,7 @@ fn restart_replay(trace: &RaytracedAudioListenerTrace3d, state: &mut ReplayState
     state.segments.clear();
     state.elapsed_s = 0.0;
     state.farthest_m = 0.0;
+    state.scene_refreshes = trace.scheduling_statistics().scene_refreshes;
     if let Some(trace) = trace.trace() {
         state.segments.extend_from_slice(trace.segments());
         state.farthest_m = state

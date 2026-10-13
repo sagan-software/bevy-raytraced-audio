@@ -145,6 +145,15 @@ First-order reflections test every triangle for every emitter; for a
 level-scale scene that needs only occlusion, `with_direct_path_only()` keeps
 each emitter's response to the direct path, which uses the broad-phase
 hierarchy.
+To keep reflections at that scale, `with_max_reflection_distance(30.0)?` limits
+reflected paths to 30 m, so the hierarchy rejects surfaces outside the
+ellipsoid around the source and listener; on a 32,768-triangle floor one
+query drops from about 470 µs to 12 µs (`cargo bench --bench propagation --
+reflection_limit`). `with_emitter_budget(n)` recomputes at most `n` emitter
+responses per update, round-robin, so many emitters cost a bounded amount per
+frame. The core scene exposes the same limit as
+`AcousticScene3d::try_with_max_reflection_distance`.
+
 
 For headphone elevation cues, opt a 3D player into measured binaural rendering:
 `RaytracedAudioPlayer::new(audio).with_binaural(0.22)`. The scale controls distance
