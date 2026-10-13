@@ -57,8 +57,9 @@ pub use self::listener3d::Listener3d;
 pub use self::point2::Point2;
 pub use self::point3::Point3;
 pub use self::ray_trace::{
-    MuffleFilter, RayKind, RayTraceSettings, ReverbEstimate, SPEED_OF_SOUND_M_PER_S,
-    SourceRayResponse, muffle_strength,
+    COHERENT_TRACE_MOTION_M, MuffleFilter, RayKind, RayTraceSettings, ReverbEstimate,
+    SPEED_OF_SOUND_M_PER_S, SourceRayResponse, TraceResume, TraceStep, frame_ray_budget,
+    muffle_strength,
 };
 pub use self::ray_tracer2d::{ListenerTrace2d, RaySegment2d};
 pub use self::ray_tracer3d::{ListenerTrace3d, RaySegment3d};

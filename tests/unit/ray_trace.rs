@@ -55,6 +55,18 @@ fn settings_validate_inputs() {
     );
 }
 
+/// One frame of source-ray products stays inside the ray count and is at least one ray.
+#[test]
+fn frame_ray_budget_clamps_to_one_frame() {
+    assert_eq!(super::frame_ray_budget(1024, 256), 15);
+    assert_eq!(super::frame_ray_budget(64, 256), 250);
+    assert_eq!(super::frame_ray_budget(1, 256), 256);
+    assert_eq!(super::frame_ray_budget(0, 256), 256);
+    assert_eq!(super::frame_ray_budget(100_000, 256), 1);
+    assert_eq!(super::frame_ray_budget(64, 0), 1);
+    assert_eq!(super::frame_ray_budget(0, 0), 1);
+}
+
 /// The generator stays in the unit interval and is deterministic.
 #[test]
 fn rng_is_deterministic_and_bounded() {

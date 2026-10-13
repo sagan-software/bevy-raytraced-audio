@@ -213,6 +213,85 @@ impl RayTraceSettings {
     }
 }
 
+/// How an in-progress listener trace treats poses that differ from the ones it started with.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TraceResume {
+    /// Restart unless the listener, sources, settings, and scene are identical.
+    Exact,
+    /// Continue while the listener and every source stay within [`COHERENT_TRACE_MOTION_M`].
+    ///
+    /// The trace keeps the poses it started with. A jump past the limit, a settings change,
+    /// a source-count change, or a new scene revision discards the partial rays and starts over.
+    Coherent,
+}
+
+/// Listener or source movement, in meters, that still continues a [`TraceResume::Coherent`] trace.
+///
+/// One meter is longer than a sliced 256-ray trace takes at 120 Hz, and shorter than a teleport.
+pub const COHERENT_TRACE_MOTION_M: f64 = 1.0;
+
+/// Progress of one listener-trace advance.
+///
+/// See [`AcousticScene2d::advance_listener_trace`](crate::AcousticScene2d::advance_listener_trace)
+/// and [`AcousticScene3d::advance_listener_trace`](crate::AcousticScene3d::advance_listener_trace).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TraceStep {
+    /// Primary rays folded into the in-progress or completed trace.
+    rays_completed: u32,
+    /// Primary rays required before the trace is published.
+    ray_count: u32,
+    /// Whether this call left a published, complete result.
+    completed: bool,
+}
+
+impl TraceStep {
+    /// Builds a step from how far the trace has folded and whether it published.
+    pub(crate) const fn new(rays_completed: u32, ray_count: u32, completed: bool) -> Self {
+        Self {
+            rays_completed,
+            ray_count,
+            completed,
+        }
+    }
+
+    /// Returns how many primary rays are folded into the trace.
+    #[must_use]
+    pub const fn rays_completed(self) -> u32 {
+        self.rays_completed
+    }
+
+    /// Returns how many primary rays the trace needs.
+    #[must_use]
+    pub const fn ray_count(self) -> u32 {
+        self.ray_count
+    }
+
+    /// Returns whether the trace is published and complete.
+    #[must_use]
+    pub const fn completed(self) -> bool {
+        self.completed
+    }
+}
+
+/// Source-ray products to advance in one frame.
+///
+/// One product is one traced source times one primary ray. The release benchmark
+/// `propagation/listener_slice/3d/sources/1024` measured a mean of 4.0 ms for 15 rays and
+/// 1,024 sources on a 16-core Ryzen 9 5950X, which is this many products. A scene with fewer
+/// sources clamps up to its full ray count and finishes in one call.
+const FRAME_SOURCE_RAYS: u64 = 16_000;
+
+/// Returns how many primary rays one frame should advance for `source_count` sources.
+///
+/// The result is at least one and at most `ray_count`. Zero sources still return `ray_count`,
+/// because a listener trace with no sources only estimates reverb.
+#[must_use]
+pub fn frame_ray_budget(source_count: usize, ray_count: u32) -> u32 {
+    let sources = u64::try_from(source_count).unwrap_or(u64::MAX).max(1);
+    let rays = u32::try_from(FRAME_SOURCE_RAYS / sources).unwrap_or(u32::MAX);
+    rays.clamp(1, ray_count.max(1))
+}
+
 /// The role a recorded ray segment played in a listener trace.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum RayKind {
@@ -766,9 +845,7 @@ pub(crate) fn trace_threads(units: u64) -> usize {
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
-        let available = std::thread::available_parallelism()
-            .map(std::num::NonZeroUsize::get)
-            .unwrap_or(1);
+        let available = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get);
         let wanted = usize::try_from(units / MINIMUM_PARALLEL_RAY_UNITS).unwrap_or(usize::MAX);
         wanted.clamp(1, available)
     }

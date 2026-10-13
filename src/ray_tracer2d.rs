@@ -4,8 +4,8 @@ use crate::bvh::{Bounds, Ray};
 use crate::cache_statistics::{TraceCacheMiss, TraceCacheStatistics};
 use crate::math2d::Vector2;
 use crate::ray_trace::{
-    EchoStatistics, SourceAccumulator, TraceRng, estimate_ray_units, for_each_slot, narrow,
-    trace_threads,
+    COHERENT_TRACE_MOTION_M, EchoStatistics, SourceAccumulator, TraceResume, TraceRng, TraceStep,
+    estimate_ray_units, for_each_slot, narrow, trace_threads,
 };
 use crate::scene2d::clear_of_source;
 use crate::{
@@ -162,6 +162,10 @@ pub struct ListenerTrace2d {
     cached_input: Option<(std::sync::Arc<()>, Listener2d, RayTraceSettings)>,
     /// Cache decisions accumulated across calls, including forced computations.
     cache_statistics: TraceCacheStatistics,
+    /// Poses and folded rays of a trace that has not been published yet.
+    latch: Option<TraceLatch2d>,
+    /// Listener pose used by the in-progress trace, or by the last completed one.
+    settled_listener: Option<Listener2d>,
 }
 
 impl ListenerTrace2d {
@@ -201,14 +205,38 @@ impl ListenerTrace2d {
         &self.segments
     }
 
-    /// Clears published results while keeping allocated storage.
-    fn reset(&mut self) {
-        self.sources.clear();
-        self.segments.clear();
-        self.reverb = ReverbEstimate::DRY;
-        self.ambient_direction = None;
-        self.ambient_focus = 0.0;
+    /// Returns whether a trace has started and has not published yet.
+    #[must_use]
+    pub const fn is_tracing(&self) -> bool {
+        self.latch.is_some()
     }
+
+    /// Returns the listener pose the in-progress or last completed trace used.
+    #[must_use]
+    pub const fn traced_listener(&self) -> Option<Listener2d> {
+        self.settled_listener
+    }
+}
+
+/// Poses and running totals for a 2D listener trace that is still casting rays.
+#[derive(Clone, Debug)]
+struct TraceLatch2d {
+    /// Scene revision the trace started against.
+    revision: std::sync::Arc<()>,
+    /// Listener pose captured when the trace started.
+    listener: Listener2d,
+    /// Settings captured when the trace started.
+    settings: RayTraceSettings,
+    /// Primary rays already folded into `statistics` and the source accumulators.
+    rays_completed: u32,
+    /// Echo totals for the folded rays.
+    statistics: EchoStatistics,
+    /// Sum of escaped-ray ambience vectors.
+    ambient_sum: Vector2,
+    /// Sum of the lengths of those ambience vectors.
+    ambient_weight: f64,
+    /// Shared azimuth added to every primary ray, drawn once for the whole trace.
+    angle_offset: f64,
 }
 
 /// The nearest surface hit along a ray.
@@ -234,17 +262,16 @@ struct RayEnergy {
 }
 
 impl AcousticScene2d {
-    /// Fires rays from the listener, follows their bounces, and estimates muffling and reverb.
+    /// Fires every primary ray and publishes one complete listener trace.
     ///
     /// Results are written into `output`, reusing its storage. Source responses follow the order
     /// of `sources`. Repeating an identical scene, listener, source list and settings reuses
-    /// the completed deterministic result. Changes to any input trigger a full trace.
+    /// the completed deterministic result. Changes to any input replace that result.
     /// See [`crate::RayTraceSettings`] for the ray model.
     ///
-    /// Primary rays execute on scoped threads when the estimated work is large enough to pay
-    /// for them. Each ray draws from its own deterministic stream derived from the seed and its
-    /// index, and per-ray results fold in ray order, so a completed trace depends only on its
-    /// inputs, never on the lane count.
+    /// This is [`Self::advance_listener_trace`] with a budget of every ray and
+    /// [`TraceResume::Exact`]. A frame loop that must stay inside a frame budget should call
+    /// `advance_listener_trace` instead.
     pub fn trace_listener(
         &self,
         listener: Listener2d,
@@ -252,43 +279,157 @@ impl AcousticScene2d {
         settings: RayTraceSettings,
         output: &mut ListenerTrace2d,
     ) {
-        let revision = settings.reuses_results().then(|| self.revision());
-        let miss = if let Some(revision) = revision {
-            match &output.cached_input {
-                None => Some(TraceCacheMiss::Cold),
-                Some((previous, _, _)) if !std::sync::Arc::ptr_eq(previous, revision) => {
-                    Some(TraceCacheMiss::Scene)
-                }
-                Some((_, receiver, _)) if *receiver != listener => Some(TraceCacheMiss::Listener),
-                Some((_, _, config)) if *config != settings => Some(TraceCacheMiss::Settings),
-                Some(_)
-                    if sources.len() != output.source_points.len()
-                        || !sources
-                            .iter()
-                            .zip(&output.source_points)
-                            .all(|(source, previous)| source_point(*source) == *previous) =>
-                {
-                    Some(TraceCacheMiss::Sources)
-                }
-                Some(_) => None,
+        let step = self.advance_listener_trace(
+            listener,
+            sources,
+            settings,
+            output,
+            settings.ray_count(),
+            TraceResume::Exact,
+        );
+        debug_assert!(step.completed());
+    }
+
+    /// Advances an in-progress listener trace by at most `ray_budget` primary rays.
+    ///
+    /// A budget of zero does not start work. An exact cache hit returns the completed trace
+    /// without casting. While a trace is in progress, [`TraceResume::Coherent`] keeps casting
+    /// from the poses captured at the start until [`COHERENT_TRACE_MOTION_M`] is exceeded.
+    /// Published sources, reverb, and ambience stay at the previous completed result until the
+    /// new trace finishes, so a sliced trace does not clear audio for the frames it spans.
+    ///
+    /// Primary rays in one call share scoped threads when the batch is large enough to pay for
+    /// them. Each ray draws from its own deterministic stream, and batches fold in ray order, so
+    /// the published trace matches [`Self::trace_listener`] for the poses the trace started with.
+    pub fn advance_listener_trace(
+        &self,
+        listener: Listener2d,
+        sources: &[Emitter2d],
+        settings: RayTraceSettings,
+        output: &mut ListenerTrace2d,
+        ray_budget: u32,
+        resume: TraceResume,
+    ) -> TraceStep {
+        let ray_count = settings.ray_count();
+        if self.latch_matches(output, listener, sources, settings, resume) {
+            if ray_budget == 0 {
+                let completed = output
+                    .latch
+                    .as_ref()
+                    .is_some_and(|latch| latch.rays_completed >= latch.settings.ray_count());
+                return trace_step(output, completed);
             }
-        } else {
-            Some(TraceCacheMiss::Forced)
-        };
-        output.cache_statistics.record(miss);
-        if miss.is_none() {
-            return;
+            return self.trace_ray_batch(output, ray_budget);
         }
-        // Invalidate before recomputing so unwinding cannot leave a partially refreshed cache.
+        if let Some(miss) = self.cache_miss(output, listener, sources, settings) {
+            if ray_budget == 0 {
+                return TraceStep::new(0, ray_count, false);
+            }
+            output.cache_statistics.record(Some(miss));
+            self.begin_listener_trace(listener, sources, settings, output);
+            self.trace_ray_batch(output, ray_budget)
+        } else {
+            output.cache_statistics.record(None);
+            TraceStep::new(ray_count, ray_count, true)
+        }
+    }
+
+    /// Returns why `output`'s completed result cannot answer this request.
+    ///
+    /// `None` means the completed result is an exact hit. An in-progress latch is not a hit;
+    /// callers check the latch before this.
+    fn cache_miss(
+        &self,
+        output: &ListenerTrace2d,
+        listener: Listener2d,
+        sources: &[Emitter2d],
+        settings: RayTraceSettings,
+    ) -> Option<TraceCacheMiss> {
+        let Some(revision) = settings.reuses_results().then(|| self.revision()) else {
+            return Some(TraceCacheMiss::Forced);
+        };
+        match &output.cached_input {
+            None => Some(TraceCacheMiss::Cold),
+            Some((previous, _, _)) if !std::sync::Arc::ptr_eq(previous, revision) => {
+                Some(TraceCacheMiss::Scene)
+            }
+            Some((_, receiver, _)) if *receiver != listener => Some(TraceCacheMiss::Listener),
+            Some((_, _, config)) if *config != settings => Some(TraceCacheMiss::Settings),
+            Some(_)
+                if sources.len() != output.source_points.len()
+                    || !sources
+                        .iter()
+                        .zip(&output.source_points)
+                        .all(|(source, previous)| source_point(*source) == *previous) =>
+            {
+                Some(TraceCacheMiss::Sources)
+            }
+            Some(_) => None,
+        }
+    }
+
+    /// Returns whether `output`'s in-progress trace can accept this request without restarting.
+    ///
+    /// Source poses live on `output`, where the trace captured them, rather than on the latch.
+    fn latch_matches(
+        &self,
+        output: &ListenerTrace2d,
+        listener: Listener2d,
+        sources: &[Emitter2d],
+        settings: RayTraceSettings,
+        resume: TraceResume,
+    ) -> bool {
+        let Some(latch) = output.latch.as_ref() else {
+            return false;
+        };
+        if latch.settings != settings || !std::sync::Arc::ptr_eq(&latch.revision, self.revision()) {
+            return false;
+        }
+        if sources.len() != output.source_points.len() {
+            return false;
+        }
+        let listener_ok = match resume {
+            TraceResume::Exact => latch.listener == listener,
+            TraceResume::Coherent => {
+                within_trace_motion(listener_vector(latch.listener), listener_vector(listener))
+            }
+        };
+        listener_ok
+            && sources
+                .iter()
+                .zip(&output.source_points)
+                .all(|(source, previous)| {
+                    let next = source_point(*source);
+                    // Clearance is an exact pose field. Stored values are finite, and adding zero
+                    // canonicalizes negative zero, so bit equality matches numeric equality.
+                    next.1.to_bits() == previous.1.to_bits()
+                        && match resume {
+                            TraceResume::Exact => next.0 == previous.0,
+                            TraceResume::Coherent => within_trace_motion(previous.0, next.0),
+                        }
+                })
+    }
+
+    /// Drops any partial trace and captures direct paths for a new one.
+    ///
+    /// Published sources and reverb stay in place until the trace publishes, so audio keeps the
+    /// previous result while the new rays accumulate. Recorded segments belong to the new trace
+    /// and start empty.
+    fn begin_listener_trace(
+        &self,
+        listener: Listener2d,
+        sources: &[Emitter2d],
+        settings: RayTraceSettings,
+        output: &mut ListenerTrace2d,
+    ) {
         output.cached_input = None;
-        output.reset();
-        let record = settings.records_rays();
-        let origin = Vector2::from_point(listener.position());
+        output.latch = None;
+        output.segments.clear();
+        output.settled_listener = Some(listener);
+        let origin = listener_vector(listener);
         let mut source_points = core::mem::take(&mut output.source_points);
         source_points.clear();
         source_points.extend(sources.iter().map(|source| source_point(*source)));
-
-        // Positions, clearances, and accumulators share one array for the ray loop's hot scan.
         let mut scratch = core::mem::take(&mut output.scratch);
         scratch.clear();
         scratch.extend(
@@ -300,11 +441,39 @@ impl AcousticScene2d {
                     accumulator: SourceAccumulator::default(),
                 }),
         );
+        self.record_direct_sources(
+            origin,
+            &mut scratch,
+            &mut output.segments,
+            settings.records_rays(),
+        );
+        let ray_count = settings.ray_count();
+        let mut base_rng = TraceRng::new(settings.seed());
+        let angle_offset = base_rng.next_unit() * TAU / f64::from(ray_count);
+        output.scratch = scratch;
+        output.source_points = source_points;
+        output.latch = Some(TraceLatch2d {
+            revision: std::sync::Arc::clone(self.revision()),
+            listener,
+            settings,
+            rays_completed: 0,
+            statistics: EchoStatistics::default(),
+            ambient_sum: Vector2::default(),
+            ambient_weight: 0.0,
+            angle_offset,
+        });
+    }
 
-        // Straight lines from the listener decide direct visibility and seed permeation.
+    /// Stores each source's direct gain and records occluded permeation segments.
+    fn record_direct_sources(
+        &self,
+        origin: Vector2,
+        scratch: &mut [SourceScratch],
+        segments: &mut Vec<RaySegment2d>,
+        record: bool,
+    ) {
         let mut direct_crossings: Vec<(f64, Vector2, BandGain)> = Vec::new();
         for (index, source) in scratch.iter_mut().enumerate() {
-            // Crossings inside the source clearance are skipped by ending the path before it.
             let (gain, occluded) = clear_of_source(source.point, origin, source.clearance_m)
                 .map_or((BandGain::UNITY, false), |end| {
                     self.direct_transmission_with(origin, end, &mut direct_crossings)
@@ -313,7 +482,7 @@ impl AcousticScene2d {
             source.accumulator.add_permeation(gain, 1.0);
             if occluded {
                 record_segment(
-                    &mut output.segments,
+                    segments,
                     record,
                     (origin, source.point),
                     RayKind::Permeation,
@@ -323,43 +492,79 @@ impl AcousticScene2d {
                 );
             }
         }
+    }
 
+    /// Casts the next budget of rays on the latched trace and publishes it when it finishes.
+    fn trace_ray_batch(&self, output: &mut ListenerTrace2d, ray_budget: u32) -> TraceStep {
+        let Some(mut latch) = output.latch.take() else {
+            return trace_step(output, false);
+        };
+        let ray_count = latch.settings.ray_count();
+        let start_ray = latch.rays_completed;
+        let end_ray = start_ray.saturating_add(ray_budget).min(ray_count);
+        if end_ray == start_ray {
+            output.latch = Some(latch);
+            return trace_step(output, false);
+        }
+        let start = usize::try_from(start_ray).unwrap_or(usize::MAX);
+        let end = usize::try_from(end_ray).unwrap_or(usize::MAX);
+        let mut ray_results = core::mem::take(&mut output.ray_results);
+        if ray_results.len() < end {
+            ray_results.resize_with(end, RayResults::default);
+        }
+        let mut scratch = core::mem::take(&mut output.scratch);
+        let _ = self.acceleration();
+        let threads = trace_threads(estimate_ray_units(
+            end_ray - start_ray,
+            latch.settings.max_bounces(),
+            scratch.len(),
+            self.segment_count(),
+        ));
+        // `end` is at least `start` and the vector now reaches `end`, so both splits are in range.
+        let (_, rest) = ray_results.split_at_mut(start);
+        let (batch, _) = rest.split_at_mut(end - start);
+        for results in batch.iter_mut() {
+            results.clear();
+        }
+        self.cast_primary_batch(&latch, &scratch, batch, start_ray, threads);
+        fold_primary_batch(&mut latch, &mut scratch, &mut output.segments, batch);
+        latch.rays_completed = end_ray;
+        let completed = end_ray == ray_count;
+        if completed {
+            publish_listener_trace(output, &latch, &scratch);
+        } else {
+            output.latch = Some(latch);
+        }
+        output.scratch = scratch;
+        output.ray_results = ray_results;
+        TraceStep::new(end_ray, ray_count, completed)
+    }
+
+    /// Casts one frame of primary rays into `batch`, starting at `start_ray`.
+    fn cast_primary_batch(
+        &self,
+        latch: &TraceLatch2d,
+        scratch: &[SourceScratch],
+        batch: &mut [RayResults],
+        start_ray: u32,
+        threads: usize,
+    ) {
+        let settings = latch.settings;
         let ray_count = settings.ray_count();
+        let origin = listener_vector(latch.listener);
+        let angle_offset = latch.angle_offset;
         let permeation_stride = ray_count
             .checked_div(settings.permeation_ray_count())
             .map_or(u32::MAX, |stride| stride.max(1));
-        let mut base_rng = TraceRng::new(settings.seed());
-        let angle_offset = base_rng.next_unit() * TAU / f64::from(ray_count);
-
-        // Per-ray result slots keep their allocations across traces and lane counts.
-        let slot_count = usize::try_from(ray_count).unwrap_or(usize::MAX);
-        let mut ray_results = core::mem::take(&mut output.ray_results);
-        while ray_results.len() < slot_count {
-            ray_results.push(RayResults::default());
-        }
-        for results in ray_results.iter_mut().take(slot_count) {
-            results.clear();
-        }
-        let (ray_slots, _) = ray_results.split_at_mut(slot_count);
-
-        // The hierarchy must exist before lanes run, so no thread waits on its lazy build.
-        let _ = self.acceleration();
-        let units = estimate_ray_units(
-            ray_count,
-            settings.max_bounces(),
-            scratch.len(),
-            self.segment_count(),
-        );
-        let threads = trace_threads(units);
-        for_each_slot(ray_slots, threads, &|ray_index, results| {
-            let ray_index = u32::try_from(ray_index).unwrap_or(u32::MAX);
+        for_each_slot(batch, threads, &|local_index, results| {
+            let ray_index = start_ray + u32::try_from(local_index).unwrap_or(u32::MAX);
             let angle = TAU.mul_add(f64::from(ray_index) / f64::from(ray_count), angle_offset);
             let direction = Vector2 {
                 x: angle.cos(),
                 y: angle.sin(),
             };
             let casts_permeation =
-                settings.permeation_ray_count() > 0 && ray_index % permeation_stride == 0;
+                settings.permeation_ray_count() > 0 && ray_index.is_multiple_of(permeation_stride);
             let mut rng = TraceRng::for_ray(settings.seed(), ray_index);
             results.active.extend(0..scratch.len());
             self.follow_ray(
@@ -368,53 +573,12 @@ impl AcousticScene2d {
                     direction,
                     casts_permeation,
                 },
-                &scratch,
+                scratch,
                 settings,
                 &mut rng,
                 results,
             );
         });
-
-        // Folding in ray order makes statistics, accumulations, and recordings lane independent.
-        let mut statistics = EchoStatistics::default();
-        let mut ambient_sum = Vector2::default();
-        let mut ambient_weight = 0.0_f64;
-        for results in ray_slots.iter() {
-            statistics.merge(results.statistics);
-            if let Some(direction) = results.ambient {
-                ambient_sum = ambient_sum.add(direction);
-                ambient_weight += direction.length();
-            }
-            for &(index, energy) in &results.discovered {
-                if let Some(source) = scratch.get_mut(index) {
-                    source.accumulator.discovered_energy += energy;
-                }
-            }
-            for &(index, gain) in &results.permeated {
-                if let Some(source) = scratch.get_mut(index) {
-                    source.accumulator.add_permeation(gain, 1.0);
-                }
-            }
-            output.segments.extend(results.segments.iter().copied());
-        }
-
-        output.reverb = ReverbEstimate::from_statistics(&statistics, ray_count);
-        let ambient_length = ambient_sum.length();
-        if ambient_weight > 0.0 && ambient_length > 0.0 {
-            let unit = ambient_sum.scale(ambient_length.recip());
-            output.ambient_direction = Some(SolverPoint2d::new(unit.x, unit.y));
-            output.ambient_focus = narrow((ambient_length / ambient_weight).clamp(0.0, 1.0));
-        }
-        output.sources.extend(
-            scratch
-                .iter()
-                .map(|source| source.accumulator.finish(ray_count)),
-        );
-        output.scratch = scratch;
-        output.ray_results = ray_results;
-        output.source_points = source_points;
-        output.cached_input =
-            revision.map(|revision| (std::sync::Arc::clone(revision), listener, settings));
     }
 
     /// Follows one primary ray, writing its independent results into `results`.
@@ -741,6 +905,85 @@ impl AcousticScene2d {
         );
         best
     }
+}
+
+/// Folds `batch` into the latch and scratch in ray order and appends recorded segments.
+fn fold_primary_batch(
+    latch: &mut TraceLatch2d,
+    scratch: &mut [SourceScratch],
+    segments: &mut Vec<RaySegment2d>,
+    batch: &[RayResults],
+) {
+    for results in batch {
+        latch.statistics.merge(results.statistics);
+        if let Some(direction) = results.ambient {
+            latch.ambient_sum = latch.ambient_sum.add(direction);
+            latch.ambient_weight += direction.length();
+        }
+        for &(index, energy) in &results.discovered {
+            if let Some(source) = scratch.get_mut(index) {
+                source.accumulator.discovered_energy += energy;
+            }
+        }
+        for &(index, gain) in &results.permeated {
+            if let Some(source) = scratch.get_mut(index) {
+                source.accumulator.add_permeation(gain, 1.0);
+            }
+        }
+        segments.extend(results.segments.iter().copied());
+    }
+}
+
+/// Replaces published acoustics with one finished trace and stores its cache key.
+fn publish_listener_trace(
+    output: &mut ListenerTrace2d,
+    latch: &TraceLatch2d,
+    scratch: &[SourceScratch],
+) {
+    let ray_count = latch.settings.ray_count();
+    output.sources.clear();
+    output.sources.extend(
+        scratch
+            .iter()
+            .map(|source| source.accumulator.finish(ray_count)),
+    );
+    output.reverb = ReverbEstimate::from_statistics(&latch.statistics, ray_count);
+    output.ambient_direction = None;
+    output.ambient_focus = 0.0;
+    let ambient_length = latch.ambient_sum.length();
+    if latch.ambient_weight > 0.0 && ambient_length > 0.0 {
+        let unit = latch.ambient_sum.scale(ambient_length.recip());
+        output.ambient_direction = Some(SolverPoint2d::new(unit.x, unit.y));
+        output.ambient_focus = narrow((ambient_length / latch.ambient_weight).clamp(0.0, 1.0));
+    }
+    output.cached_input = latch.settings.reuses_results().then(|| {
+        (
+            std::sync::Arc::clone(&latch.revision),
+            latch.listener,
+            latch.settings,
+        )
+    });
+    output.settled_listener = Some(latch.listener);
+}
+
+/// Returns a step for the trace currently stored in `output`.
+fn trace_step(output: &ListenerTrace2d, completed: bool) -> TraceStep {
+    let (rays_completed, ray_count) = output.latch.as_ref().map_or((0, 0), |latch| {
+        (latch.rays_completed, latch.settings.ray_count())
+    });
+    TraceStep::new(rays_completed, ray_count, completed)
+}
+
+/// Returns whether two solver positions are at most [`COHERENT_TRACE_MOTION_M`] apart.
+fn within_trace_motion(previous: Vector2, next: Vector2) -> bool {
+    let delta = next.subtract(previous);
+    let limit = COHERENT_TRACE_MOTION_M;
+    delta.dot(delta) <= limit * limit
+}
+
+/// Returns the listener position in solver space.
+fn listener_vector(listener: Listener2d) -> Vector2 {
+    Vector2::from_point(listener.position())
 }
 
 /// Converts one emitter into its solver position and clearance in meters.

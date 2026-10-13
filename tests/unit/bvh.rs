@@ -448,3 +448,41 @@ fn dynamic_surface_lists_cover_orientation_changes() {
         assert_eq!(visited, (0..8).collect::<Vec<_>>());
     }
 }
+
+/// A one-slot frontier and a direct descendant walk stop at the first accepted surface.
+#[test]
+fn any_hit_descendant_matches_a_one_slot_frontier() {
+    use super::{NodeKind, Ray};
+    let hierarchy = BoundingVolumeHierarchy::build(
+        (0..6).map(|index| (index, planar_bounds(fixture_x(index)))),
+        SceneDimensions::Two,
+    );
+    let ray = Ray::new((-1.0, 0.0, 0.0), (1.0, 0.0, 0.0));
+    let root = hierarchy.root.expect("six surfaces form a branch");
+    assert!(hierarchy.any_hit_stacked::<1>(root, ray, 100.0, None, &mut |_| true));
+    assert!(!hierarchy.any_hit_stacked::<1>(root, ray, 100.0, None, &mut |_| false));
+    assert!(!hierarchy.any_hit_stacked::<1>(usize::MAX, ray, 100.0, None, &mut |_| true));
+    let leaf = hierarchy
+        .nodes
+        .iter()
+        .position(|node| matches!(node.kind, NodeKind::Leaf { .. }))
+        .expect("leaf");
+    assert!(hierarchy.any_hit_descendant(leaf, ray, 100.0, None, &mut |_| true));
+    assert!(!hierarchy.any_hit_descendant(leaf, ray, 100.0, None, &mut |_| false));
+    let surfaces = match &hierarchy.nodes[leaf].kind {
+        NodeKind::Leaf { indices } => hierarchy.surface_indices[indices.clone()].to_vec(),
+        NodeKind::Branch { .. } => panic!("expected a leaf"),
+    };
+    assert!(
+        !hierarchy.any_hit_descendant(leaf, ray, 100.0, Some(surfaces[0]), &mut |index| index
+            == surfaces[0])
+    );
+    assert!(!hierarchy.any_hit_descendant(usize::MAX, ray, 100.0, None, &mut |_| true));
+    let miss = Ray::new((-1.0, 50.0, 0.0), (1.0, 0.0, 0.0));
+    assert!(!hierarchy.any_hit_descendant(root, miss, 100.0, None, &mut |_| true));
+    assert!(hierarchy.any_hit_descendant(root, ray, 100.0, None, &mut |_| true));
+    let mut broken = hierarchy;
+    broken.surface_indices.clear();
+    assert!(!broken.any_hit_descendant(leaf, ray, 100.0, None, &mut |_| true));
+    assert!(!broken.any_hit_stacked::<1>(root, ray, 100.0, None, &mut |_| true));
+}

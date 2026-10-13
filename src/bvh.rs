@@ -467,7 +467,24 @@ impl BoundingVolumeHierarchy {
         if !root_is_reached {
             return false;
         }
-        let mut stack = [root; MAX_TRAVERSAL_STACK];
+        self.any_hit_stacked::<MAX_TRAVERSAL_STACK>(root, ray, limit, skipped_surface, &mut test)
+    }
+
+    /// Walks a reached root with a fixed frontier of `STACK` nodes.
+    ///
+    /// `STACK` is at least one. When both children of a node are already waiting, the extra
+    /// child continues through [`Self::any_hit_descendant`], which keeps the answer exact for a
+    /// frontier smaller than the tree. [`MAX_TRAVERSAL_STACK`] is larger than any tree that fits
+    /// in memory, so production calls do not use that continuation.
+    fn any_hit_stacked<const STACK: usize>(
+        &self,
+        root: usize,
+        ray: Ray,
+        limit: f64,
+        skipped_surface: Option<usize>,
+        test: &mut impl FnMut(usize) -> bool,
+    ) -> bool {
+        let mut stack = [root; STACK];
         let mut depth = 1_usize;
         while depth > 0 {
             depth -= 1;
@@ -479,12 +496,8 @@ impl BoundingVolumeHierarchy {
             };
             match node.kind {
                 NodeKind::Leaf { ref indices } => {
-                    if let Some(surface_indices) = self.surface_indices.get(indices.clone()) {
-                        for surface_index in surface_indices {
-                            if skipped_surface != Some(*surface_index) && test(*surface_index) {
-                                return true;
-                            }
-                        }
+                    if self.leaf_hits(indices.clone(), skipped_surface, test) {
+                        return true;
                     }
                 }
                 NodeKind::Branch { left, right } => {
@@ -501,16 +514,14 @@ impl BoundingVolumeHierarchy {
                                 *slot = child;
                                 depth += 1;
                             }
-                            // The fixed stack exceeds any allocatable tree's depth; this
-                            // recursive fallback keeps the answer exact if that bound were
-                            // ever exceeded.
+                            // A full frontier keeps the child exact without discarding it.
                             None => {
                                 if self.any_hit_descendant(
                                     child,
                                     ray,
                                     limit,
                                     skipped_surface,
-                                    &mut test,
+                                    &mut *test,
                                 ) {
                                     return true;
                                 }
@@ -537,14 +548,7 @@ impl BoundingVolumeHierarchy {
         };
         match node.kind {
             NodeKind::Leaf { ref indices } => {
-                if let Some(surface_indices) = self.surface_indices.get(indices.clone()) {
-                    for surface_index in surface_indices {
-                        if skipped_surface != Some(*surface_index) && test(*surface_index) {
-                            return true;
-                        }
-                    }
-                }
-                false
+                self.leaf_hits(indices.clone(), skipped_surface, test)
             }
             NodeKind::Branch { left, right } => {
                 for child in [left, right] {
@@ -560,6 +564,24 @@ impl BoundingVolumeHierarchy {
                 false
             }
         }
+    }
+
+    /// Returns whether one reached leaf contains an accepted surface that passes `test`.
+    fn leaf_hits(
+        &self,
+        indices: Range<usize>,
+        skipped_surface: Option<usize>,
+        test: &mut impl FnMut(usize) -> bool,
+    ) -> bool {
+        let Some(surface_indices) = self.surface_indices.get(indices) else {
+            return false;
+        };
+        for surface_index in surface_indices {
+            if skipped_surface != Some(*surface_index) && test(*surface_index) {
+                return true;
+            }
+        }
+        false
     }
 
     /// Visits a reached leaf or descends into children nearest-first.

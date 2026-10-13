@@ -5,7 +5,7 @@ use crate::math3d::Vector3;
 use crate::ray_trace::{EchoStatistics, TraceRng};
 use crate::{
     AcousticMaterial, AcousticScene3d, BandAbsorption, BandGain, Emitter3d, Listener3d, Point3,
-    RayKind, RayTraceSettings, Triangle3d,
+    RayKind, RayTraceSettings, TraceResume, Triangle3d,
 };
 
 /// Makes a finite point.
@@ -515,4 +515,426 @@ fn escape_and_scatter_boundaries_are_finite() {
         super::scatter(diffuse.scale(-1.), normal, 0.5, &mut TraceRng::new(7)),
         normal
     );
+}
+
+/// Four recorded rays are enough to prove a sliced fold matches one complete call.
+fn few_rays() -> RayTraceSettings {
+    RayTraceSettings::default()
+        .try_with_ray_count(4)
+        .expect("nonzero ray count")
+        .with_max_bounces(2)
+        .with_recorded_rays(true)
+}
+
+/// Compares every published listener-trace field.
+fn assert_same_trace(left: &ListenerTrace3d, right: &ListenerTrace3d) {
+    assert_eq!(left.sources(), right.sources());
+    assert_eq!(left.reverb(), right.reverb());
+    assert_eq!(left.ambient_direction(), right.ambient_direction());
+    assert_eq!(left.ambient_focus(), right.ambient_focus());
+    assert_eq!(left.segments(), right.segments());
+}
+
+/// One-ray steps publish the same trace as one full call, including an empty batch.
+#[test]
+fn sliced_exact_trace_matches_one_call() {
+    let scene = box_room((3., 3., 3.), None);
+    let listener = Listener3d::new(point(0., 0., 0.));
+    let sources = [Emitter3d::new(point(1., 0., 0.))];
+    assert_sliced_matches(&scene, listener, &sources, few_rays());
+    assert_sliced_matches(
+        &scene,
+        listener,
+        &sources,
+        few_rays().with_permeation_ray_count(0),
+    );
+    let covered = [Emitter3d::new(point(0., 0., 0.))
+        .try_with_clearance(1.0)
+        .expect("finite clearance")];
+    assert_sliced_matches(&scene, listener, &covered, few_rays());
+}
+
+/// Casts one ray at a time and compares the published trace with one full call.
+fn assert_sliced_matches(
+    scene: &AcousticScene3d,
+    listener: Listener3d,
+    sources: &[Emitter3d],
+    settings: RayTraceSettings,
+) {
+    let mut full = ListenerTrace3d::default();
+    scene.trace_listener(listener, sources, settings, &mut full);
+    let mut sliced = ListenerTrace3d::default();
+    let idle = scene.trace_ray_batch(&mut sliced, 1);
+    assert!(!idle.completed());
+    assert_eq!(idle.ray_count(), 0);
+    let mut calls = 0_u32;
+    loop {
+        calls += 1;
+        let step = scene.advance_listener_trace(
+            listener,
+            sources,
+            settings,
+            &mut sliced,
+            1,
+            TraceResume::Exact,
+        );
+        if step.completed() {
+            assert_eq!(step.rays_completed(), settings.ray_count());
+            assert_eq!(step.ray_count(), settings.ray_count());
+            break;
+        }
+        assert!(sliced.is_tracing());
+        assert_eq!(sliced.traced_listener(), Some(listener));
+        assert!(calls < settings.ray_count());
+    }
+    assert_eq!(calls, settings.ray_count());
+    assert!(!sliced.is_tracing());
+    assert_same_trace(&sliced, &full);
+    assert_eq!(sliced.cache_statistics().cold, 1);
+    assert_eq!(sliced.cache_statistics().computations, 1);
+    assert_eq!(sliced.cache_statistics().hits, 0);
+    let repeated = scene.advance_listener_trace(
+        listener,
+        sources,
+        settings,
+        &mut sliced,
+        0,
+        TraceResume::Exact,
+    );
+    assert!(repeated.completed());
+    assert_eq!(repeated.rays_completed(), settings.ray_count());
+    assert_eq!(sliced.cache_statistics().hits, 1);
+}
+
+/// Motion inside one meter keeps casting the trace that already started.
+#[test]
+fn coherent_motion_keeps_the_started_trace() {
+    let scene = box_room((3., 3., 3.), None);
+    let settings = few_rays();
+    let listener = Listener3d::new(point(0., 0., 0.));
+    let sources = [Emitter3d::new(point(1., 0., 0.))];
+    let mut full = ListenerTrace3d::default();
+    scene.trace_listener(listener, &sources, settings, &mut full);
+    let mut sliced = ListenerTrace3d::default();
+    let first = scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut sliced,
+        1,
+        TraceResume::Coherent,
+    );
+    assert!(!first.completed());
+    assert_eq!(sliced.traced_listener(), Some(listener));
+    let moved_listener = Listener3d::new(point(0.01, 0., 0.));
+    let moved_sources = [Emitter3d::new(point(1.01, 0., 0.))];
+    let mut calls = 1_u32;
+    loop {
+        calls += 1;
+        let step = scene.advance_listener_trace(
+            moved_listener,
+            &moved_sources,
+            settings,
+            &mut sliced,
+            1,
+            TraceResume::Coherent,
+        );
+        if step.completed() {
+            assert_eq!(step.rays_completed(), settings.ray_count());
+            break;
+        }
+        assert_eq!(sliced.traced_listener(), Some(listener));
+        assert!(calls < settings.ray_count() + 1);
+    }
+    assert_same_trace(&sliced, &full);
+    assert_eq!(sliced.traced_listener(), Some(listener));
+    assert_eq!(sliced.cache_statistics().computations, 1);
+}
+
+/// A new slice leaves the previous sources and reverb in place until it publishes.
+#[test]
+fn a_new_slice_keeps_the_previous_published_result() {
+    let scene = box_room((3., 3., 3.), None);
+    let settings = few_rays();
+    let listener = Listener3d::new(point(0., 0., 0.));
+    let sources = [Emitter3d::new(point(1., 0., 0.))];
+    let mut output = ListenerTrace3d::default();
+    scene.trace_listener(listener, &sources, settings, &mut output);
+    let published = output.sources().to_vec();
+    let reverb = output.reverb();
+    let moved = Listener3d::new(point(0.01, 0., 0.));
+    let started = scene.advance_listener_trace(
+        moved,
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Coherent,
+    );
+    assert!(!started.completed());
+    assert_eq!(output.sources(), published.as_slice());
+    assert_eq!(output.reverb(), reverb);
+    let continued = scene.advance_listener_trace(
+        Listener3d::new(point(0.02, 0., 0.)),
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Coherent,
+    );
+    assert!(!continued.completed());
+    assert_eq!(output.sources(), published.as_slice());
+    assert_eq!(output.traced_listener(), Some(moved));
+    let step = scene.advance_listener_trace(
+        moved,
+        &sources,
+        settings,
+        &mut output,
+        settings.ray_count(),
+        TraceResume::Coherent,
+    );
+    assert!(step.completed());
+    let mut fresh = ListenerTrace3d::default();
+    scene.trace_listener(moved, &sources, settings, &mut fresh);
+    assert_same_trace(&output, &fresh);
+}
+
+/// A zero budget neither starts a trace nor casts rays on one that has started.
+#[test]
+fn zero_budget_does_not_start_or_cast() {
+    let scene = box_room((3., 3., 3.), None);
+    let settings = few_rays();
+    let listener = Listener3d::new(point(0., 0., 0.));
+    let sources = [Emitter3d::new(point(1., 0., 0.))];
+    let mut output = ListenerTrace3d::default();
+    let idle = scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        0,
+        TraceResume::Exact,
+    );
+    assert!(!idle.completed());
+    assert_eq!(idle.rays_completed(), 0);
+    assert_eq!(idle.ray_count(), settings.ray_count());
+    assert!(!output.is_tracing());
+    assert_eq!(output.cache_statistics().computations, 0);
+    scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Exact,
+    );
+    let stats = output.cache_statistics();
+    let paused = scene.trace_ray_batch(&mut output, 0);
+    assert_eq!(paused.rays_completed(), 1);
+    assert!(!paused.completed());
+    assert!(output.is_tracing());
+    let held = scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        0,
+        TraceResume::Exact,
+    );
+    assert_eq!(held.rays_completed(), 1);
+    assert!(!held.completed());
+    assert_eq!(output.cache_statistics(), stats);
+}
+
+/// A jump past one meter, or an exact pose change, publishes the new inputs.
+#[test]
+fn changed_pose_restarts_the_partial_trace() {
+    let scene = box_room((3., 3., 3.), None);
+    let settings = few_rays();
+    let listener = Listener3d::new(point(0., 0., 0.));
+    let sources = [Emitter3d::new(point(1., 0., 0.))];
+    let far = Listener3d::new(point(2., 0., 0.));
+    let mut output = ListenerTrace3d::default();
+    scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Coherent,
+    );
+    let step = scene.advance_listener_trace(
+        far,
+        &sources,
+        settings,
+        &mut output,
+        settings.ray_count(),
+        TraceResume::Coherent,
+    );
+    assert!(step.completed());
+    assert_eq!(output.traced_listener(), Some(far));
+    assert_eq!(output.cache_statistics().cold, 2);
+    let mut fresh = ListenerTrace3d::default();
+    scene.trace_listener(far, &sources, settings, &mut fresh);
+    assert_same_trace(&output, &fresh);
+
+    let near = Listener3d::new(point(0.01, 0., 0.));
+    let mut exact = ListenerTrace3d::default();
+    scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut exact,
+        1,
+        TraceResume::Exact,
+    );
+    let step = scene.advance_listener_trace(
+        near,
+        &sources,
+        settings,
+        &mut exact,
+        settings.ray_count(),
+        TraceResume::Exact,
+    );
+    assert!(step.completed());
+    assert_eq!(exact.traced_listener(), Some(near));
+    let mut fresh = ListenerTrace3d::default();
+    scene.trace_listener(near, &sources, settings, &mut fresh);
+    assert_same_trace(&exact, &fresh);
+}
+
+/// Settings, scene, source count, clearance, and source position each start a new trace.
+#[test]
+fn changed_inputs_restart_a_partial_trace() {
+    let settings = few_rays();
+    let listener = Listener3d::new(point(0., 0., 0.));
+    let sources = [Emitter3d::new(point(1., 0., 0.))];
+    let mut scene = box_room((3., 3., 3.), None);
+
+    let mut output = ListenerTrace3d::default();
+    scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Exact,
+    );
+    finish_like_fresh(
+        &scene,
+        listener,
+        &sources,
+        settings.with_seed(99),
+        &mut output,
+    );
+
+    let mut output = ListenerTrace3d::default();
+    scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Exact,
+    );
+    let more = [sources[0], Emitter3d::new(point(0., 1., 0.))];
+    let started = scene.advance_listener_trace(
+        listener,
+        &more,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Exact,
+    );
+    assert!(!started.completed());
+    assert_eq!(output.sources(), []);
+    finish_like_fresh(&scene, listener, &more, settings, &mut output);
+
+    let mut output = ListenerTrace3d::default();
+    scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Exact,
+    );
+    let cleared = [sources[0]
+        .try_with_clearance(0.25)
+        .expect("finite clearance")];
+    finish_like_fresh(&scene, listener, &cleared, settings, &mut output);
+
+    let mut output = ListenerTrace3d::default();
+    scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Exact,
+    );
+    let nudged = [Emitter3d::new(point(1.01, 0., 0.))];
+    finish_like_fresh(&scene, listener, &nudged, settings, &mut output);
+
+    let mut output = ListenerTrace3d::default();
+    scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Coherent,
+    );
+    let jumped = [Emitter3d::new(point(3., 0., 0.))];
+    let step = scene.advance_listener_trace(
+        listener,
+        &jumped,
+        settings,
+        &mut output,
+        settings.ray_count(),
+        TraceResume::Coherent,
+    );
+    assert!(step.completed());
+    let mut fresh = ListenerTrace3d::default();
+    scene.trace_listener(listener, &jumped, settings, &mut fresh);
+    assert_same_trace(&output, &fresh);
+
+    let mut output = ListenerTrace3d::default();
+    scene.advance_listener_trace(
+        listener,
+        &sources,
+        settings,
+        &mut output,
+        1,
+        TraceResume::Exact,
+    );
+    quad(
+        &mut scene,
+        [(0., -1., -1.), (0., 1., -1.), (0., 1., 1.), (0., -1., 1.)],
+        plaster(),
+    );
+    finish_like_fresh(&scene, listener, &sources, settings, &mut output);
+}
+
+/// Finishes `output` for the supplied inputs and compares it with a one-shot trace.
+fn finish_like_fresh(
+    scene: &AcousticScene3d,
+    listener: Listener3d,
+    sources: &[Emitter3d],
+    settings: RayTraceSettings,
+    output: &mut ListenerTrace3d,
+) {
+    let step = scene.advance_listener_trace(
+        listener,
+        sources,
+        settings,
+        output,
+        settings.ray_count(),
+        TraceResume::Exact,
+    );
+    assert!(step.completed());
+    assert!(!output.is_tracing());
+    let mut fresh = ListenerTrace3d::default();
+    scene.trace_listener(listener, sources, settings, &mut fresh);
+    assert_same_trace(output, &fresh);
 }
