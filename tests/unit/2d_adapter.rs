@@ -795,6 +795,119 @@ fn a_long_trace_continues_across_updates_without_another_schedule() {
     assert_eq!(trace.trace().expect("listener").sources().len(), 1);
 }
 
+/// A walk inside the coherent radius keeps the scheduled trace and its image sources.
+#[test]
+fn a_walking_listener_keeps_image_sources_until_the_slice_ends() {
+    let (mut app, listener, emitter) = long_trace_scene();
+    app.update();
+    assert_eq!(scheduled(&app), 1);
+    assert!(is_tracing(&app));
+    assert!((direct_distance(&app, emitter) - 2.0).abs() < 1.0e-6);
+    move_x(&mut app, listener, 0.05);
+    app.update();
+    assert_eq!(scheduled(&app), 1);
+    assert!(!is_tracing(&app));
+    assert!((direct_distance(&app, emitter) - 2.0).abs() < 1.0e-6);
+    move_x(&mut app, listener, 0.10);
+    app.update();
+    assert_eq!(scheduled(&app), 2);
+    assert!((direct_distance(&app, emitter) - 1.90).abs() < 1.0e-4);
+}
+
+/// A jump past the coherent radius restarts the slice and refreshes image sources.
+#[test]
+fn a_listener_teleport_restarts_the_slice_and_refreshes_image_sources() {
+    let (mut app, listener, emitter) = long_trace_scene();
+    app.update();
+    move_x(&mut app, listener, -2.0);
+    app.update();
+    assert_eq!(scheduled(&app), 2);
+    assert!(is_tracing(&app));
+    assert!((direct_distance(&app, emitter) - 4.0).abs() < 1.0e-5);
+}
+
+/// Emitter motion during a slice still refreshes image sources without restarting the trace.
+#[test]
+fn emitter_motion_during_a_slice_still_refreshes_image_sources() {
+    use super::RaytracedAudioListenerTrace2d;
+    let (mut app, _listener, emitter) = long_trace_scene();
+    app.update();
+    move_x(&mut app, emitter, 2.05);
+    app.update();
+    assert_eq!(scheduled(&app), 2);
+    assert!(!is_tracing(&app));
+    assert_eq!(
+        app.world()
+            .resource::<RaytracedAudioListenerTrace2d>()
+            .trace()
+            .expect("listener")
+            .sources()
+            .len(),
+        1
+    );
+    assert!((direct_distance(&app, emitter) - 2.05).abs() < 1.0e-4);
+}
+
+/// Builds a scene whose 20,000-ray trace spans two updates.
+fn long_trace_scene() -> (App, Entity, Entity) {
+    use super::RaytracedAudioTracing2d;
+    let mut app = App::new();
+    app.add_plugins((TransformPlugin, RaytracedAudio2dPlugin::default()));
+    let listener = app
+        .world_mut()
+        .spawn((RaytracedAudioListener2d, Transform::default()))
+        .id();
+    let emitter = app
+        .world_mut()
+        .spawn((RaytracedAudioEmitter2d, Transform::from_xyz(2.0, 0.0, 0.0)))
+        .id();
+    let mut tracing = app.world_mut().resource_mut::<RaytracedAudioTracing2d>();
+    tracing.settings = tracing
+        .settings
+        .try_with_ray_count(20_000)
+        .expect("nonzero ray count")
+        .with_max_bounces(1);
+    (app, listener, emitter)
+}
+
+/// Returns how many listener traces the adapter has scheduled.
+fn scheduled(app: &App) -> u64 {
+    use super::RaytracedAudioListenerTrace2d;
+    app.world()
+        .resource::<RaytracedAudioListenerTrace2d>()
+        .scheduling_statistics()
+        .scheduled
+}
+
+/// Returns whether the listener trace is still casting.
+fn is_tracing(app: &App) -> bool {
+    use super::RaytracedAudioListenerTrace2d;
+    app.world()
+        .resource::<RaytracedAudioListenerTrace2d>()
+        .trace()
+        .expect("listener")
+        .is_tracing()
+}
+
+/// Returns the cached image-source direct distance in meters.
+fn direct_distance(app: &App, emitter: Entity) -> f64 {
+    app.world()
+        .get::<RaytracedAudioResponse2d>(emitter)
+        .expect("image-source response")
+        .response()
+        .direct
+        .distance_m()
+}
+
+/// Moves one entity along X, in meters.
+fn move_x(app: &mut App, entity: Entity, x: f32) {
+    app.world_mut()
+        .get_mut::<Transform>(entity)
+        .expect("transform")
+        .translation
+        .x = x;
+}
+
 /// Counts emitters that already have an image-source response.
 fn emitters_with_response(app: &App, emitters: &[Entity]) -> usize {
     emitters

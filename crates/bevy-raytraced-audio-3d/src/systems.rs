@@ -125,18 +125,56 @@ pub(super) fn update_raytraced_audio(
         &mut scene_is_cached,
     );
     let delta_s = real_time.map_or(f32::INFINITY, |time| time.delta_secs());
+    let due = advance_scheduled_trace(
+        &scene,
+        listener,
+        scene_changed,
+        &tracing,
+        settings,
+        &mut listener_trace,
+        &mut trace_scratch,
+        &emitters,
+        delta_s,
+    );
+    let emitter_count = emitters.iter().count();
+    let refresh_budget = settings
+        .emitter_budget
+        .or_else(|| frame_emitter_budget(emitter_count));
+    let budgeted = budget.select(&emitters, refresh_budget);
+    let traced = TracedResponses {
+        refresh_legacy: due || !tracing.enabled,
+        budgeted,
+        indices: &trace_scratch.indices,
+        trace: listener_trace.trace(),
+    };
+    process_emitters(commands, &scene, listener, settings, &traced, emitters);
+}
+
+/// Records one schedule step, advances a due or continued slice, and returns whether it was due.
+///
+/// An in-progress slice keeps casting after its scheduled frame. Those frames do not increment
+/// the schedule counters. Listener motion inside the coherent radius does not make the frame due.
+fn advance_scheduled_trace(
+    scene: &AcousticScene3d,
+    listener: Option<Listener3d>,
+    scene_changed: bool,
+    tracing: &Res<'_, RaytracedAudioTracing3d>,
+    settings: RaytracedAudioSettings,
+    listener_trace: &mut ResMut<'_, RaytracedAudioListenerTrace3d>,
+    trace_scratch: &mut TraceScratch,
+    emitters: &EmitterQuery<'_, '_>,
+    delta_s: f32,
+) -> bool {
     trace_scratch.since_trace_s += delta_s;
+    let continue_trace = listener.is_some() && tracing.enabled && listener_trace.trace.is_tracing();
     let due = tracing.is_changed()
         || scene_changed
         || (trace_scratch.since_trace_s >= tracing.interval_s
             && (!tracing.settings.reuses_results()
-                || trace_scratch.listener != listener
-                || source_positions_changed(&emitters, &trace_scratch, settings)))
-        || has_untraced_emitter(&emitters, &trace_scratch.indices)
+                || listener_left_trace(trace_scratch.listener, listener, continue_trace)
+                || source_positions_changed(emitters, trace_scratch, settings)))
+        || has_untraced_emitter(emitters, &trace_scratch.indices)
         || listener_trace.valid != listener.is_some();
-    // An in-progress slice keeps casting after its scheduled frame. Those frames do not
-    // increment the schedule counters.
-    let continue_trace = listener.is_some() && tracing.enabled && listener_trace.trace.is_tracing();
     // Diagnostics must not advertise a changed acoustic result to downstream systems.
     let scheduling = &mut listener_trace.bypass_change_detection().scheduling;
     scheduling.scene_refreshes += u64::from(scene_changed);
@@ -150,27 +188,34 @@ pub(super) fn update_raytraced_audio(
     }
     if due || continue_trace {
         trace_listener(
-            &scene,
+            scene,
             listener.filter(|_| tracing.enabled),
-            *tracing,
+            **tracing,
             settings,
-            &emitters,
-            &mut listener_trace,
-            &mut trace_scratch,
+            emitters,
+            listener_trace,
+            trace_scratch,
         );
     }
-    let emitter_count = emitters.iter().count();
-    let refresh_budget = settings
-        .emitter_budget
-        .or_else(|| frame_emitter_budget(emitter_count));
-    let budgeted = budget.select(&emitters, refresh_budget);
-    let traced = TracedResponses {
-        refresh_legacy: due || !tracing.enabled,
-        budgeted,
-        indices: &trace_scratch.indices,
-        trace: listener_trace.trace(),
-    };
-    process_emitters(commands, &scene, listener, settings, &traced, emitters);
+    due
+}
+
+/// Returns whether listener motion should schedule a new trace.
+///
+/// While a slice is in progress, motion inside the coherent radius of the latched start pose
+/// keeps the cached image sources. A finished slice, a missing listener, or a jump past that
+/// radius uses exact inequality with the cached pose.
+fn listener_left_trace(
+    cached: Option<Listener3d>,
+    listener: Option<Listener3d>,
+    slice_in_progress: bool,
+) -> bool {
+    match (cached, listener) {
+        (Some(cached), Some(listener)) if slice_in_progress => {
+            !cached.within_trace_motion(listener)
+        }
+        (cached, listener) => cached != listener,
+    }
 }
 
 /// Returns the automatic per-frame emitter cap, or `None` when every emitter fits in one update.

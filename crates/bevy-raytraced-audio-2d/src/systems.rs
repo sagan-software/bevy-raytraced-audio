@@ -136,15 +136,15 @@ fn advance_scheduled_trace(
     delta_s: f32,
 ) -> bool {
     trace_scratch.since_trace_s += delta_s;
+    let continue_trace = listener.is_some() && tracing.enabled && listener_trace.trace.is_tracing();
     let due = tracing.is_changed()
         || scene_changed
         || (trace_scratch.since_trace_s >= tracing.interval_s
             && (!tracing.settings.reuses_results()
-                || trace_scratch.listener != listener
+                || listener_left_trace(trace_scratch.listener, listener, continue_trace)
                 || source_positions_changed(emitters, trace_scratch)))
         || has_untraced_emitter(emitters, &trace_scratch.indices)
         || listener_trace.valid != listener.is_some();
-    let continue_trace = listener.is_some() && tracing.enabled && listener_trace.trace.is_tracing();
     // Diagnostics must not advertise a changed acoustic result to downstream systems.
     let scheduling = &mut listener_trace.bypass_change_detection().scheduling;
     scheduling.scene_refreshes += u64::from(scene_changed);
@@ -180,6 +180,24 @@ pub(super) struct TraceScratch {
     since_trace_s: f32,
     /// Listener position used by the cached deterministic trace.
     listener: Option<Listener2d>,
+}
+
+/// Returns whether listener motion should schedule a new trace.
+///
+/// While a slice is in progress, motion inside the coherent radius of the latched start pose
+/// keeps the cached image sources. A finished slice, a missing listener, or a jump past that
+/// radius uses exact inequality with the cached pose.
+fn listener_left_trace(
+    cached: Option<Listener2d>,
+    listener: Option<Listener2d>,
+    slice_in_progress: bool,
+) -> bool {
+    match (cached, listener) {
+        (Some(cached), Some(listener)) if slice_in_progress => {
+            !cached.within_trace_motion(listener)
+        }
+        (cached, listener) => cached != listener,
+    }
 }
 
 /// Returns whether any emitter with a finite position is missing from the last trace.

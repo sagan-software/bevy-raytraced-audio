@@ -4,8 +4,8 @@ use crate::bvh::{Bounds, Ray};
 use crate::cache_statistics::{TraceCacheMiss, TraceCacheStatistics};
 use crate::math2d::Vector2;
 use crate::ray_trace::{
-    COHERENT_TRACE_MOTION_M, EchoStatistics, SourceAccumulator, TraceResume, TraceRng, TraceStep,
-    estimate_ray_units, for_each_slot, narrow, trace_threads,
+    EchoStatistics, SourceAccumulator, TraceResume, TraceRng, TraceStep, estimate_ray_units,
+    for_each_slot, narrow, trace_threads, within_coherent_motion,
 };
 use crate::scene2d::clear_of_source;
 use crate::{
@@ -294,7 +294,7 @@ impl AcousticScene2d {
     ///
     /// A budget of zero does not start work. An exact cache hit returns the completed trace
     /// without casting. While a trace is in progress, [`TraceResume::Coherent`] keeps casting
-    /// from the poses captured at the start until [`COHERENT_TRACE_MOTION_M`] is exceeded.
+    /// from the poses captured at the start until [`COHERENT_TRACE_MOTION_M`](crate::COHERENT_TRACE_MOTION_M) is exceeded.
     /// Published sources, reverb, and ambience stay at the previous completed result until the
     /// new trace finishes, so a sliced trace does not clear audio for the frames it spans.
     ///
@@ -390,9 +390,7 @@ impl AcousticScene2d {
         }
         let listener_ok = match resume {
             TraceResume::Exact => latch.listener == listener,
-            TraceResume::Coherent => {
-                within_trace_motion(listener_vector(latch.listener), listener_vector(listener))
-            }
+            TraceResume::Coherent => latch.listener.within_trace_motion(listener),
         };
         listener_ok
             && sources
@@ -977,11 +975,10 @@ fn trace_step(output: &ListenerTrace2d, completed: bool) -> TraceStep {
     TraceStep::new(rays_completed, ray_count, completed)
 }
 
-/// Returns whether two solver positions are at most [`COHERENT_TRACE_MOTION_M`] apart.
+/// Returns whether two solver positions are at most [`COHERENT_TRACE_MOTION_M`](crate::COHERENT_TRACE_MOTION_M) apart.
 fn within_trace_motion(previous: Vector2, next: Vector2) -> bool {
     let delta = next.subtract(previous);
-    let limit = COHERENT_TRACE_MOTION_M;
-    delta.dot(delta) <= limit * limit
+    within_coherent_motion(delta.dot(delta))
 }
 
 /// Returns the listener position in solver space.

@@ -230,6 +230,12 @@ pub enum TraceResume {
 /// One meter is longer than a sliced 256-ray trace takes at 120 Hz, and shorter than a teleport.
 pub const COHERENT_TRACE_MOTION_M: f64 = 1.0;
 
+/// Returns whether a squared displacement, in square meters, stays inside [`COHERENT_TRACE_MOTION_M`].
+pub(crate) fn within_coherent_motion(distance_squared_m2: f64) -> bool {
+    let limit_m = COHERENT_TRACE_MOTION_M;
+    distance_squared_m2 <= limit_m * limit_m
+}
+
 /// Progress of one listener-trace advance.
 ///
 /// See [`AcousticScene2d::advance_listener_trace`](crate::AcousticScene2d::advance_listener_trace)
