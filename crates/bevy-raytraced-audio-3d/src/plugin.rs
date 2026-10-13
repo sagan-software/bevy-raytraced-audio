@@ -21,6 +21,8 @@ pub struct RaytracedAudio3dPlugin {
     units_per_meter: f32,
     /// Whether the adapter writes Bevy sink volumes.
     controls_sink_volume: bool,
+    /// Whether per-emitter responses include first-order reflections.
+    reflections: bool,
 }
 
 impl Default for RaytracedAudio3dPlugin {
@@ -32,6 +34,7 @@ impl Default for RaytracedAudio3dPlugin {
             tracing: RaytracedAudioTracing3d::default(),
             units_per_meter: 1.0,
             controls_sink_volume: true,
+            reflections: true,
         }
     }
 }
@@ -102,6 +105,18 @@ impl RaytracedAudio3dPlugin {
         self
     }
 
+    /// Limits each emitter's [`super::RaytracedAudioResponse3d`] to the direct path.
+    ///
+    /// First-order reflections test every surface triangle for every emitter, while the direct
+    /// path uses the broad-phase hierarchy. Level-scale scenes that only need occlusion stay
+    /// cheap with this option. Reflected energy is then zero; emitters that carry
+    /// [`super::RaytracedAudioReflectionPaths3d`] still receive their paths.
+    #[must_use]
+    pub const fn with_direct_path_only(mut self) -> Self {
+        self.reflections = false;
+        self
+    }
+
     /// Sets the initial listener ray-trace settings.
     #[must_use]
     pub const fn with_ray_tracing(mut self, settings: RayTraceSettings) -> Self {
@@ -133,6 +148,7 @@ impl Plugin for RaytracedAudio3dPlugin {
             occluded_gain: self.occluded_gain,
             units_per_meter: self.units_per_meter,
             controls_sink_volume: self.controls_sink_volume,
+            reflections: self.reflections,
         })
         .insert_resource(self.tracing)
         .init_resource::<RaytracedAudioListenerTrace3d>()

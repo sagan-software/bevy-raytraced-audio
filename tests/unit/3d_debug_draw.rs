@@ -119,6 +119,7 @@ fn replay_emits_finite_vertices_and_observes_controls() {
         occluded_gain: 0.0,
         units_per_meter: 50.0,
         controls_sink_volume: true,
+        reflections: true,
     });
     let scaled = instant(&mut app, &mut state);
     assert_eq!(unscaled.len(), scaled.len());

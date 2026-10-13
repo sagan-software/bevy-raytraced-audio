@@ -54,7 +54,17 @@ impl AcousticScene3d {
     /// Traces direct transmission and first-order reflections between two points.
     #[must_use]
     pub fn trace(&self, emitter: Emitter3d, listener: Listener3d) -> AcousticResponse {
-        self.trace_internal(emitter, listener, None)
+        self.trace_internal(emitter, listener, None, true)
+    }
+
+    /// Traces direct transmission only, leaving reflected energy at zero.
+    ///
+    /// The direct path uses the broad-phase hierarchy, so its cost grows slowly with the
+    /// triangle count, while first-order reflections test every triangle. Use it for large
+    /// scenes where only occlusion matters.
+    #[must_use]
+    pub fn trace_direct(&self, emitter: Emitter3d, listener: Listener3d) -> AcousticResponse {
+        self.trace_internal(emitter, listener, None, false)
     }
 
     /// Returns visible first-order reflections lazily in triangle insertion order.
@@ -83,7 +93,7 @@ impl AcousticScene3d {
         listener: Listener3d,
         paths: &mut Vec<ReflectionPath3d>,
     ) -> AcousticResponse {
-        self.trace_internal(emitter, listener, Some(paths))
+        self.trace_internal(emitter, listener, Some(paths), true)
     }
 
     /// Computes the aggregate response and optionally appends the same visible paths to reusable storage.
@@ -92,6 +102,7 @@ impl AcousticScene3d {
         emitter: Emitter3d,
         listener: Listener3d,
         mut paths: Option<&mut Vec<ReflectionPath3d>>,
+        reflections: bool,
     ) -> AcousticResponse {
         if let Some(output) = paths.as_deref_mut() {
             output.clear();
@@ -115,6 +126,9 @@ impl AcousticScene3d {
                 self.direct_transmission(start, receiver)
             });
         let direct = PathResponse::new(direct_distance, direct_gain, direct_occluded);
+        if !reflections {
+            return AcousticResponse::new(direct, BandEnergy::ZERO);
+        }
 
         // Fused accumulation preserves the existing aggregate result for every visible path.
         let mut reflected_low = 0.0;

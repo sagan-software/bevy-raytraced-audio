@@ -390,8 +390,10 @@ fn update_emitter(
             let emitter = RaytracedAudioClearance3d::emitter(clearance, position);
             if let Some(paths) = reflection_paths.as_deref_mut() {
                 scene.trace_with_reflection_paths(emitter, *listener, &mut paths.paths)
-            } else {
+            } else if settings.reflections {
                 scene.trace(emitter, *listener)
+            } else {
+                scene.trace_direct(emitter, *listener)
             }
         });
 

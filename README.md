@@ -141,6 +141,10 @@ Clearances, ray speeds and trail lengths stay in meters. To map responses
 through your own occlusion curves, call `without_sink_volume()`: the adapter
 keeps publishing `RaytracedAudioResponse3d` and `RaytracedAudioRayResponse3d`
 but leaves every Bevy sink volume to the application.
+First-order reflections test every triangle for every emitter; for a
+level-scale scene that needs only occlusion, `with_direct_path_only()` keeps
+each emitter's response to the direct path, which uses the broad-phase
+hierarchy.
 
 For headphone elevation cues, opt a 3D player into measured binaural rendering:
 `RaytracedAudioPlayer::new(audio).with_binaural(0.22)`. The scale controls distance

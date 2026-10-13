@@ -11,6 +11,8 @@ pub(super) struct RaytracedAudioSettings {
     pub(super) units_per_meter: f32,
     /// Whether the adapter writes Bevy sink volumes; otherwise it only publishes responses.
     pub(super) controls_sink_volume: bool,
+    /// Whether per-emitter responses include first-order reflections.
+    pub(super) reflections: bool,
 }
 
 impl RaytracedAudioSettings {

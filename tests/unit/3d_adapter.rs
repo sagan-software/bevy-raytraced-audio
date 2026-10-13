@@ -1046,3 +1046,55 @@ fn without_sink_volume_leaves_the_sink_to_the_application()
     assert!(response.direct.is_occluded());
     Ok(())
 }
+
+/// Direct-path-only responses keep occlusion and drop reflected energy, unless an emitter asks
+/// for its reflection paths.
+#[test]
+fn direct_path_only_skips_reflections() -> Result<(), bevy_raytraced_audio::GeometryError> {
+    let mut app = App::new();
+    app.add_plugins(TransformPlugin);
+    app.add_plugins(RaytracedAudio3dPlugin::default().with_direct_path_only());
+    app.world_mut()
+        .spawn((RaytracedAudioListener3d, Transform::from_xyz(1.0, 0.0, 0.0)));
+    let direct = app
+        .world_mut()
+        .spawn((RaytracedAudioEmitter3d, Transform::from_xyz(-1.0, 0.0, 0.0)))
+        .id();
+    let with_paths = app
+        .world_mut()
+        .spawn((
+            RaytracedAudioEmitter3d,
+            super::RaytracedAudioReflectionPaths3d::default(),
+            Transform::from_xyz(-1.0, 0.0, 0.0),
+        ))
+        .id();
+    // A floor below both endpoints reflects without blocking the direct path.
+    app.world_mut().spawn((
+        RaytracedAudioSurface3d::new(
+            [
+                Vec3::new(-5.0, -1.0, -5.0),
+                Vec3::new(5.0, -1.0, -5.0),
+                Vec3::new(0.0, -1.0, 5.0),
+            ],
+            AcousticMaterial::default(),
+        )?,
+        Transform::default(),
+    ));
+    app.update();
+    let response = |entity| {
+        app.world()
+            .get::<RaytracedAudioResponse3d>(entity)
+            .expect("adapter inserts a response component")
+            .response()
+    };
+    assert!(!response(direct).direct.is_occluded());
+    assert_eq!(
+        response(direct).reflected_energy,
+        bevy_raytraced_audio::BandEnergy::ZERO
+    );
+    assert_ne!(
+        response(with_paths).reflected_energy,
+        bevy_raytraced_audio::BandEnergy::ZERO
+    );
+    Ok(())
+}

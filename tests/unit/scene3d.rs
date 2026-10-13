@@ -309,3 +309,35 @@ fn distant_parallel_walls_have_no_reflection_output() {
         AcousticScene3d::default().trace(emitter, listener)
     );
 }
+
+/// The direct-only trace matches the full trace's direct path and reports no reflections.
+#[test]
+fn direct_trace_skips_reflections_and_keeps_occlusion() {
+    let point = |x, y, z| Point3::try_new(x, y, z).unwrap();
+    let mut scene = AcousticScene3d::default();
+    let emitter = Emitter3d::new(point(-1.0, 0.0, 0.0));
+    let listener = Listener3d::new(point(1.0, 0.0, 0.0));
+    // An empty scene passes the direct path unchanged.
+    assert_eq!(
+        scene.trace_direct(emitter, listener),
+        scene.trace(emitter, listener)
+    );
+    let floor = [
+        point(-5.0, -1.0, -5.0),
+        point(5.0, -1.0, -5.0),
+        point(0.0, -1.0, 5.0),
+    ];
+    scene.add_triangle(Triangle3d::try_new(floor, AcousticMaterial::default()).unwrap());
+    let full = scene.trace(emitter, listener);
+    let direct = scene.trace_direct(emitter, listener);
+    assert_ne!(full.reflected_energy, crate::BandEnergy::ZERO);
+    assert_eq!(direct.reflected_energy, crate::BandEnergy::ZERO);
+    assert_eq!(direct.direct, full.direct);
+    let wall = [
+        point(0.0, -1.0, -1.0),
+        point(0.0, 1.0, -1.0),
+        point(0.0, 0.0, 1.0),
+    ];
+    scene.add_triangle(Triangle3d::try_new(wall, AcousticMaterial::default()).unwrap());
+    assert!(scene.trace_direct(emitter, listener).direct.is_occluded());
+}
