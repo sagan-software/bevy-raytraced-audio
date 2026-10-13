@@ -276,7 +276,7 @@ impl TraceStep {
 /// Source-ray products to advance in one frame.
 ///
 /// One product is one traced source times one primary ray. The release benchmark
-/// `propagation/listener_slice/3d/sources/1024` measured a mean of 4.0 ms for 15 rays and
+/// `propagation/listener_slice/3d/sources/1024` measured a mean of 2.0 ms for 15 rays and
 /// 1,024 sources on a 16-core Ryzen 9 5950X, which is this many products. A scene with fewer
 /// sources clamps up to its full ray count and finishes in one call.
 const FRAME_SOURCE_RAYS: u64 = 16_000;
@@ -819,6 +819,14 @@ impl TraceRng {
 /// against the dense-room listener fixtures in the propagation benchmarks.
 const MINIMUM_PARALLEL_RAY_UNITS: u64 = 12_000;
 
+/// Per-ray work that is worth a lane of its own once a trace is already parallel.
+///
+/// A dense-room ray is about 8,000 of these units. The 1,024-source frame launches 15 of
+/// those rays, and a lane sized at [`MINIMUM_PARALLEL_RAY_UNITS`] then holds two of them.
+/// A ray at or above this floor takes its own lane when the machine has one. A cheaper ray
+/// stays on the shared schedule, so a 250-ray frame of 64 sources does not spawn a lane per ray.
+const ONE_RAY_LANE_UNITS: u64 = 4_000;
+
 /// Estimates the visibility work of one listener trace from its configuration and scene size.
 pub(crate) fn estimate_ray_units(
     ray_count: u32,
@@ -834,21 +842,42 @@ pub(crate) fn estimate_ray_units(
         .saturating_mul(per_bounce)
 }
 
-/// Returns how many execution lanes a trace with `units` of estimated work should use.
+/// Returns how many execution lanes a batch of `rays` with `units` of estimated work should use.
 ///
 /// WebAssembly builds have no threads in this crate's targets and always return one lane.
-pub(crate) fn trace_threads(units: u64) -> usize {
+/// Other builds apply the lane rule to the machine's available lanes.
+pub(crate) fn trace_threads(units: u64, rays: u32) -> usize {
     #[cfg(target_arch = "wasm32")]
     {
-        let _ = units;
+        let _ = (units, rays);
         1
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
         let available = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get);
-        let wanted = usize::try_from(units / MINIMUM_PARALLEL_RAY_UNITS).unwrap_or(usize::MAX);
-        wanted.clamp(1, available)
+        lane_count(units, rays, available)
     }
+}
+
+/// Chooses a lane count from estimated work, the batch's ray count, and `available` lanes.
+///
+/// Work below [`MINIMUM_PARALLEL_RAY_UNITS`], or a machine with one lane, stays on the caller.
+/// A heavier ray, one with at least [`ONE_RAY_LANE_UNITS`], takes its own lane when `available`
+/// can give it one. The count never exceeds `available` and never drops below the shared
+/// schedule of one lane per [`MINIMUM_PARALLEL_RAY_UNITS`].
+fn lane_count(units: u64, rays: u32, available: usize) -> usize {
+    if units < MINIMUM_PARALLEL_RAY_UNITS || available <= 1 {
+        return 1;
+    }
+    let wanted = usize::try_from(units / MINIMUM_PARALLEL_RAY_UNITS)
+        .unwrap_or(usize::MAX)
+        .clamp(1, available);
+    let ray_count = usize::try_from(rays).unwrap_or(usize::MAX).max(1);
+    let per_ray = units / u64::try_from(ray_count).unwrap_or(u64::MAX);
+    if per_ray < ONE_RAY_LANE_UNITS {
+        return wanted;
+    }
+    ray_count.clamp(1, available).max(wanted)
 }
 
 /// Runs `run(index, slot)` for every slot, optionally across scoped threads.

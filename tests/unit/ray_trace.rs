@@ -55,6 +55,26 @@ fn settings_validate_inputs() {
     );
 }
 
+/// A heavy ray takes its own lane, and a cheap ray stays on the shared schedule.
+#[test]
+fn lane_count_separates_a_heavy_ray_from_a_long_cheap_batch() {
+    let minimum = super::MINIMUM_PARALLEL_RAY_UNITS;
+    let floor = super::ONE_RAY_LANE_UNITS;
+    assert_eq!(super::lane_count(minimum - 1, 15, 32), 1);
+    assert_eq!(super::lane_count(15 * floor, 15, 1), 1);
+    assert_eq!(super::lane_count(0, 0, 0), 1);
+    // 15 rays at the floor outgrow the shared lane count and fit on 32 lanes.
+    assert_eq!(super::lane_count(15 * floor, 15, 32), 15);
+    // One unit under the floor keeps the shared count: 59_985 / 12_000 = 4.
+    assert_eq!(super::lane_count(15 * (floor - 1), 15, 32), 4);
+    // 250 rays above the parallel threshold, but under the per-ray floor, stay shared.
+    assert_eq!(super::lane_count(10 * minimum, 250, 32), 10);
+    // Eight lanes cannot give 15 heavy rays a lane each, so the batch uses all eight.
+    assert_eq!(super::lane_count(15 * floor, 15, 8), 8);
+    // Four heavy rays do not reduce a batch that already earned ten lanes.
+    assert_eq!(super::lane_count(10 * minimum, 4, 32), 10);
+}
+
 /// One frame of source-ray products stays inside the ray count and is at least one ray.
 #[test]
 fn frame_ray_budget_clamps_to_one_frame() {

@@ -514,12 +514,15 @@ impl AcousticScene2d {
         }
         let mut scratch = core::mem::take(&mut output.scratch);
         let _ = self.acceleration();
-        let threads = trace_threads(estimate_ray_units(
+        let threads = trace_threads(
+            estimate_ray_units(
+                end_ray - start_ray,
+                latch.settings.max_bounces(),
+                scratch.len(),
+                self.segment_count(),
+            ),
             end_ray - start_ray,
-            latch.settings.max_bounces(),
-            scratch.len(),
-            self.segment_count(),
-        ));
+        );
         // `end` is at least `start` and the vector now reaches `end`, so both splits are in range.
         let (_, rest) = ray_results.split_at_mut(start);
         let (batch, _) = rest.split_at_mut(end - start);
