@@ -612,3 +612,178 @@ fn a_large_parallel_wall_still_reflects_outside_the_prop_cluster() {
     }));
     assert_eq!(seen, vec![0]);
 }
+
+/// Thin axis-aligned flags on a 0.25 m x-z lattice, indexed as `column * rows + row`.
+fn flag_field(columns: u32, rows: u32) -> Vec<(usize, Bounds)> {
+    let mut surfaces = Vec::new();
+    for column in 0..columns {
+        for row in 0..rows {
+            let x = f64::from(column) * 0.25;
+            let z = f64::from(row) * 0.25;
+            surfaces.push((
+                surfaces.len(),
+                Bounds::path_3d((x, -0.12, z), (x, 0.12, z + 0.24)),
+            ));
+        }
+    }
+    surfaces
+}
+
+/// Returns whether `index` is a surface whose own bounds meet the ray before `limit`.
+fn bounds_accept(surfaces: &[(usize, Bounds)], ray: super::Ray, limit: f64, index: usize) -> bool {
+    surfaces
+        .iter()
+        .any(|(candidate, bounds)| *candidate == index && bounds.ray_entry(ray, limit).is_some())
+}
+
+/// Brute-force any-hit over primitive bounds, ignoring leaf padding.
+fn bounds_oracle(
+    surfaces: &[(usize, Bounds)],
+    ray: super::Ray,
+    limit: f64,
+    skip: Option<usize>,
+) -> bool {
+    surfaces
+        .iter()
+        .any(|(index, bounds)| skip != Some(*index) && bounds.ray_entry(ray, limit).is_some())
+}
+
+/// Runs the production visibility query with the bounds oracle as its exact test.
+fn query_bounds(
+    hierarchy: &BoundingVolumeHierarchy,
+    surfaces: &[(usize, Bounds)],
+    ray: super::Ray,
+    limit: f64,
+    skip: Option<usize>,
+) -> bool {
+    // Large trees ignore this box; the grid and the slabs decide.
+    let path = Bounds::path_3d((0.0, 0.0, 0.0), (0.0, 0.0, 0.0));
+    hierarchy.any_hit(ray, path, limit, skip, |index| {
+        bounds_accept(surfaces, ray, limit, index)
+    })
+}
+
+/// A uniform grid exists only for a large 3D prop set. Planar scenes keep the tree.
+#[test]
+fn uniform_grid_is_only_built_for_a_large_three_dimensional_prop_set() {
+    let surfaces = flag_field(8, 8);
+    let spatial = BoundingVolumeHierarchy::build(surfaces.clone(), SceneDimensions::Three);
+    let planar = BoundingVolumeHierarchy::build(surfaces.clone(), SceneDimensions::Two);
+    let few = BoundingVolumeHierarchy::build(flag_field(3, 3), SceneDimensions::Three);
+    let ray = super::Ray::new((0.1, 0.0, 0.1), (1.0, 0.0, 0.0));
+    let path = Bounds::path_3d((0.1, 0.0, 0.1), (0.4, 0.0, 0.1));
+
+    assert!(spatial.small_grid.is_some());
+    assert!(planar.small_grid.is_none());
+    assert!(few.small_grid.is_none());
+    assert!(planar.any_hit(ray, path, 0.3, None, |index| {
+        bounds_accept(&surfaces, ray, 0.3, index)
+    }));
+}
+
+/// Short overlaps agree with a per-primitive bounds test, including the lattice edges.
+#[test]
+fn narrow_grid_queries_match_primitive_bounds() {
+    let surfaces = flag_field(8, 8);
+    let hierarchy = BoundingVolumeHierarchy::build(surfaces.clone(), SceneDimensions::Three);
+    let grid = hierarchy
+        .small_grid
+        .as_ref()
+        .expect("64 flags build a grid");
+    let rays = [
+        super::Ray::new((0.1, 0.0, 0.1), (1.0, 0.0, 0.0)),
+        super::Ray::new((1.5, 0.0, 1.8), (1.0, 0.0, 0.0)),
+        super::Ray::new((-0.5, 0.0, 0.1), (1.0, 0.0, 0.0)),
+        super::Ray::new((0.125, 0.0, -0.2), (0.0, 0.0, 1.0)),
+        super::Ray::new((0.1, 0.0, 0.1), (1.0, 0.0, 1.0)),
+    ];
+    let limits = [0.3_f64, 0.4, 1.0, 0.5, 0.2];
+
+    for (ray, limit) in rays.into_iter().zip(limits) {
+        let mut accepts = |index| bounds_accept(&surfaces, ray, limit, index);
+        let answer = grid.query(ray, limit, None, &mut accepts);
+        assert_ne!(
+            answer,
+            super::GridAnswer::Wide,
+            "fixture rays stay inside eight cells"
+        );
+        assert_eq!(
+            query_bounds(&hierarchy, &surfaces, ray, limit, None),
+            bounds_oracle(&surfaces, ray, limit, None)
+        );
+    }
+    let interior = super::Ray::new((0.1, 0.0, 0.1), (1.0, 0.0, 0.0));
+    assert!(bounds_oracle(&surfaces, interior, 0.3, None));
+    assert!(!query_bounds(&hierarchy, &surfaces, interior, 0.3, Some(8)));
+}
+
+/// A long in-slab segment is handed back to the tree and still finds the blocker.
+#[test]
+fn wide_grid_queries_fall_back_to_the_tree() {
+    let surfaces = flag_field(16, 16);
+    let hierarchy = BoundingVolumeHierarchy::build(surfaces.clone(), SceneDimensions::Three);
+    let grid = hierarchy
+        .small_grid
+        .as_ref()
+        .expect("256 flags build a grid");
+    let ray = super::Ray::new((-1.0, 0.0, 0.1), (1.0, 0.0, 0.0));
+    let mut accepts = |index| bounds_accept(&surfaces, ray, 20.0, index);
+
+    assert_eq!(
+        grid.query(ray, 20.0, None, &mut accepts),
+        super::GridAnswer::Wide
+    );
+    assert_eq!(
+        query_bounds(&hierarchy, &surfaces, ray, 20.0, None),
+        bounds_oracle(&surfaces, ray, 20.0, None)
+    );
+    assert!(bounds_oracle(&surfaces, ray, 20.0, None));
+}
+
+/// A ray outside the prop slab is a miss and does not inspect prop surfaces.
+#[test]
+fn a_ray_outside_the_prop_slab_does_not_scan_props() {
+    let surfaces = flag_field(8, 8);
+    let hierarchy = BoundingVolumeHierarchy::build(surfaces, SceneDimensions::Three);
+    let grid = hierarchy
+        .small_grid
+        .as_ref()
+        .expect("64 flags build a grid");
+    let ray = super::Ray::new((0.1, 1.0, 0.1), (1.0, 0.0, 0.0));
+    let path = Bounds::path_3d((0.1, 1.0, 0.1), (1.1, 1.0, 0.1));
+
+    assert_eq!(
+        grid.query(ray, 1.0, None, &mut |_| panic!(
+            "a slab miss must not test a prop"
+        )),
+        super::GridAnswer::Clear
+    );
+    assert!(!hierarchy.any_hit(ray, path, 1.0, None, |_| {
+        panic!("a slab miss must not test a prop")
+    }));
+}
+
+/// A side-listed wall is tested before the grid, and a narrow prop hit still resolves.
+#[test]
+fn side_listed_walls_stay_ahead_of_the_prop_grid() {
+    let wall = Bounds::path_3d((-10.0, -10.0, -10.0), (10.0, -10.0, 10.0));
+    let mut surfaces = vec![(0_usize, wall)];
+    surfaces.extend(
+        flag_field(8, 8)
+            .into_iter()
+            .map(|(index, bounds)| (index + 1, bounds)),
+    );
+    let hierarchy = BoundingVolumeHierarchy::build(surfaces.clone(), SceneDimensions::Three);
+    let wall_ray = super::Ray::new((0.0, -5.0, 0.0), (0.0, -1.0, 0.0));
+    let wall_path = Bounds::path_3d((0.0, -5.0, 0.0), (0.0, -10.0, 0.0));
+    let prop_ray = super::Ray::new((0.1, 0.0, 0.1), (1.0, 0.0, 0.0));
+
+    assert_eq!(hierarchy.large_surface_count(), 1);
+    assert!(hierarchy.small_grid.is_some());
+    assert!(hierarchy.any_hit(wall_ray, wall_path, 20.0, None, |index| index == 0));
+    assert_eq!(
+        query_bounds(&hierarchy, &surfaces, prop_ray, 0.3, None),
+        bounds_oracle(&surfaces, prop_ray, 0.3, None)
+    );
+    assert!(bounds_oracle(&surfaces, prop_ray, 0.3, None));
+}

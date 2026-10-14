@@ -1,4 +1,7 @@
 //! Cached balanced bounds hierarchy used for exact segment and triangle visibility tests.
+//!
+//! Short 3D visibility queries over the small primitives can answer from a uniform grid. Long
+//! overlaps, closest-hit queries, and every 2D scene keep the binary tree.
 
 use core::ops::Range;
 
@@ -17,6 +20,23 @@ const MAX_TRAVERSAL_STACK: usize = 128;
 /// The factor keeps a room shell out of every ancestor while a uniform set of walls stays in
 /// the tree and keeps the parallel-wall reflection cull.
 const LARGE_PRIMITIVE_EXTENT_FACTOR: f64 = 8.0;
+
+/// Fewest small primitives that justify a uniform visibility grid.
+///
+/// Below this count the binary tree is only a few nodes deep, so the extra index does not
+/// remove a walk.
+const MIN_GRID_SURFACES: usize = 16;
+
+/// Widest cell rectangle answered by a direct grid scan.
+///
+/// A segment that only crosses the prop slab covers a handful of cells. Longer overlaps stay
+/// on the binary tree so a scan cannot walk the whole lattice.
+const MAX_DIRECT_GRID_CELLS: usize = 8;
+
+/// Largest lattice stored beside the tree.
+///
+/// A denser set keeps the binary tree. The dense listener fixture is about one thousand cells.
+const MAX_GRID_CELLS: usize = 4_096;
 
 /// Number of coordinate axes in the planar acoustic scene.
 #[derive(Clone, Copy, Debug)]
@@ -192,6 +212,46 @@ impl Bounds {
         Some(entry)
     }
 
+    /// Returns the entry and exit parameters of the closed overlap, when the ray meets it.
+    #[inline]
+    fn ray_overlap(self, ray: Ray, maximum_parameter: f64) -> Option<(f64, f64)> {
+        let mut entry = 0.0_f64;
+        let mut exit = maximum_parameter;
+        let axes = [
+            (
+                ray.origin.0,
+                ray.inverse_direction.0,
+                self.min_x,
+                self.max_x,
+            ),
+            (
+                ray.origin.1,
+                ray.inverse_direction.1,
+                self.min_y,
+                self.max_y,
+            ),
+            (
+                ray.origin.2,
+                ray.inverse_direction.2,
+                self.min_z,
+                self.max_z,
+            ),
+        ];
+        for (origin, inverse_direction, minimum, maximum) in axes {
+            if !tighten_slab(
+                &mut entry,
+                &mut exit,
+                origin,
+                inverse_direction,
+                minimum,
+                maximum,
+            ) {
+                return None;
+            }
+        }
+        Some((entry, exit))
+    }
+
     /// Combines two bounds into the smallest bounds containing both.
     const fn union(self, other: Self) -> Self {
         Self {
@@ -285,7 +345,8 @@ impl Bounds {
 /// Bounds and primitive indices arranged into a balanced binary tree.
 ///
 /// A primitive much larger than the median extent is stored beside the tree and tested on its
-/// own. One room shell then does not enlarge every ancestor of the remaining props.
+/// own. One room shell then does not enlarge every ancestor of the remaining props. Numerous
+/// remaining props also get a uniform grid for short visibility queries.
 #[derive(Clone, Debug, Default)]
 pub(crate) struct BoundingVolumeHierarchy {
     /// Tree nodes stored in post-order so child bounds are already available during construction.
@@ -298,6 +359,8 @@ pub(crate) struct BoundingVolumeHierarchy {
     parallel_axis: Option<Axis>,
     /// Room-scale primitives kept out of the tree so their bounds do not inflate ancestors.
     large_surfaces: Vec<PrimitiveBounds>,
+    /// Uniform grid over the small primitives, when a 3D lattice is cheaper than the tree.
+    small_grid: Option<SmallGrid>,
 }
 
 impl BoundingVolumeHierarchy {
@@ -351,6 +414,8 @@ impl BoundingVolumeHierarchy {
             &mut hierarchy.surface_indices,
         );
         hierarchy.root = Some(root);
+        let grid = Self::props_grid(&hierarchy.nodes, root, &primitives, dimensions);
+        hierarchy.small_grid = grid;
         hierarchy
     }
 
@@ -458,8 +523,10 @@ impl BoundingVolumeHierarchy {
     /// boolean, so children are visited without nearest-first ordering and traversal stops at
     /// the first accepted primitive. Visibility checks are the hottest traversal in a listener
     /// trace because every bounce casts one per source plus one toward the listener.
-    /// `path_bounds` is the corridor's conservative box, used only for tiny single-leaf scenes
-    /// where the box test beats slab traversal setup.
+    /// Room-scale primitives are tested first. A short overlap of the remaining props is
+    /// answered from a uniform grid; a long overlap keeps the binary tree. `path_bounds` is
+    /// the corridor's conservative box, used only for tiny single-leaf scenes where the box
+    /// test beats slab traversal setup.
     pub(crate) fn any_hit(
         &self,
         ray: Ray,
@@ -475,6 +542,13 @@ impl BoundingVolumeHierarchy {
         // Room-scale primitives sit outside the root, so a root miss is not a scene miss.
         if self.large_ray_accepted(ray, limit, skipped_surface, &mut test) {
             return true;
+        }
+        if let Some(grid) = &self.small_grid {
+            match grid.query(ray, limit, skipped_surface, &mut test) {
+                GridAnswer::Hit => return true,
+                GridAnswer::Clear => return false,
+                GridAnswer::Wide => {}
+            }
         }
         let Some(root) = self.root else {
             return false;
@@ -784,6 +858,17 @@ impl BoundingVolumeHierarchy {
         self.large_surfaces.len()
     }
 
+    /// Indexes the small primitives with the same bounds the tree root stored.
+    fn props_grid(
+        nodes: &[Node],
+        root: usize,
+        primitives: &[PrimitiveBounds],
+        dimensions: SceneDimensions,
+    ) -> Option<SmallGrid> {
+        let bounds = nodes.get(root)?.bounds;
+        SmallGrid::build(primitives, dimensions, bounds)
+    }
+
     /// Partitions one nonempty slice and appends its node after all child nodes.
     fn build_node(
         primitives: &mut [PrimitiveBounds],
@@ -888,6 +973,363 @@ impl BoundingVolumeHierarchy {
             }
         }
     }
+}
+
+/// Tightens one slab overlap. Returns false when the ray misses this axis.
+///
+/// Plain comparisons avoid the NaN and signed-zero handling of `f64::min` and `f64::max`.
+/// Every operand on the hot path is finite, and this runs for each visited node.
+#[inline]
+fn tighten_slab(
+    entry: &mut f64,
+    exit: &mut f64,
+    origin: f64,
+    inverse_direction: f64,
+    minimum: f64,
+    maximum: f64,
+) -> bool {
+    if inverse_direction.is_infinite() {
+        // A ray parallel to this slab must already lie between its planes.
+        return !(origin < minimum || origin > maximum);
+    }
+    let first = (minimum - origin) * inverse_direction;
+    let second = (maximum - origin) * inverse_direction;
+    let (near, far) = if first <= second {
+        (first, second)
+    } else {
+        (second, first)
+    };
+    if near > *entry {
+        *entry = near;
+    }
+    if far < *exit {
+        *exit = far;
+    }
+    *entry <= *exit
+}
+
+/// Uniform x-z lattice over the small primitives of one 3D hierarchy.
+#[derive(Clone, Debug)]
+struct SmallGrid {
+    /// Clip box. This is the small-primitive root, so a miss is a root miss.
+    bounds: Bounds,
+    /// Cell edge length, in meters.
+    cell: f64,
+    /// Cell columns along x.
+    x_count: usize,
+    /// Cell rows along z.
+    z_count: usize,
+    /// Exclusive prefix: cell `c` occupies `starts[c]..starts[c + 1]`.
+    starts: Vec<u32>,
+    /// Surface indices grouped by cell. One surface may occupy several cells.
+    indices: Vec<u32>,
+}
+
+/// Result of a uniform-grid visibility query.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum GridAnswer {
+    /// The ray misses the prop box, or a short scan accepted nothing.
+    Clear,
+    /// A short scan accepted a surface.
+    Hit,
+    /// The overlap is wider than a direct scan, so the binary tree must answer.
+    Wide,
+}
+
+/// Cell size and dimensions of one lattice.
+#[derive(Clone, Copy, Debug)]
+struct Lattice {
+    /// Cell edge length, in meters.
+    cell: f64,
+    /// Cell columns along x.
+    columns: usize,
+    /// Cell rows along z.
+    rows: usize,
+}
+
+impl SmallGrid {
+    /// Builds a lattice for a 3D prop set large enough that short scans beat the tree.
+    fn build(
+        primitives: &[PrimitiveBounds],
+        dimensions: SceneDimensions,
+        bounds: Bounds,
+    ) -> Option<Self> {
+        if !matches!(dimensions, SceneDimensions::Three) || primitives.len() < MIN_GRID_SURFACES {
+            return None;
+        }
+        let lattice = Lattice::from_bounds(bounds, primitives.len())?;
+        let starts = cell_starts(primitives, bounds, lattice)?;
+        let indices = scatter_cells(primitives, bounds, lattice, &starts)?;
+        Some(Self {
+            bounds,
+            cell: lattice.cell,
+            x_count: lattice.columns,
+            z_count: lattice.rows,
+            starts,
+            indices,
+        })
+    }
+
+    /// Answers a short visibility query. A wide footprint returns [`GridAnswer::Wide`].
+    #[inline]
+    fn query(
+        &self,
+        ray: Ray,
+        limit: f64,
+        skipped_surface: Option<usize>,
+        test: &mut impl FnMut(usize) -> bool,
+    ) -> GridAnswer {
+        let Some((entry, exit)) = self.bounds.ray_overlap(ray, limit) else {
+            return GridAnswer::Clear;
+        };
+        let Some((x0, x1, z0, z1)) = self.footprint(ray, entry, exit) else {
+            return GridAnswer::Wide;
+        };
+        let width = x0.abs_diff(x1).saturating_add(1);
+        let depth = z0.abs_diff(z1).saturating_add(1);
+        let Some(covered) = width.checked_mul(depth) else {
+            return GridAnswer::Wide;
+        };
+        if covered > MAX_DIRECT_GRID_CELLS {
+            return GridAnswer::Wide;
+        }
+        if self.rectangle_hits(x0, x1, z0, z1, skipped_surface, test) {
+            GridAnswer::Hit
+        } else {
+            GridAnswer::Clear
+        }
+    }
+
+    /// Maps the clipped segment's x-z endpoints into lattice slots.
+    #[inline]
+    fn footprint(&self, ray: Ray, entry: f64, exit: f64) -> Option<(usize, usize, usize, usize)> {
+        let start_x = axis_position(ray.origin.0, ray.inverse_direction.0, entry)?;
+        let end_x = axis_position(ray.origin.0, ray.inverse_direction.0, exit)?;
+        let start_z = axis_position(ray.origin.2, ray.inverse_direction.2, entry)?;
+        let end_z = axis_position(ray.origin.2, ray.inverse_direction.2, exit)?;
+        let x0 = lattice_index(start_x, self.bounds.min_x, self.cell, self.x_count)?;
+        let x1 = lattice_index(end_x, self.bounds.min_x, self.cell, self.x_count)?;
+        let z0 = lattice_index(start_z, self.bounds.min_z, self.cell, self.z_count)?;
+        let z1 = lattice_index(end_z, self.bounds.min_z, self.cell, self.z_count)?;
+        Some((x0, x1, z0, z1))
+    }
+
+    /// Returns whether any surface in the inclusive cell rectangle passes `test`.
+    #[inline]
+    fn rectangle_hits(
+        &self,
+        x0: usize,
+        x1: usize,
+        z0: usize,
+        z1: usize,
+        skipped_surface: Option<usize>,
+        test: &mut impl FnMut(usize) -> bool,
+    ) -> bool {
+        let x_low = x0.min(x1);
+        let x_high = x0.max(x1);
+        let z_low = z0.min(z1);
+        let z_high = z0.max(z1);
+        for column in x_low..=x_high {
+            for row in z_low..=z_high {
+                if self.cell_hits(column, row, skipped_surface, test) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    /// Returns whether one cell contains an accepted surface other than `skipped_surface`.
+    #[inline]
+    fn cell_hits(
+        &self,
+        column: usize,
+        row: usize,
+        skipped_surface: Option<usize>,
+        test: &mut impl FnMut(usize) -> bool,
+    ) -> bool {
+        let Some(slot) = column
+            .checked_mul(self.z_count)
+            .and_then(|value| value.checked_add(row))
+        else {
+            return false;
+        };
+        let Some(start) = self.starts.get(slot).copied() else {
+            return false;
+        };
+        let Some(end) = self.starts.get(slot.saturating_add(1)).copied() else {
+            return false;
+        };
+        let (Some(start_index), Some(end_index)) =
+            (usize::try_from(start).ok(), usize::try_from(end).ok())
+        else {
+            return false;
+        };
+        let Some(surfaces) = self.indices.get(start_index..end_index) else {
+            return false;
+        };
+        for surface in surfaces {
+            let Some(surface_index) = usize::try_from(*surface).ok() else {
+                continue;
+            };
+            if skipped_surface != Some(surface_index) && test(surface_index) {
+                return true;
+            }
+        }
+        false
+    }
+}
+
+impl Lattice {
+    /// Chooses a near-square lattice that covers `bounds` and stays under the cell cap.
+    fn from_bounds(bounds: Bounds, count: usize) -> Option<Self> {
+        let span_x = bounds.max_x - bounds.min_x;
+        let span_z = bounds.max_z - bounds.min_z;
+        if !span_x.is_finite() || !span_z.is_finite() || span_x < 0.0 || span_z < 0.0 {
+            return None;
+        }
+        let count_f = f64::from(u32::try_from(count).ok()?);
+        let span = span_x.max(span_z).max(1.0e-3);
+        let side = count_f.sqrt().ceil().max(1.0);
+        let cell = span / side;
+        if !cell.is_finite() || cell <= 0.0 {
+            return None;
+        }
+        let columns = axis_cells(span_x, cell)?;
+        let rows = axis_cells(span_z, cell)?;
+        let cells = columns.checked_mul(rows)?;
+        if cells > MAX_GRID_CELLS {
+            return None;
+        }
+        Some(Self {
+            cell,
+            columns,
+            rows,
+        })
+    }
+}
+
+/// Builds the exclusive cell prefix from every primitive reference.
+fn cell_starts(
+    primitives: &[PrimitiveBounds],
+    bounds: Bounds,
+    lattice: Lattice,
+) -> Option<Vec<u32>> {
+    let cells = lattice.columns.checked_mul(lattice.rows)?;
+    let mut counts = vec![0_u32; cells];
+    for primitive in primitives {
+        visit_cells(primitive.bounds, bounds, lattice, |slot| {
+            let count = counts.get_mut(slot)?;
+            *count = count.checked_add(1)?;
+            Some(())
+        })?;
+    }
+    prefix_counts(&counts)
+}
+
+/// Turns per-cell counts into an exclusive prefix of length `counts + 1`.
+fn prefix_counts(counts: &[u32]) -> Option<Vec<u32>> {
+    let mut starts = Vec::with_capacity(counts.len().saturating_add(1));
+    let mut running = 0_u32;
+    for count in counts {
+        starts.push(running);
+        running = running.checked_add(*count)?;
+    }
+    starts.push(running);
+    Some(starts)
+}
+
+/// Writes surface indices into the ranges described by `starts`.
+fn scatter_cells(
+    primitives: &[PrimitiveBounds],
+    bounds: Bounds,
+    lattice: Lattice,
+    starts: &[u32],
+) -> Option<Vec<u32>> {
+    let total = starts.last().copied()?;
+    let mut cursor = starts.to_vec();
+    let mut indices = vec![0_u32; usize::try_from(total).ok()?];
+    for primitive in primitives {
+        let index = u32::try_from(primitive.surface_index).ok()?;
+        visit_cells(primitive.bounds, bounds, lattice, |slot| {
+            let place = cursor.get_mut(slot)?;
+            let position = usize::try_from(*place).ok()?;
+            *indices.get_mut(position)? = index;
+            *place = place.checked_add(1)?;
+            Some(())
+        })?;
+    }
+    Some(indices)
+}
+
+/// Visits every lattice slot overlapped by `primitive`.
+fn visit_cells(
+    primitive: Bounds,
+    root: Bounds,
+    lattice: Lattice,
+    mut visit: impl FnMut(usize) -> Option<()>,
+) -> Option<()> {
+    let x0 = lattice_index(primitive.min_x, root.min_x, lattice.cell, lattice.columns)?;
+    let x1 = lattice_index(primitive.max_x, root.min_x, lattice.cell, lattice.columns)?;
+    let z0 = lattice_index(primitive.min_z, root.min_z, lattice.cell, lattice.rows)?;
+    let z1 = lattice_index(primitive.max_z, root.min_z, lattice.cell, lattice.rows)?;
+    for column in x0.min(x1)..=x0.max(x1) {
+        for row in z0.min(z1)..=z0.max(z1) {
+            let slot = column.checked_mul(lattice.rows)?.checked_add(row)?;
+            visit(slot)?;
+        }
+    }
+    Some(())
+}
+
+/// Column or row count that keeps the far boundary inside the lattice.
+fn axis_cells(span: f64, cell: f64) -> Option<usize> {
+    let scaled = (span / cell).ceil().max(1.0);
+    if !scaled.is_finite() {
+        return None;
+    }
+    lattice_slot(scaled).checked_add(1)
+}
+
+/// Clamps a world coordinate into a lattice axis.
+fn lattice_index(position: f64, origin: f64, cell: f64, count: usize) -> Option<usize> {
+    if count == 0 || !position.is_finite() || !cell.is_finite() || cell <= 0.0 {
+        return None;
+    }
+    let scaled = ((position - origin) / cell).floor();
+    if !scaled.is_finite() {
+        return None;
+    }
+    if scaled <= 0.0 {
+        return Some(0);
+    }
+    let last = count - 1;
+    let last_u32 = u32::try_from(last).ok()?;
+    if scaled >= f64::from(last_u32) {
+        return Some(last);
+    }
+    Some(lattice_slot(scaled))
+}
+
+/// Converts a finite, non-negative lattice coordinate that already lies below the axis length.
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "callers reject non-finite and negative coordinates and clamp to the axis length first"
+)]
+const fn lattice_slot(scaled: f64) -> usize {
+    scaled as usize
+}
+
+/// Reconstructs one world coordinate from a reciprocal direction and a ray parameter.
+fn axis_position(origin: f64, inverse: f64, parameter: f64) -> Option<f64> {
+    let position = if inverse.is_finite() {
+        let scaled = parameter * inverse.recip();
+        origin + scaled
+    } else {
+        origin
+    };
+    position.is_finite().then_some(position)
 }
 
 /// Returns whether `path` meets `bounds` on the axes perpendicular to `axis`.
