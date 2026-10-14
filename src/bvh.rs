@@ -540,7 +540,7 @@ impl BoundingVolumeHierarchy {
                 .visit_candidates_until(path_bounds, skipped_surface, |index| !test(index));
         }
         // Room-scale primitives sit outside the root, so a root miss is not a scene miss.
-        if self.large_ray_accepted(ray, limit, skipped_surface, &mut test) {
+        if self.large_ray_accepted(ray, path_bounds, limit, skipped_surface, &mut test) {
             return true;
         }
         if let Some(grid) = &self.small_grid {
@@ -838,15 +838,21 @@ impl BoundingVolumeHierarchy {
     }
 
     /// Returns whether `test` accepts a side-listed primitive the ray reaches before `limit`.
+    ///
+    /// `path_bounds` boxes the ray's segment. Six comparisons reject a room surface the segment
+    /// cannot reach before the slab test pays three multiplies per axis, and most visibility
+    /// queries in a room stay far from every wall.
     fn large_ray_accepted(
         &self,
         ray: Ray,
+        path_bounds: Bounds,
         limit: f64,
         skipped_surface: Option<usize>,
         test: &mut impl FnMut(usize) -> bool,
     ) -> bool {
         self.large_surfaces.iter().any(|surface| {
             skipped_surface != Some(surface.surface_index)
+                && surface.bounds.overlaps(path_bounds)
                 && surface.bounds.ray_entry(ray, limit).is_some()
                 && test(surface.surface_index)
         })

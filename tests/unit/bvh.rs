@@ -585,6 +585,30 @@ fn large_and_small_surfaces_both_remain_visible() {
     );
 }
 
+/// A visibility segment only consults a side-listed wall its bounding box reaches.
+#[test]
+fn visibility_skips_a_wall_the_path_box_stops_short_of() {
+    use super::Ray;
+    let wall = Bounds::path_3d((-10.0, -10.0, -10.0), (10.0, -10.0, 10.0));
+    let mut surfaces = vec![(0_usize, wall)];
+    surfaces
+        .extend((1..17_u32).map(|index| (usize::try_from(index).unwrap(), compact_bounds(index))));
+    let hierarchy = BoundingVolumeHierarchy::build(surfaces, SceneDimensions::Three);
+    let ray = Ray::new((0.0, -5.0, 5.0), (0.0, -1.0, 0.0));
+    let wall_tests = core::cell::Cell::new(0_u32);
+    let test = |index: usize| {
+        wall_tests.set(wall_tests.get() + u32::from(index == 0));
+        index == 0
+    };
+    let short = Bounds::path_3d((0.0, -5.0, 5.0), (0.0, -9.0, 5.0));
+    assert!(!hierarchy.any_hit(ray, short, 20.0, None, test));
+    assert_eq!(wall_tests.get(), 0);
+    // A box that touches the wall plane still tests the wall.
+    let touching = Bounds::path_3d((0.0, -5.0, 5.0), (0.0, -10.0, 5.0));
+    assert!(hierarchy.any_hit(ray, touching, 5.0, None, test));
+    assert_eq!(wall_tests.get(), 1);
+}
+
 /// A side-listed parallel wall still reflects outside the prop cluster and rejects a far miss.
 #[test]
 fn a_large_parallel_wall_still_reflects_outside_the_prop_cluster() {
