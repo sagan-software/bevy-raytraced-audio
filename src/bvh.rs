@@ -12,6 +12,12 @@ const MAX_LEAF_SURFACES: usize = 4;
 /// this capacity; the any-hit fallback recursion covers the theoretical remainder.
 const MAX_TRAVERSAL_STACK: usize = 128;
 
+/// A primitive longer than this multiple of the median extent is stored beside the tree.
+///
+/// The factor keeps a room shell out of every ancestor while a uniform set of walls stays in
+/// the tree and keeps the parallel-wall reflection cull.
+const LARGE_PRIMITIVE_EXTENT_FACTOR: f64 = 8.0;
+
 /// Number of coordinate axes in the planar acoustic scene.
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum SceneDimensions {
@@ -265,9 +271,21 @@ impl Bounds {
             SceneDimensions::Three => Axis::Z,
         }
     }
+
+    /// Returns the longest axis that this scene dimension stores.
+    fn longest_extent(self, dimensions: SceneDimensions) -> f64 {
+        let planar = self.extent(Axis::X).max(self.extent(Axis::Y));
+        match dimensions {
+            SceneDimensions::Two => planar,
+            SceneDimensions::Three => planar.max(self.extent(Axis::Z)),
+        }
+    }
 }
 
 /// Bounds and primitive indices arranged into a balanced binary tree.
+///
+/// A primitive much larger than the median extent is stored beside the tree and tested on its
+/// own. One room shell then does not enlarge every ancestor of the remaining props.
 #[derive(Clone, Debug, Default)]
 pub(crate) struct BoundingVolumeHierarchy {
     /// Tree nodes stored in post-order so child bounds are already available during construction.
@@ -278,10 +296,15 @@ pub(crate) struct BoundingVolumeHierarchy {
     root: Option<usize>,
     /// Common plane normal for parallel axis-aligned surfaces, if the scene has one.
     parallel_axis: Option<Axis>,
+    /// Room-scale primitives kept out of the tree so their bounds do not inflate ancestors.
+    large_surfaces: Vec<PrimitiveBounds>,
 }
 
 impl BoundingVolumeHierarchy {
     /// Builds a balanced tree while preserving original surface indices in every node.
+    ///
+    /// Room-scale outliers are stored beside the tree. A uniform set, including a room made
+    /// only of large walls, keeps the same partition order as a tree without that side list.
     #[expect(
         clippy::float_cmp,
         reason = "reflection rejection requires exactly planar bounds; a tolerance would admit tilted walls"
@@ -320,6 +343,7 @@ impl BoundingVolumeHierarchy {
         if primitives.is_empty() {
             return hierarchy;
         }
+        hierarchy.large_surfaces = Self::partition_large_primitives(&mut primitives, dimensions);
         let root = Self::build_node(
             &mut primitives,
             dimensions,
@@ -332,15 +356,23 @@ impl BoundingVolumeHierarchy {
 
     /// Returns the bounds of every primitive in the hierarchy, or `None` for an empty scene.
     pub(crate) fn root_bounds(&self) -> Option<Bounds> {
-        self.root
+        let mut bounds = self
+            .root
             .and_then(|index| self.nodes.get(index))
-            .map(|node| node.bounds)
+            .map(|node| node.bounds);
+        for surface in &self.large_surfaces {
+            bounds = Some(bounds.map_or(surface.bounds, |existing| existing.union(surface.bounds)));
+        }
+        bounds
     }
 
     /// Rejects parallel wall groups whose tangential bounds cannot contain an image reflection.
     /// A valid image ray is a convex combination of the two tangential endpoint coordinates.
     /// Other orientations keep the exact per-surface path; padding permits arithmetic rounding.
     pub(crate) fn may_have_reflections(&self, path: Bounds) -> bool {
+        if self.large_surfaces_may_reflect(path) {
+            return true;
+        }
         let Some(root) = self.root.and_then(|index| self.nodes.get(index)) else {
             return false;
         };
@@ -351,31 +383,7 @@ impl BoundingVolumeHierarchy {
         let Some(axis) = self.parallel_axis else {
             return true;
         };
-        let bounds = root.bounds;
-        let overlaps = |minimum: f64, maximum: f64, low: f64, high: f64| {
-            let padding = 64.0
-                * f64::EPSILON
-                * minimum
-                    .abs()
-                    .max(maximum.abs())
-                    .max(low.abs())
-                    .max(high.abs());
-            minimum - padding <= high && low <= maximum + padding
-        };
-        match axis {
-            Axis::X => {
-                overlaps(path.min_y, path.max_y, bounds.min_y, bounds.max_y)
-                    && overlaps(path.min_z, path.max_z, bounds.min_z, bounds.max_z)
-            }
-            Axis::Y => {
-                overlaps(path.min_x, path.max_x, bounds.min_x, bounds.max_x)
-                    && overlaps(path.min_z, path.max_z, bounds.min_z, bounds.max_z)
-            }
-            Axis::Z => {
-                overlaps(path.min_x, path.max_x, bounds.min_x, bounds.max_x)
-                    && overlaps(path.min_y, path.max_y, bounds.min_y, bounds.max_y)
-            }
-        }
+        tangential_overlap(axis, path, root.bounds)
     }
 
     /// Visits candidates until the callback returns false and reports whether traversal completed.
@@ -385,6 +393,9 @@ impl BoundingVolumeHierarchy {
         skipped_surface: Option<usize>,
         mut visit_surface: impl FnMut(usize) -> bool,
     ) -> bool {
+        if !self.visit_large_candidates(path_bounds, skipped_surface, &mut visit_surface) {
+            return false;
+        }
         let Some(root) = self.root else {
             return true;
         };
@@ -424,6 +435,10 @@ impl BoundingVolumeHierarchy {
         mut maximum_parameter: f64,
         mut hit_parameter: impl FnMut(usize) -> Option<f64>,
     ) {
+        self.visit_large_rays(ray, &mut maximum_parameter, &mut hit_parameter);
+        if maximum_parameter < 0.0 {
+            return;
+        }
         let Some(root) = self.root else {
             return;
         };
@@ -456,6 +471,10 @@ impl BoundingVolumeHierarchy {
         if self.surface_indices.len() <= MAX_LEAF_SURFACES {
             return !self
                 .visit_candidates_until(path_bounds, skipped_surface, |index| !test(index));
+        }
+        // Room-scale primitives sit outside the root, so a root miss is not a scene miss.
+        if self.large_ray_accepted(ray, limit, skipped_surface, &mut test) {
+            return true;
         }
         let Some(root) = self.root else {
             return false;
@@ -649,6 +668,122 @@ impl BoundingVolumeHierarchy {
         }
     }
 
+    /// Moves room-scale outliers out of `primitives` when a tight majority remains.
+    ///
+    /// A leaf-sized set, a nonpositive median extent, and a split that would move every
+    /// primitive stay in input order. The retained slice keeps that order, so later median
+    /// splits of a uniform room match a tree built without this partition.
+    fn partition_large_primitives(
+        primitives: &mut Vec<PrimitiveBounds>,
+        dimensions: SceneDimensions,
+    ) -> Vec<PrimitiveBounds> {
+        if primitives.len() <= MAX_LEAF_SURFACES {
+            return Vec::new();
+        }
+        let mut extents = primitives
+            .iter()
+            .map(|primitive| primitive.bounds.longest_extent(dimensions))
+            .collect::<Vec<_>>();
+        let median_index = extents.len() / 2;
+        extents.select_nth_unstable_by(median_index, f64::total_cmp);
+        let median = extents.get(median_index).copied().unwrap_or(0.0);
+        if median <= 0.0 {
+            return Vec::new();
+        }
+        let limit = median * LARGE_PRIMITIVE_EXTENT_FACTOR;
+        let large_count = extents.iter().filter(|extent| **extent > limit).count();
+        if large_count == 0 || large_count == primitives.len() {
+            return Vec::new();
+        }
+        let mut large_surfaces = Vec::with_capacity(large_count);
+        primitives.retain(|primitive| {
+            let stays = primitive.bounds.longest_extent(dimensions) <= limit;
+            if !stays {
+                large_surfaces.push(*primitive);
+            }
+            stays
+        });
+        large_surfaces
+    }
+
+    /// Returns whether a side-listed primitive can still reflect `path`.
+    ///
+    /// An empty side list leaves the tree rule unchanged. Without one shared plane, the
+    /// tangential test cannot reject a side-listed primitive.
+    fn large_surfaces_may_reflect(&self, path: Bounds) -> bool {
+        if self.large_surfaces.is_empty() {
+            return false;
+        }
+        let Some(axis) = self.parallel_axis else {
+            return true;
+        };
+        self.large_surfaces
+            .iter()
+            .any(|surface| tangential_overlap(axis, path, surface.bounds))
+    }
+
+    /// Visits side-listed primitives whose bounds overlap `path_bounds`.
+    ///
+    /// Returns whether every overlapping primitive was accepted.
+    fn visit_large_candidates(
+        &self,
+        path_bounds: Bounds,
+        skipped_surface: Option<usize>,
+        visit_surface: &mut impl FnMut(usize) -> bool,
+    ) -> bool {
+        for surface in &self.large_surfaces {
+            let skipped = skipped_surface == Some(surface.surface_index);
+            if !skipped
+                && surface.bounds.overlaps(path_bounds)
+                && !visit_surface(surface.surface_index)
+            {
+                return false;
+            }
+        }
+        true
+    }
+
+    /// Tests side-listed primitives and tightens the closest-hit limit.
+    fn visit_large_rays(
+        &self,
+        ray: Ray,
+        maximum_parameter: &mut f64,
+        hit_parameter: &mut impl FnMut(usize) -> Option<f64>,
+    ) {
+        for surface in &self.large_surfaces {
+            if *maximum_parameter < 0.0 {
+                return;
+            }
+            if surface.bounds.ray_entry(ray, *maximum_parameter).is_some()
+                && let Some(parameter) = hit_parameter(surface.surface_index)
+                && parameter < *maximum_parameter
+            {
+                *maximum_parameter = parameter;
+            }
+        }
+    }
+
+    /// Returns whether `test` accepts a side-listed primitive the ray reaches before `limit`.
+    fn large_ray_accepted(
+        &self,
+        ray: Ray,
+        limit: f64,
+        skipped_surface: Option<usize>,
+        test: &mut impl FnMut(usize) -> bool,
+    ) -> bool {
+        self.large_surfaces.iter().any(|surface| {
+            skipped_surface != Some(surface.surface_index)
+                && surface.bounds.ray_entry(ray, limit).is_some()
+                && test(surface.surface_index)
+        })
+    }
+
+    /// Returns how many primitives were stored beside the tree.
+    #[cfg(test)]
+    const fn large_surface_count(&self) -> usize {
+        self.large_surfaces.len()
+    }
+
     /// Partitions one nonempty slice and appends its node after all child nodes.
     fn build_node(
         primitives: &mut [PrimitiveBounds],
@@ -751,6 +886,36 @@ impl BoundingVolumeHierarchy {
                 }
                 self.visit_candidate_node(*right, path_bounds, skipped_surface, visit_surface)
             }
+        }
+    }
+}
+
+/// Returns whether `path` meets `bounds` on the axes perpendicular to `axis`.
+///
+/// Padding covers the same rounding the exact reflection test allows.
+fn tangential_overlap(axis: Axis, path: Bounds, bounds: Bounds) -> bool {
+    let overlaps = |minimum: f64, maximum: f64, low: f64, high: f64| {
+        let padding = 64.0
+            * f64::EPSILON
+            * minimum
+                .abs()
+                .max(maximum.abs())
+                .max(low.abs())
+                .max(high.abs());
+        minimum - padding <= high && low <= maximum + padding
+    };
+    match axis {
+        Axis::X => {
+            overlaps(path.min_y, path.max_y, bounds.min_y, bounds.max_y)
+                && overlaps(path.min_z, path.max_z, bounds.min_z, bounds.max_z)
+        }
+        Axis::Y => {
+            overlaps(path.min_x, path.max_x, bounds.min_x, bounds.max_x)
+                && overlaps(path.min_z, path.max_z, bounds.min_z, bounds.max_z)
+        }
+        Axis::Z => {
+            overlaps(path.min_x, path.max_x, bounds.min_x, bounds.max_x)
+                && overlaps(path.min_y, path.max_y, bounds.min_y, bounds.max_y)
         }
     }
 }

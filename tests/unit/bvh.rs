@@ -486,3 +486,129 @@ fn any_hit_descendant_matches_a_one_slot_frontier() {
     assert!(!broken.any_hit_descendant(leaf, ray, 100.0, None, &mut |_| true));
     assert!(!broken.any_hit_stacked::<1>(root, ray, 100.0, None, &mut |_| true));
 }
+
+/// A 0.2 m box placed on a 0.3 m stride so neighboring fixtures do not overlap.
+fn compact_bounds(index: u32) -> Bounds {
+    let x = f64::from(index) * 0.3;
+    Bounds::path_3d((x, 0.0, 0.0), (x + 0.2, 0.2, 0.2))
+}
+
+/// Room-scale shells leave the tree. Uniform, degenerate, and leaf-sized sets do not.
+#[test]
+fn only_extent_outliers_leave_the_tree() {
+    let wall = Bounds::path_3d((-10.0, -10.0, -10.0), (10.0, -10.0, 10.0));
+    let mut mixed = vec![(0_usize, wall)];
+    mixed.extend((1..17_u32).map(|index| (usize::try_from(index).unwrap(), compact_bounds(index))));
+    assert_eq!(
+        BoundingVolumeHierarchy::build(mixed, SceneDimensions::Three).large_surface_count(),
+        1
+    );
+
+    let uniform = (0..16_u32).map(|index| (usize::try_from(index).unwrap(), compact_bounds(index)));
+    assert_eq!(
+        BoundingVolumeHierarchy::build(uniform, SceneDimensions::Three).large_surface_count(),
+        0
+    );
+
+    let few = [
+        (0_usize, wall),
+        (1, compact_bounds(1)),
+        (2, compact_bounds(2)),
+    ];
+    assert_eq!(
+        BoundingVolumeHierarchy::build(few, SceneDimensions::Three).large_surface_count(),
+        0
+    );
+
+    let points = (0..8_u32).map(|index| {
+        let x = f64::from(index);
+        (
+            usize::try_from(index).unwrap(),
+            Bounds::path_3d((x, 0.0, 0.0), (x, 0.0, 0.0)),
+        )
+    });
+    assert_eq!(
+        BoundingVolumeHierarchy::build(points, SceneDimensions::Three).large_surface_count(),
+        0
+    );
+}
+
+/// Depth counts only in a three-dimensional scene.
+#[test]
+fn extent_outliers_follow_the_scene_axes() {
+    let long_depth = Bounds::path_3d((0.0, 0.0, -10.0), (0.2, 0.2, 10.0));
+    let surfaces: Vec<_> = (0..16_usize)
+        .map(|index| {
+            let bounds = if index == 0 {
+                long_depth
+            } else {
+                compact_bounds(u32::try_from(index).unwrap())
+            };
+            (index, bounds)
+        })
+        .collect();
+    let planar = BoundingVolumeHierarchy::build(surfaces.clone(), SceneDimensions::Two);
+    let spatial = BoundingVolumeHierarchy::build(surfaces, SceneDimensions::Three);
+
+    assert_eq!(planar.large_surface_count(), 0);
+    assert_eq!(spatial.large_surface_count(), 1);
+}
+
+/// A side-listed wall and a prop inside the tree both stay visible to a ray.
+#[test]
+fn large_and_small_surfaces_both_remain_visible() {
+    use super::Ray;
+    let wall = Bounds::path_3d((-10.0, -10.0, -10.0), (10.0, -10.0, 10.0));
+    let mut surfaces = vec![(0_usize, wall)];
+    surfaces
+        .extend((1..17_u32).map(|index| (usize::try_from(index).unwrap(), compact_bounds(index))));
+    let hierarchy = BoundingVolumeHierarchy::build(surfaces, SceneDimensions::Three);
+    let wall_ray = Ray::new((0.0, -5.0, 5.0), (0.0, -1.0, 0.0));
+    let wall_path = Bounds::path_3d((0.0, -5.0, 5.0), (0.0, -10.0, 5.0));
+
+    assert!(hierarchy.any_hit(wall_ray, wall_path, 20.0, None, |index| index == 0));
+    assert!(!hierarchy.any_hit(wall_ray, wall_path, 20.0, Some(0), |_| true));
+    let prop_ray = Ray::new((-1.0, 0.1, 0.1), (1.0, 0.0, 0.0));
+    let prop_path = Bounds::path_3d((-1.0, 0.1, 0.1), (0.5, 0.1, 0.1));
+    assert!(hierarchy.any_hit(prop_ray, prop_path, 20.0, None, |index| index == 1));
+
+    let mut seen = Vec::new();
+    hierarchy.visit_ray(wall_ray, 20.0, |index| {
+        seen.push(index);
+        None
+    });
+    assert_eq!(seen, vec![0]);
+    assert!(
+        hierarchy
+            .root_bounds()
+            .is_some_and(|root| root.contains(wall))
+    );
+}
+
+/// A side-listed parallel wall still reflects outside the prop cluster and rejects a far miss.
+#[test]
+fn a_large_parallel_wall_still_reflects_outside_the_prop_cluster() {
+    let wall = Bounds::path_3d((-10.0, 0.0, -10.0), (10.0, 0.0, 10.0));
+    let mut surfaces = vec![(0_usize, wall)];
+    surfaces.extend((1..17_u32).map(|index| {
+        let x = f64::from(index) * 0.3;
+        (
+            usize::try_from(index).unwrap(),
+            Bounds::path_3d((x, 0.0, 0.0), (x + 0.2, 0.0, 0.2)),
+        )
+    }));
+    let hierarchy = BoundingVolumeHierarchy::build(surfaces, SceneDimensions::Three);
+    let off_plane = Bounds::path_3d((9.0, 1.0, 9.0), (9.5, 1.0, 9.5));
+    let on_plane = Bounds::path_3d((9.0, 0.0, 9.0), (9.5, 0.0, 9.5));
+    let far_miss = Bounds::path_3d((100.0, 0.0, 100.0), (101.0, 0.0, 101.0));
+
+    assert_eq!(hierarchy.large_surface_count(), 1);
+    assert!(hierarchy.may_have_reflections(off_plane));
+    assert!(!hierarchy.may_have_reflections(far_miss));
+    let mut seen = Vec::new();
+    assert!(hierarchy.visit_candidates_until(on_plane, None, |index| {
+        seen.push(index);
+        true
+    }));
+    assert_eq!(seen, vec![0]);
+}

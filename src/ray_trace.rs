@@ -282,7 +282,7 @@ impl TraceStep {
 /// Source-ray products to advance in one frame.
 ///
 /// One product is one traced source times one primary ray. The release benchmark
-/// `propagation/listener_slice/3d/sources/1024` measured a mean of 2.0 ms for 15 rays and
+/// `propagation/listener_slice/3d/sources/1024` measured a mean of 1.1 ms for 15 rays and
 /// 1,024 sources on a 16-core Ryzen 9 5950X, which is this many products. A scene with fewer
 /// sources clamps up to its full ray count and finishes in one call.
 const FRAME_SOURCE_RAYS: u64 = 16_000;
