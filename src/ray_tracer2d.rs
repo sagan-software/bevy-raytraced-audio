@@ -797,7 +797,7 @@ impl AcousticScene2d {
             let visible = sources.get(index).is_some_and(|source| {
                 let faces_source = source.point.subtract(hit_point).dot(hit.normal) > 0.0;
                 faces_source
-                    && clear_of_source(source.point, hit_point, source.clearance_m).is_none_or(
+                    && clear_of_source(source.point, hit_point, source.clearance_m).is_some_and(
                         |end| !self.segment_is_blocked(hit_point, end, Some(hit.segment_index)),
                     )
             });

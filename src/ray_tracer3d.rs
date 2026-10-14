@@ -800,7 +800,7 @@ impl AcousticScene3d {
                 let faces_source = source.point.subtract(hit_point).dot(hit.normal) > 0.0;
                 // A hit point inside the source clearance is a reflector the clearance ignores.
                 faces_source
-                    && clear_of_source(source.point, hit_point, source.clearance_m).is_none_or(
+                    && clear_of_source(source.point, hit_point, source.clearance_m).is_some_and(
                         |end| !self.segment_is_blocked(hit_point, end, Some(hit.triangle_index)),
                     )
             });
